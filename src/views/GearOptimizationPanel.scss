@@ -29,9 +29,8 @@
     background: transparent;
     color: inherit;
   }
-  span:last-child {
-    font-size: 12px;
-    color: rgb(var(--color-text-base), .60);
+  input.gear-optimization_minimum-tenacity-mitigation {
+    width: 56px;
   }
 }
 .gear-optimization_locks {

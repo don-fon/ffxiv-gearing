@@ -4,6 +4,19 @@ const test = require('node:test');
 const ts = require('typescript');
 const vm = require('node:vm');
 
+const statFormulaSource = fs.readFileSync(require.resolve('../src/statFormulas.ts'), 'utf8');
+const statFormulaCompiled = ts.transpileModule(statFormulaSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.CommonJS,
+    target: ts.ScriptTarget.ES2022,
+  },
+}).outputText;
+const statFormulas = {};
+vm.runInNewContext(statFormulaCompiled, {
+  exports: statFormulas,
+  module: { exports: statFormulas },
+});
+
 const source = fs.readFileSync(require.resolve('../src/optimizer.ts'), 'utf8');
 const compiled = ts.transpileModule(source, {
   compilerOptions: {
@@ -12,10 +25,15 @@ const compiled = ts.transpileModule(source, {
   },
 }).outputText;
 const optimizer = {};
-vm.runInNewContext(compiled, { exports: optimizer, module: { exports: optimizer } });
+vm.runInNewContext(compiled, {
+  exports: optimizer,
+  module: { exports: optimizer },
+  require: request => request === './statFormulas' ? statFormulas : require(request),
+});
 
 const {
   calculateExpectedDamage,
+  calculateTenacityMitigation,
   findTargetSpeedContributions,
   optimizeGearset,
   planGearOptimization,
@@ -53,6 +71,137 @@ function gear(id, name, level, slot, stats, cap, materiaSlot, unique = true) {
     synced: false,
   };
 }
+
+const tankDamage = {
+  ...damage,
+  job: 'PLD',
+  mainStat: 'VIT',
+};
+
+function tenacityInput(objective) {
+  return {
+    syncLevel: 1,
+    fixedStats: {
+      STR: 2000, VIT: 2000, CRT: 420, DET: 440, DHT: 420, TEN: 420, SKS: 420, PDMG: 100,
+    },
+    gears: [
+      gear(1, 'damage', 1, 3, { STR: 10, VIT: 10, DHT: 500 }, 1000, 0),
+      gear(2, 'mitigation', 1, 3, { STR: 10, VIT: 10, TEN: 280 }, 1000, 0),
+    ],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'TEN', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.50,
+    objective,
+    damage: tankDamage,
+  };
+}
+
+test('minimum tenacity mitigation is an exact hard constraint', () => {
+  const unconstrained = optimizeGearset(tenacityInput({ type: 'damage' }));
+  const zeroMinimum = optimizeGearset(tenacityInput({
+    type: 'minimumTenacity',
+    minimumTenacityMitigation: 0,
+  }));
+  const constrained = optimizeGearset(tenacityInput({
+    type: 'minimumTenacity',
+    minimumTenacityMitigation: 0.02,
+  }));
+
+  assert.equal(unconstrained.gears[0].id, 1);
+  assert.equal(zeroMinimum.damage, unconstrained.damage);
+  assert.equal(zeroMinimum.gears[0].id, unconstrained.gears[0].id);
+  assert.equal(constrained.gears[0].id, 2);
+  assert.equal(constrained.tenacityMitigation, 0.02);
+  assert.equal(calculateTenacityMitigation(constrained.stats.TEN, tankDamage.level), 0.02);
+  assert.ok(constrained.damage < unconstrained.damage);
+});
+
+test('unreachable minimum tenacity mitigation is rejected during planning', () => {
+  assert.throws(() => planGearOptimization(tenacityInput({
+    type: 'minimumTenacity',
+    minimumTenacityMitigation: 0.03,
+  })), /坚韧减伤不低于 3\.0%/);
+});
+
+test('minimum tenacity mitigation matches exhaustive multi-slot enumeration', () => {
+  const slots = [3, 4, 5, 7];
+  const choices = [
+    { DHT: 220, TEN: 0 },
+    { CRT: 150, TEN: 100 },
+    { DET: 100, TEN: 220 },
+  ];
+  const gears = slots.flatMap((slot, slotIndex) => choices.map((stats, optionIndex) =>
+    gear(100 + slotIndex * 3 + optionIndex, `${slotIndex}-${optionIndex}`, 1, slot,
+      { STR: 10, VIT: 10, ...stats }, 1000, 0)));
+  const fixedStats = {
+    STR: 2000, VIT: 2000, CRT: 420, DET: 440, DHT: 420, TEN: 420, SKS: 420, PDMG: 100,
+  };
+  const baseInput = {
+    syncLevel: 1,
+    fixedStats,
+    gears,
+    slots,
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'TEN', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.50,
+    damage: tankDamage,
+  };
+  let totals = [{ ...fixedStats }];
+  for (const slot of slots) {
+    totals = totals.flatMap(stats => gears.filter(item => item.slot === slot).map(item => {
+      const combined = { ...stats };
+      for (const [stat, value] of Object.entries(item.stats)) {
+        combined[stat] = (combined[stat] ?? 0) + value;
+      }
+      return combined;
+    }));
+  }
+  const evaluated = totals.map(stats => ({
+    stats,
+    damage: calculateExpectedDamage(stats, tankDamage),
+    tenacityMitigation: calculateTenacityMitigation(stats.TEN, tankDamage.level),
+  }));
+  const minimumTenacityMitigation = 0.03;
+  const constrainedExpected = Math.max(...evaluated
+    .filter(item => item.tenacityMitigation >= minimumTenacityMitigation)
+    .map(item => item.damage));
+  const constrained = optimizeGearset({
+    ...baseInput,
+    objective: { type: 'minimumTenacity', minimumTenacityMitigation },
+  });
+  assert.equal(constrained.damage, constrainedExpected);
+});
+
+test('minimum tenacity mitigation filters exact GCD speed partitions', () => {
+  const input = {
+    syncLevel: 1,
+    fixedStats: {
+      STR: 2000, VIT: 2000, CRT: 420, DET: 440, DHT: 420, TEN: 420, SKS: 420, PDMG: 100,
+    },
+    gears: [
+      gear(1, 'head damage', 1, 3, { STR: 10, VIT: 10, DHT: 300, SKS: 22 }, 1000, 0),
+      gear(2, 'head tenacity', 1, 3, { STR: 10, VIT: 10, TEN: 140, SKS: 60 }, 1000, 0),
+      gear(3, 'body damage', 1, 4, { STR: 10, VIT: 10, DHT: 300 }, 1000, 0),
+      gear(4, 'body tenacity', 1, 4, { STR: 10, VIT: 10, TEN: 140, SKS: 40 }, 1000, 0),
+    ],
+    slots: [3, 4],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'TEN', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.49,
+    objective: { type: 'minimumTenacity', minimumTenacityMitigation: 0.02 },
+    damage: tankDamage,
+  };
+
+  const plan = planGearOptimization(input);
+  const result = optimizeGearset(input);
+  assert.equal(plan.partitions.map(partition => partition.contribution).join(','), '100');
+  assert.equal(result.gears.map(item => item.id).sort().join(','), '2,4');
+  assert.equal(result.tenacityMitigation, 0.02);
+});
 
 test('735 DRG share case is improved with the configured weapon and food', () => {
   const input = {

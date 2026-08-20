@@ -1,3 +1,7 @@
+import { calculateTenacityMitigation } from './statFormulas';
+
+export { calculateTenacityMitigation } from './statFormulas';
+
 export type OptimizerStat =
   'STR' | 'DEX' | 'INT' | 'MND' | 'VIT' |
   'CRT' | 'DET' | 'DHT' | 'TEN' | 'PIE' | 'SKS' | 'SPS' |
@@ -62,9 +66,14 @@ export interface GearOptimizationInput {
   targetGcd: number;
   targetSpeedContribution?: number;
   globalMinimumDamage?: number;
+  objective?: GearOptimizationObjective;
   food?: OptimizerFood;
   damage: OptimizerDamageContext;
 }
+
+export type GearOptimizationObjective =
+  { type: 'damage' } |
+  { type: 'minimumTenacity', minimumTenacityMitigation: number };
 
 export interface OptimizerSpeedPartition {
   contribution: number;
@@ -94,6 +103,7 @@ export interface OptimizerGearChoice {
 
 export interface GearOptimizationResult {
   damage: number;
+  tenacityMitigation: number;
   stats: OptimizerStats;
   gears: OptimizerGearChoice[];
   exploredStates: number;
@@ -108,6 +118,11 @@ export interface OptimizerProgress {
 interface GearOption {
   stats: OptimizerStats;
   choices: OptimizerGearChoice[];
+}
+
+interface OptimizationEvaluation {
+  damage: number;
+  tenacityMitigation: number;
 }
 
 interface SearchState extends GearOption {
@@ -138,6 +153,8 @@ interface SpeedSearchPlan {
   optionsBySpeed: Map<number, GearOption[]>[];
   completionMaxima: Map<number, OptimizerStats>[];
 }
+
+class NoFeasibleOptimizationSolution extends Error {}
 
 const damageStats: OptimizerStat[] = [
   'STR', 'DEX', 'INT', 'MND', 'CRT', 'DET', 'DHT', 'TEN', 'SKS', 'SPS', 'PDMG', 'MDMG',
@@ -735,6 +752,23 @@ export function calculateExpectedDamage(stats: OptimizerStats,
     context);
 }
 
+function minimumTenacityMitigation(input: GearOptimizationInput): number | undefined {
+  return input.objective?.type === 'minimumTenacity'
+    ? input.objective.minimumTenacityMitigation
+    : undefined;
+}
+
+function meetsObjective(evaluation: OptimizationEvaluation, input: GearOptimizationInput): boolean {
+  const minimum = minimumTenacityMitigation(input);
+  return minimum === undefined || evaluation.tenacityMitigation + 1e-12 >= minimum;
+}
+
+function evaluateStats(stats: OptimizerStats, input: GearOptimizationInput): OptimizationEvaluation {
+  const damage = calculateExpectedDamage(stats, input.damage);
+  const tenacityMitigation = calculateTenacityMitigation(stats.TEN, input.damage.level);
+  return { damage, tenacityMitigation };
+}
+
 function calculateExpectedDamageComponents(attackMainValue: number, intelligence: number,
   CRT: number, DET: number, DHT: number, TEN: number | undefined,
   PDMG: number | undefined, MDMG: number | undefined,
@@ -785,6 +819,12 @@ function calculateCombinedExpectedDamage(left: OptimizerStats, right: OptimizerS
     combinedStatValue(left, right, 'PDMG', input.food),
     combinedStatValue(left, right, 'MDMG', input.food),
     input.damage);
+}
+
+function calculateCombinedTenacityMitigation(left: OptimizerStats, right: OptimizerStats,
+  input: GearOptimizationInput): number {
+  return calculateTenacityMitigation(
+    combinedStatValue(left, right, 'TEN', input.food), input.damage.level);
 }
 
 function createCombinedDamageCalculator(input: GearOptimizationInput):
@@ -845,6 +885,33 @@ function createCombinedDamageCalculator(input: GearOptimizationInput):
   };
 }
 
+function combinedDamageValue(left: OptimizerStats, right: OptimizerStats,
+  input: GearOptimizationInput,
+  calculateDamage?: (left: OptimizerStats, right: OptimizerStats) => number): number {
+  return calculateDamage === undefined
+    ? calculateCombinedExpectedDamage(left, right, input)
+    : calculateDamage(left, right);
+}
+
+function feasibleDamageBound(left: OptimizerStats, right: OptimizerStats,
+  input: GearOptimizationInput,
+  calculateDamage?: (left: OptimizerStats, right: OptimizerStats) => number): number {
+  const damage = combinedDamageValue(left, right, input, calculateDamage);
+  const minimum = minimumTenacityMitigation(input);
+  if (minimum === undefined || minimum <= 0) return damage;
+  return calculateCombinedTenacityMitigation(left, right, input) + 1e-12 >= minimum
+    ? damage
+    : -Infinity;
+}
+
+function evaluateCombinedStats(left: OptimizerStats, right: OptimizerStats,
+  input: GearOptimizationInput,
+  calculateDamage?: (left: OptimizerStats, right: OptimizerStats) => number): OptimizationEvaluation {
+  const damage = combinedDamageValue(left, right, input, calculateDamage);
+  const tenacityMitigation = calculateCombinedTenacityMitigation(left, right, input);
+  return { damage, tenacityMitigation };
+}
+
 function reconstruct(state: SearchState): OptimizerGearChoice[] {
   const groups: OptimizerGearChoice[][] = [];
   let current: SearchState | undefined = state;
@@ -869,7 +936,7 @@ function findGreedySolution(input: GearOptimizationInput,
       const remaining = speedPlan.completionMaxima[groupIndex + 1].get(nextPrefix)!;
       for (const option of speedPlan.optionsBySpeed[groupIndex].get(speed)!) {
         const stats = addStats(state.stats, option.stats);
-        const bound = calculateCombinedExpectedDamage(stats, remaining, input);
+        const bound = feasibleDamageBound(stats, remaining, input);
         if (bound > bestBound) {
           bestBound = bound;
           bestNextPrefix = nextPrefix;
@@ -883,7 +950,8 @@ function findGreedySolution(input: GearOptimizationInput,
       }
     }
     if (bestNext === undefined) {
-      throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+      throw new NoFeasibleOptimizationSolution(
+        `没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
     }
     state = bestNext;
     prefixSpeed = bestNextPrefix;
@@ -899,6 +967,12 @@ function validateOptimizationInput(input: GearOptimizationInput): void {
   if (input.targetSpeedContribution !== undefined &&
       !Number.isInteger(input.targetSpeedContribution)) {
     throw new Error('速度搜索分片参数无效。');
+  }
+  if (input.objective?.type === 'minimumTenacity' &&
+      (!Number.isFinite(input.objective.minimumTenacityMitigation) ||
+        input.objective.minimumTenacityMitigation < 0 ||
+        input.objective.minimumTenacityMitigation >= 1)) {
+    throw new Error('最低坚韧减伤必须是大于等于 0 且小于 100 的百分比。');
   }
 }
 
@@ -945,28 +1019,41 @@ export function planGearOptimization(input: GearOptimizationInput): GearOptimiza
   const groups = prepareSearchGroups(planningInput);
   const contributions = buildSpeedSearchPlan(groups, planningInput).targetContributions;
   let heuristicResult: GearOptimizationResult | undefined;
-  const partitions = contributions.map(contribution => {
+  const partitions: OptimizerSpeedPartition[] = [];
+  for (const contribution of contributions) {
     const partitionInput = { ...planningInput, targetSpeedContribution: contribution };
     const speedPlan = buildSpeedSearchPlan(groups, partitionInput);
-    const state = findGreedySolution(partitionInput, speedPlan);
+    let state: SearchState;
+    try {
+      state = findGreedySolution(partitionInput, speedPlan);
+    } catch (error) {
+      if (planningInput.objective?.type === 'minimumTenacity' &&
+          error instanceof NoFeasibleOptimizationSolution) continue;
+      throw error;
+    }
     const stats = applyFood(state.stats, input.food);
-    const damage = calculateExpectedDamage(stats, input.damage);
-    if (heuristicResult === undefined || damage > heuristicResult.damage) {
+    const evaluation = evaluateStats(stats, input);
+    if (heuristicResult === undefined || evaluation.damage > heuristicResult.damage) {
       heuristicResult = {
-        damage,
+        ...evaluation,
         stats,
         gears: reconstruct(state),
         exploredStates: 0,
       };
     }
-    return {
+    partitions.push({
       contribution,
-      heuristicDamage: damage,
+      heuristicDamage: evaluation.damage,
       estimatedWork: estimatePartitionWork(speedPlan),
-    };
-  });
+    });
+  }
   if (heuristicResult === undefined) {
-    throw new Error(`No complete gearset reaches GCD ${input.targetGcd.toFixed(2)}.`);
+    if (input.objective?.type === 'minimumTenacity') {
+      throw new Error(`没有找到坚韧减伤不低于 ` +
+        `${(input.objective.minimumTenacityMitigation * 100).toFixed(1)}%` +
+        ` 且最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+    }
+    throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
   }
   const promisingContributions = new Set(Array.from(partitions)
     .sort((left, right) => right.heuristicDamage - left.heuristicDamage)
@@ -991,8 +1078,8 @@ export function optimizeGearset(input: GearOptimizationInput,
   const combinedDamage = createCombinedDamageCalculator(input);
   let bestState: SearchState | undefined = findGreedySolution(input, speedPlan);
   let bestStats: OptimizerStats | undefined = applyFood(bestState.stats, input.food);
-  let bestDamage = calculateExpectedDamage(bestStats, input.damage);
-  let pruningDamage = Math.max(bestDamage, input.globalMinimumDamage ?? -Infinity);
+  let bestEvaluation = evaluateStats(bestStats, input);
+  let pruningDamage = Math.max(bestEvaluation.damage, input.globalMinimumDamage ?? -Infinity);
   let exploredStates = 0;
   let states: SearchState[] = [{ stats: input.fixedStats, choices: [] }];
 
@@ -1009,7 +1096,8 @@ export function optimizeGearset(input: GearOptimizationInput,
           const stats = addStats(state.stats, option.stats);
           const nextPrefix = prefixSpeed + speed;
           const remaining = speedPlan.completionMaxima[groupIndex + 1].get(nextPrefix)!;
-          if (combinedDamage(stats, remaining) <= pruningDamage) continue;
+          const bound = feasibleDamageBound(stats, remaining, input, combinedDamage);
+          if (bound <= pruningDamage) continue;
           const signature = statSignature(stats);
           if (!next.has(signature)) {
             next.set(signature, {
@@ -1044,7 +1132,7 @@ export function optimizeGearset(input: GearOptimizationInput,
 
   const upperDamage = (stateNode: AttributeTreeNode<SearchState>,
     optionNode: AttributeTreeNode<GearOption>): number =>
-    combinedDamage(stateNode.maxima, optionNode.maxima);
+    feasibleDamageBound(stateNode.maxima, optionNode.maxima, input, combinedDamage);
   const searchFinalOptions = (stateNode: AttributeTreeNode<SearchState>,
     optionNode: AttributeTreeNode<GearOption>,
     bound = upperDamage(stateNode, optionNode)): void => {
@@ -1053,12 +1141,12 @@ export function optimizeGearset(input: GearOptimizationInput,
       for (const state of stateNode.items) {
         for (const option of optionNode.items) {
           exploredStates++;
-          const damage = combinedDamage(state.stats, option.stats);
-          if (damage > bestDamage) {
+          const evaluation = evaluateCombinedStats(state.stats, option.stats, input, combinedDamage);
+          if (meetsObjective(evaluation, input) && evaluation.damage > bestEvaluation.damage) {
             const combinedStats = addStats(state.stats, option.stats);
             const stats = applyFood(combinedStats, input.food);
-            bestDamage = damage;
-            pruningDamage = Math.max(pruningDamage, damage);
+            bestEvaluation = evaluation;
+            pruningDamage = Math.max(pruningDamage, evaluation.damage);
             bestStats = stats;
             bestState = {
               stats: combinedStats,
@@ -1121,7 +1209,7 @@ export function optimizeGearset(input: GearOptimizationInput,
     throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
   }
   return {
-    damage: bestDamage,
+    ...bestEvaluation,
     stats: bestStats,
     gears: reconstruct(bestState),
     exploredStates,

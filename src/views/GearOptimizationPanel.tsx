@@ -5,6 +5,7 @@ import * as G from '../game';
 import { loadGearDataOfLevelRange } from '../stores';
 import { createGearOptimizationInput } from '../optimizerInput';
 import type {
+  GearOptimizationInput,
   GearOptimizationResult,
   GearOptimizationPlan,
   OptimizerProgress,
@@ -24,6 +25,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const store = useStore();
   const speedStat: 'SKS' | 'SPS' = store.schema.stats.includes('SKS') ? 'SKS' : 'SPS';
   const speedName = G.statNames[speedStat];
+  const isTank = store.schema.stats.includes('TEN');
   const initialGcd = store.equippedEffects?.gcd ?? 2.5;
   const [ lockedSlots, setLockedSlots ] = React.useState<number[]>([]);
   const [ targetGcd, setTargetGcd ] = React.useState(initialGcd.toFixed(2));
@@ -31,6 +33,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const [ progress, setProgress ] = React.useState<OptimizerProgress>();
   const [ result, setResult ] = React.useState<GearOptimizationResult>();
   const [ baselineDamage, setBaselineDamage ] = React.useState<number>();
+  const [ minimumTenacityMitigation, setMinimumTenacityMitigation ] = React.useState('0.0');
   const [ error, setError ] = React.useState('');
   const workersRef = React.useRef<Worker[]>([]);
   const mountedRef = React.useRef(true);
@@ -55,9 +58,19 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
 
   const start = async () => {
     const parsedTargetGcd = targetGcd.trim() === '' ? NaN : Number(targetGcd);
+    const parsedMinimumTenacityMitigation = minimumTenacityMitigation.trim() === ''
+      ? NaN
+      : Number(minimumTenacityMitigation);
     if (!Number.isFinite(parsedTargetGcd) || parsedTargetGcd <= 0 ||
         Math.abs(parsedTargetGcd * 100 - Math.round(parsedTargetGcd * 100)) > 1e-7) {
       setError('请输入大于 0 且最多包含两位小数的目标 GCD。');
+      setStatus('error');
+      return;
+    }
+    if (isTank &&
+        (!Number.isFinite(parsedMinimumTenacityMitigation) ||
+          parsedMinimumTenacityMitigation < 0 || parsedMinimumTenacityMitigation >= 100)) {
+      setError('请输入大于等于 0 且小于 100 的最低坚韧减伤百分比。');
       setStatus('error');
       return;
     }
@@ -83,9 +96,18 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     }
     if (!mountedRef.current) return;
 
-    let input;
+    let input: GearOptimizationInput;
     try {
       input = createGearOptimizationInput(store, lockedSlots, parsedTargetGcd);
+      input = isTank
+        ? {
+          ...input,
+          objective: {
+            type: 'minimumTenacity',
+            minimumTenacityMitigation: parsedMinimumTenacityMitigation / 100,
+          },
+        }
+        : { ...input, objective: { type: 'damage' } };
     } catch (inputError) {
       setError(inputError instanceof Error ? inputError.message : String(inputError));
       setStatus('error');
@@ -181,6 +203,12 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const parsedTargetGcd = targetGcd.trim() === '' ? NaN : Number(targetGcd);
   const targetGcdValid = Number.isFinite(parsedTargetGcd) && parsedTargetGcd > 0 &&
     Math.abs(parsedTargetGcd * 100 - Math.round(parsedTargetGcd * 100)) <= 1e-7;
+  const parsedMinimumTenacityMitigation = minimumTenacityMitigation.trim() === ''
+    ? NaN
+    : Number(minimumTenacityMitigation);
+  const minimumTenacityMitigationValid = Number.isFinite(parsedMinimumTenacityMitigation) &&
+    parsedMinimumTenacityMitigation >= 0 && parsedMinimumTenacityMitigation < 100;
+  const tankObjectiveValid = !isTank || minimumTenacityMitigationValid;
   return (
     <div className="gear-optimization card">
       <div className="gear-optimization_intro">
@@ -190,9 +218,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         <p>装备、魔晶石和当前食物生效后计算出的 GCD 必须精确等于目标值。</p>
       </div>
 
-      <label className="gear-optimization_constraint-row">
+      <div className="gear-optimization_constraint-row">
         <span>目标 GCD</span>
         <input
+          aria-label="目标 GCD"
           type="number"
           min="0.01"
           step="0.01"
@@ -204,8 +233,28 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             setResult(undefined);
           }}
         />
-        <span>{`当前 ${initialGcd.toFixed(2)} 秒`}</span>
-      </label>
+      </div>
+      {isTank && (
+        <div className="gear-optimization_constraint-row">
+          <span>坚韧减伤不低于</span>
+          <input
+            aria-label="最低坚韧减伤"
+            className="gear-optimization_minimum-tenacity-mitigation"
+            type="number"
+            min="0"
+            max="99.9"
+            step="0.1"
+            value={minimumTenacityMitigation}
+            disabled={busy}
+            onChange={event => {
+              setMinimumTenacityMitigation(event.target.value);
+              setStatus('idle');
+              setResult(undefined);
+            }}
+          />
+          <span>%</span>
+        </div>
+      )}
 
       <div className="gear-optimization_section-title">锁定当前装备（可选）</div>
       <div className="gear-optimization_locks">
@@ -246,6 +295,9 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
                 {result.damage >= baselineDamage ? '+' : ''}{(result.damage - baselineDamage).toFixed(5)}
               </span>
             )}
+            {isTank && (
+              <span>坚韧减伤 {(result.tenacityMitigation * 100).toFixed(1)}%</span>
+            )}
           </div>
           <div className="gear-optimization_stats">
             {store.schema.stats.filter(stat => stat !== 'VIT').map(stat => (
@@ -268,7 +320,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       )}
 
       <div className="gear-optimization_actions">
-        <Button disabled={busy || store.syncLevel === undefined || !targetGcdValid} onClick={start}>
+        <Button
+          disabled={busy || store.syncLevel === undefined || !targetGcdValid || !tankObjectiveValid}
+          onClick={start}
+        >
           {result === undefined ? '开始计算' : '重新计算'}
         </Button>
         {result !== undefined && (

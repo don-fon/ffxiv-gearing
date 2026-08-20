@@ -2,6 +2,7 @@ import * as mobx from 'mobx';
 import * as mst from 'mobx-state-tree';
 import * as G from '../game';
 import * as share from '../share';
+import { calculateTenacityMitigation } from '../statFormulas';
 import { floor, ceil, Setting, Promotion, GearUnion, GearUnionReference,
   gearDataOrdered, gearDataLoading, loadGearDataOfGearId, loadGearDataOfLevelRange } from '.';
 import type { IGear, IFood, IGearUnion, IMateria } from '.';
@@ -300,7 +301,7 @@ export const Store = mst.types
       const detDamage = floor((140 * (DET! - main) / det + 1000) / detTrunc) * detTrunc / 1000;
       const dhtChance = floor(550 * (DHT! - sub) / div + bluAetherialMimicry) / 1000;
       const tenDamage = floor(112 * ((TEN ?? sub) - sub) / div + 1000) / 1000;
-      const tenMitigation = floor(200 * ((TEN ?? sub) - sub) / div) / 1000;
+      const tenMitigation = calculateTenacityMitigation(TEN, levelMod);
       const weaponDamage = floor(main * statModifiers[attackMainStat]! / 1000) +
         ((mainStat === 'MND' || mainStat === 'INT' ? MDMG : PDMG) ?? 0) +
         (self.job === 'BLU' ? G.bluMdmgAdditions[self.equippedStats['INT']! - self.baseStats['INT']!] ?? 0 : 0);
