@@ -1,11 +1,11 @@
-import { optimizeNoSpeedGearset } from './optimizer';
-import type { NoSpeedOptimizationInput } from './optimizer';
+import { optimizeGearset } from './optimizer';
+import type { GearOptimizationInput } from './optimizer';
 
 /* eslint-disable no-restricted-globals */
 
-self.onmessage = (event: MessageEvent<NoSpeedOptimizationInput>) => {
+self.onmessage = (event: MessageEvent<GearOptimizationInput>) => {
   try {
-    const result = optimizeNoSpeedGearset(event.data, progress => {
+    const result = optimizeGearset(event.data, progress => {
       self.postMessage({ type: 'progress', progress });
     });
     self.postMessage({ type: 'result', result });

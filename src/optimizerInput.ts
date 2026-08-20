@@ -2,14 +2,15 @@ import * as G from './game';
 import { gearDataOrdered } from './stores';
 import type { IFood, IGear, IStore } from './stores';
 import type {
-  NoSpeedOptimizationInput,
+  GearOptimizationInput,
   OptimizerFood,
   OptimizerGear,
+  OptimizerMateriaStat,
   OptimizerStat,
   OptimizerStats,
 } from './optimizer';
 
-const fullSecondaryStats: OptimizerStat[] = ['CRT', 'DET', 'DHT', 'TEN'];
+const damageSecondaryStats: OptimizerMateriaStat[] = ['CRT', 'DET', 'DHT', 'TEN'];
 
 function concretizeStat(store: IStore, stat: G.Stat): OptimizerStat {
   if (stat === 'main') return store.schema.mainStat!;
@@ -85,26 +86,33 @@ function prepareGear(store: IStore, gear: G.Gear, current?: IGear): OptimizerGea
   };
 }
 
-function hasSpeed(stats: OptimizerStats): boolean {
-  return (stats.SKS ?? 0) > 0 || (stats.SPS ?? 0) > 0;
-}
-
-function isEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear, syncLevel: number): boolean {
+function isEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear, syncLevel: number,
+  secondaryStats: OptimizerMateriaStat[]): boolean {
   if (gear.level === syncLevel || gear.level === syncLevel - 5) return true;
   if (gear.level <= syncLevel || !prepared.synced) return false;
   const syncCaps = G.getCaps(gear, syncLevel);
-  return fullSecondaryStats.filter(stat =>
+  return secondaryStats.filter(stat =>
     (prepared.stats[stat] ?? 0) >= (syncCaps[stat as G.Stat] ?? Infinity)).length >= 2;
 }
 
-export function createNoSpeedOptimizationInput(store: IStore,
-  lockedSlots: number[]): NoSpeedOptimizationInput {
+export function createGearOptimizationInput(store: IStore,
+  lockedSlots: number[], targetSpeed: number): GearOptimizationInput {
   if (store.job === undefined || store.schema.mainStat === undefined ||
       store.schema.statModifiers === undefined || store.schema.traitDamageMultiplier === undefined) {
     throw new Error('仅支持具有每威力伤害期望的战斗职业。');
   }
   if (store.syncLevel === undefined) {
     throw new Error('请先选择一个明确的品级同步值。');
+  }
+  if (!Number.isInteger(targetSpeed) || targetSpeed < 0) {
+    throw new Error('目标技速/咏速必须是非负整数。');
+  }
+
+  const speedStat: 'SKS' | 'SPS' = store.schema.stats.includes('SKS') ? 'SKS' : 'SPS';
+  const secondaryStats: OptimizerMateriaStat[] = damageSecondaryStats.concat(speedStat);
+  const baseSpeed = store.baseStats[speedStat] ?? 0;
+  if (targetSpeed < baseSpeed) {
+    throw new Error(`目标${speedStat === 'SKS' ? '技速' : '咏速'}不能低于基础值 ${baseSpeed}。`);
   }
 
   const slots = Array.from(new Set(store.schema.slots
@@ -131,13 +139,7 @@ export function createNoSpeedOptimizationInput(store: IStore,
     const current = currentById.get(gear.id);
     if (gear.customizable && current === undefined) continue;
     const prepared = prepareGear(store, gear, current);
-    if (hasSpeed(prepared.stats)) {
-      if (lockedIdSet.has(gear.id)) {
-        throw new Error(`锁定的“${gear.name}”带有技速或咏速。`);
-      }
-      continue;
-    }
-    if (lockedIdSet.has(gear.id) || isEligible(store, gear, prepared, store.syncLevel)) {
+    if (lockedIdSet.has(gear.id) || isEligible(store, gear, prepared, store.syncLevel, secondaryStats)) {
       gears.push(prepared);
     }
   }
@@ -152,9 +154,6 @@ export function createNoSpeedOptimizationInput(store: IStore,
   const equippedFood = store.equippedGears.get('-1') as IFood | undefined;
   if (equippedFood !== undefined) {
     const stats = concretizeStats(store, equippedFood.stats);
-    if (hasSpeed(stats)) {
-      throw new Error('当前食物带有技速或咏速，请更换食物后再计算。');
-    }
     food = {
       id: equippedFood.id,
       name: equippedFood.name,
@@ -163,8 +162,8 @@ export function createNoSpeedOptimizationInput(store: IStore,
     };
   }
 
-  const materiaStats = store.schema.stats.filter((stat): stat is 'CRT' | 'DET' | 'DHT' | 'TEN' =>
-    fullSecondaryStats.includes(stat as OptimizerStat));
+  const materiaStats = store.schema.stats.filter((stat): stat is OptimizerMateriaStat =>
+    secondaryStats.includes(stat as OptimizerMateriaStat));
   const level = G.jobLevelModifiers[store.jobLevel];
   return {
     syncLevel: store.syncLevel,
@@ -173,6 +172,8 @@ export function createNoSpeedOptimizationInput(store: IStore,
     slots,
     lockedGearIds,
     materiaStats,
+    speedStat,
+    targetSpeed,
     food,
     damage: {
       job: store.job,

@@ -16,7 +16,7 @@ vm.runInNewContext(compiled, { exports: optimizer, module: { exports: optimizer 
 
 const {
   calculateExpectedDamage,
-  optimizeNoSpeedGearset,
+  optimizeGearset,
 } = optimizer;
 
 const damage = {
@@ -71,7 +71,9 @@ test('735 DRG share case is improved with the configured weapon and food', () =>
     ],
     slots: [3, 4, 5, 7, 8, 9, 10, 11, 12],
     lockedGearIds: [],
-    materiaStats: ['CRT', 'DET', 'DHT'],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 420,
     food: {
       id: 49240,
       name: '焦糖爆米花',
@@ -89,7 +91,7 @@ test('735 DRG share case is improved with the configured weapon and food', () =>
     SKS: 420,
     PDMG: 146,
   }, damage);
-  const result = optimizeNoSpeedGearset(input);
+  const result = optimizeGearset(input);
 
   assert.equal(baselineDamage.toFixed(5), '70.47624');
   assert.ok(result.damage > baselineDamage);
@@ -102,7 +104,7 @@ test('735 DRG share case is improved with the configured weapon and food', () =>
   assert.equal(result.gears.filter(item => item.slot === 12).map(item => item.id).sort().join(','), '43174,47159');
 });
 
-test('swapped slot attributes collapse into one accumulated state', () => {
+test('swapped slot attributes contract before the main search', () => {
   const simpleDamage = {
     ...damage,
     level: { ...damage.level, main: 0, sub: 0 },
@@ -119,21 +121,29 @@ test('swapped slot attributes collapse into one accumulated state', () => {
     synced: false,
   });
   const progress = [];
-  optimizeNoSpeedGearset({
+  optimizeGearset({
     syncLevel: 1,
     fixedStats: {},
-    gears: [make(1, 4, 5, 10), make(2, 4, 10, 5), make(3, 7, 5, 10), make(4, 7, 10, 5)],
-    slots: [4, 7],
+    gears: [
+      make(1, 4, 5, 10), make(2, 4, 10, 5),
+      make(3, 7, 5, 10), make(4, 7, 10, 5),
+      make(5, 8, 5, 10), make(6, 8, 10, 5),
+    ],
+    slots: [4, 7, 8],
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT'],
+    speedStat: 'SKS',
+    targetSpeed: 0,
     damage: simpleDamage,
   }, value => progress.push(value));
 
-  assert.equal(progress[1].states, 3);
+  assert.equal(progress.length, 1);
+  assert.equal(progress[0].totalGroups, 1);
+  assert.equal(progress[0].states, 4);
 });
 
 test('locking a gear ID restricts that slot without preserving old melds', () => {
-  const result = optimizeNoSpeedGearset({
+  const result = optimizeGearset({
     syncLevel: 1,
     fixedStats: { STR: 100, CRT: 100, DET: 100, DHT: 100, PDMG: 1 },
     gears: [
@@ -143,10 +153,124 @@ test('locking a gear ID restricts that slot without preserving old melds', () =>
     slots: [3],
     lockedGearIds: [1],
     materiaStats: ['CRT', 'DET', 'DHT'],
+    speedStat: 'SKS',
+    targetSpeed: 0,
     damage: {
       ...damage,
       level: { ...damage.level, main: 1, sub: 1 },
     },
   });
   assert.equal(result.gears[0].id, 1);
+});
+
+test('target speed is an exact constraint and can be reached with speed materia', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'speed meld', 1, 3, { STR: 1, SKS: 20 }, 1000, 1)],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 494,
+    damage,
+  });
+
+  assert.equal(result.stats.SKS, 494);
+  assert.equal(result.gears[0].melds[0].stat, 'SKS');
+});
+
+test('low critical hit does not force critical hit materia', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'one meld', 1, 3, {}, 1000, 1)],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 420,
+    damage,
+  });
+
+  assert.equal(result.gears[0].melds[0].stat, 'DHT');
+});
+
+test('speed food is included in the exact final speed constraint', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'food speed', 1, 3, { SKS: 20 }, 1000, 0)],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 450,
+    food: {
+      id: 1,
+      name: 'speed food',
+      stats: { SKS: 10 },
+      statRates: { SKS: 10 },
+    },
+    damage,
+  });
+
+  assert.equal(result.stats.SKS, 450);
+});
+
+test('an unreachable exact target speed reports no solution', () => {
+  assert.throws(() => optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'fixed speed', 1, 3, { SKS: 20 }, 1000, 0)],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 441,
+    damage,
+  }), /441/);
+});
+
+test('equivalent synced rings collapse before distinct-ID pairing', () => {
+  const equivalentRings = Array.from({ length: 200 }, (_, index) => ({
+    ...gear(1000 + index, `synced ring ${index}`, 795, 12,
+      { STR: 100, CRT: 80, DET: 50 }, 80 + index, 0),
+    synced: true,
+  }));
+  const result = optimizeGearset({
+    syncLevel: 630,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: equivalentRings,
+    slots: [12],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 420,
+    damage,
+  });
+
+  assert.equal(result.gears.length, 2);
+  assert.notEqual(result.gears[0].id, result.gears[1].id);
+  assert.equal(result.exploredStates, 1);
+});
+
+test('same-speed candidates dominated in every damage stat are removed', () => {
+  const result = optimizeGearset({
+    syncLevel: 630,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [
+      gear(1, 'dominated', 630, 3, { STR: 90, CRT: 70, DET: 40 }, 100, 0),
+      gear(2, 'dominant', 630, 3, { STR: 100, CRT: 80, DET: 50 }, 100, 0),
+    ],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 420,
+    damage,
+  });
+
+  assert.equal(result.gears[0].id, 2);
+  assert.equal(result.exploredStates, 1);
 });

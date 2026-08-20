@@ -5,7 +5,7 @@ import * as share from '../share';
 import { floor, ceil, Setting, Promotion, GearUnion, GearUnionReference,
   gearDataOrdered, gearDataLoading, loadGearDataOfGearId, loadGearDataOfLevelRange } from '.';
 import type { IGear, IFood, IGearUnion, IMateria } from '.';
-import type { NoSpeedOptimizationResult } from '../optimizer';
+import type { GearOptimizationResult } from '../optimizer';
 
 const clanStorageKey = 'ffxiv-gearing.dt.clan';
 const tiersShownStorageKey = 'ffxiv-gearing.dt.tiers-shown';
@@ -729,7 +729,7 @@ export const Store = mst.types
     setOptimizationDataLoading(loading: boolean): void {
       self.optimizationDataLoading = loading;
     },
-    applyNoSpeedOptimization(result: NoSpeedOptimizationResult): void {
+    applyGearOptimization(result: GearOptimizationResult): void {
       let ringCount = 0;
       for (const choice of result.gears) {
         const slot = choice.slot === 12 && ringCount++ > 0 ? -12 : choice.slot;

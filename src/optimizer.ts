@@ -48,19 +48,23 @@ export interface OptimizerDamageContext {
   bluMdmgAdditions: number[];
 }
 
-export interface NoSpeedOptimizationInput {
+export type OptimizerMateriaStat = 'CRT' | 'DET' | 'DHT' | 'TEN' | 'SKS' | 'SPS';
+
+export interface GearOptimizationInput {
   syncLevel: number;
   fixedStats: OptimizerStats;
   gears: OptimizerGear[];
   slots: number[];
   lockedGearIds: number[];
-  materiaStats: Array<'CRT' | 'DET' | 'DHT' | 'TEN'>;
+  materiaStats: OptimizerMateriaStat[];
+  speedStat: 'SKS' | 'SPS';
+  targetSpeed: number;
   food?: OptimizerFood;
   damage: OptimizerDamageContext;
 }
 
 export interface OptimizerMeld {
-  stat: 'CRT' | 'DET' | 'DHT' | 'TEN';
+  stat: OptimizerMateriaStat;
   grade: number;
 }
 
@@ -73,7 +77,7 @@ export interface OptimizerGearChoice {
   melds: OptimizerMeld[];
 }
 
-export interface NoSpeedOptimizationResult {
+export interface GearOptimizationResult {
   damage: number;
   stats: OptimizerStats;
   gears: OptimizerGearChoice[];
@@ -97,8 +101,12 @@ interface SearchState extends GearOption {
 }
 
 const damageStats: OptimizerStat[] = [
-  'STR', 'DEX', 'INT', 'MND', 'CRT', 'DET', 'DHT', 'TEN', 'PDMG', 'MDMG',
+  'STR', 'DEX', 'INT', 'MND', 'CRT', 'DET', 'DHT', 'TEN', 'SKS', 'SPS', 'PDMG', 'MDMG',
 ];
+const scoredStats = damageStats.filter(stat => stat !== 'SKS' && stat !== 'SPS');
+const maximumContractionProduct = 50_000;
+const maximumContractedOptions = 50_000;
+const maximumGroupContractions = 5;
 
 const floor = (value: number) => Math.trunc(value + 1e-7);
 
@@ -115,7 +123,7 @@ function statSignature(stats: OptimizerStats): string {
 }
 
 function addMeld(stats: OptimizerStats, caps: OptimizerStats,
-  stat: 'CRT' | 'DET' | 'DHT' | 'TEN', value: number): OptimizerStats {
+  stat: OptimizerMateriaStat, value: number): OptimizerStats {
   const current = stats[stat] ?? 0;
   return {
     ...stats,
@@ -124,7 +132,7 @@ function addMeld(stats: OptimizerStats, caps: OptimizerStats,
 }
 
 function gearOptions(gear: OptimizerGear,
-  materiaStats: NoSpeedOptimizationInput['materiaStats']): GearOption[] {
+  materiaStats: GearOptimizationInput['materiaStats']): GearOption[] {
   let options: GearOption[] = [{
     stats: gear.stats,
     choices: [{
@@ -140,13 +148,7 @@ function gearOptions(gear: OptimizerGear,
   for (const materia of gear.materiaSlots) {
     const next = new Map<string, GearOption>();
     for (const option of options) {
-      const critRemaining = (gear.caps.CRT ?? 0) - (option.stats.CRT ?? 0);
-      // At most 10% of a materia may be wasted. For a +54 materia this means
-      // that at least 49 points must remain before CRT is forced.
-      const stats = critRemaining >= Math.ceil(materia.value * 0.9)
-        ? ['CRT'] as const
-        : materiaStats.filter(stat => stat !== 'CRT');
-      for (const stat of stats) {
+      for (const stat of materiaStats) {
         const meldedStats = addMeld(option.stats, gear.caps, stat, materia.value);
         const choice = option.choices[0];
         const melded: GearOption = {
@@ -175,7 +177,63 @@ function deduplicateOptions(options: GearOption[]): GearOption[] {
   return Array.from(unique.values());
 }
 
-function buildGroups(input: NoSpeedOptimizationInput): GearOption[][] {
+function dominates(left: GearOption, right: GearOption): boolean {
+  return scoredStats.every(stat => (left.stats[stat] ?? 0) >= (right.stats[stat] ?? 0));
+}
+
+function pruneDominatedOptions(options: GearOption[], speedStat: 'SKS' | 'SPS'): GearOption[] {
+  const bySpeed = new Map<number, GearOption[]>();
+  for (const option of options) {
+    const speed = option.stats[speedStat] ?? 0;
+    const sameSpeed = bySpeed.get(speed) ?? [];
+    sameSpeed.push(option);
+    bySpeed.set(speed, sameSpeed);
+  }
+
+  const result: GearOption[] = [];
+  for (const sameSpeed of bySpeed.values()) {
+    sameSpeed.sort((left, right) => scoredStats.reduce((total, stat) =>
+      total + (right.stats[stat] ?? 0) - (left.stats[stat] ?? 0), 0));
+    const frontier: GearOption[] = [];
+    for (const option of sameSpeed) {
+      if (!frontier.some(candidate => dominates(candidate, option))) {
+        frontier.push(option);
+      }
+    }
+    result.push(...frontier);
+  }
+  return result;
+}
+
+function equivalentGearSignature(gear: OptimizerGear,
+  materiaStats: GearOptimizationInput['materiaStats']): string {
+  if (gear.synced) return `synced|${statSignature(gear.stats)}`;
+  const caps = materiaStats.map(stat => gear.caps[stat] ?? '').join(',');
+  const materiaSlots = gear.materiaSlots.map(slot => `${slot.grade}:${slot.value}`).join(',');
+  return `${statSignature(gear.stats)}|${caps}|${materiaSlots}`;
+}
+
+function deduplicateEquivalentGears(gears: OptimizerGear[], maximumPerSignature: number,
+  lockedGearIds: Set<number>, materiaStats: GearOptimizationInput['materiaStats']): OptimizerGear[] {
+  const bySignature = new Map<string, OptimizerGear[]>();
+  for (const gear of gears) {
+    const signature = equivalentGearSignature(gear, materiaStats);
+    const equivalent = bySignature.get(signature) ?? [];
+    equivalent.push(gear);
+    bySignature.set(signature, equivalent);
+  }
+
+  const result: OptimizerGear[] = [];
+  for (const equivalent of bySignature.values()) {
+    const locked = equivalent.filter(gear => lockedGearIds.has(gear.id));
+    const unlocked = equivalent.filter(gear => !lockedGearIds.has(gear.id));
+    result.push(...locked);
+    result.push(...unlocked.slice(0, Math.max(0, maximumPerSignature - locked.length)));
+  }
+  return result;
+}
+
+function buildGroups(input: GearOptimizationInput): GearOption[][] {
   const lockedGearIds = new Set(input.lockedGearIds);
   const bySlot = new Map<number, OptimizerGear[]>();
   for (const gear of input.gears) {
@@ -197,9 +255,14 @@ function buildGroups(input: NoSpeedOptimizationInput): GearOption[][] {
     if (gears.length === 0) {
       throw new Error(`部位 ${slot} 没有满足条件的装备。`);
     }
-    const options = gears.flatMap(gear => gearOptions(gear, input.materiaStats));
+    // Equivalent synced gear is common across a wide item-level range. Collapse
+    // it before materia expansion and ring pairing. Rings retain two IDs per
+    // signature because a legal pair must use two different item IDs.
+    gears = deduplicateEquivalentGears(gears, slot === 12 ? 2 : 1, lockedGearIds, input.materiaStats);
+    const options = gears.flatMap(gear =>
+      pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat));
     if (slot !== 12) {
-      groups.push(deduplicateOptions(options));
+      groups.push(pruneDominatedOptions(deduplicateOptions(options), input.speedStat));
       continue;
     }
 
@@ -220,9 +283,63 @@ function buildGroups(input: NoSpeedOptimizationInput): GearOption[][] {
     if (pairs.length === 0) {
       throw new Error('没有两枚不同 ID 且满足条件的戒指。');
     }
-    groups.push(deduplicateOptions(pairs));
+    groups.push(pruneDominatedOptions(deduplicateOptions(pairs), input.speedStat));
   }
   return groups;
+}
+
+function combineGroups(left: GearOption[], right: GearOption[]): GearOption[] {
+  const unique = new Map<string, GearOption>();
+  for (const leftOption of left) {
+    for (const rightOption of right) {
+      const stats = addStats(leftOption.stats, rightOption.stats);
+      const signature = statSignature(stats);
+      if (!unique.has(signature)) {
+        unique.set(signature, {
+          stats,
+          choices: leftOption.choices.concat(rightOption.choices),
+        });
+      }
+    }
+  }
+  return Array.from(unique.values());
+}
+
+function contractEquivalentGroups(groups: GearOption[][]): GearOption[][] {
+  let nextId = 0;
+  const contracted = groups.map(options => ({ id: nextId++, options }));
+  const rejectedPairs = new Set<string>();
+  for (let contraction = 0; contraction < maximumGroupContractions; contraction++) {
+    const pairs: Array<{ left: number, right: number, product: number }> = [];
+    for (let left = 0; left < contracted.length; left++) {
+      for (let right = left + 1; right < contracted.length; right++) {
+        const pairKey = `${contracted[left].id}:${contracted[right].id}`;
+        const product = contracted[left].options.length * contracted[right].options.length;
+        if (!rejectedPairs.has(pairKey) && product <= maximumContractionProduct) {
+          pairs.push({ left, right, product });
+        }
+      }
+    }
+    pairs.sort((left, right) => left.product - right.product);
+
+    let merged = false;
+    for (const pair of pairs) {
+      const leftGroup = contracted[pair.left];
+      const rightGroup = contracted[pair.right];
+      const options = combineGroups(leftGroup.options, rightGroup.options);
+      if (options.length > maximumContractedOptions || options.length * 5 > pair.product * 4) {
+        rejectedPairs.add(`${leftGroup.id}:${rightGroup.id}`);
+        continue;
+      }
+      contracted.splice(pair.right, 1);
+      contracted.splice(pair.left, 1);
+      contracted.push({ id: nextId++, options });
+      merged = true;
+      break;
+    }
+    if (!merged) break;
+  }
+  return contracted.map(group => group.options);
 }
 
 function applyFood(stats: OptimizerStats, food?: OptimizerFood): OptimizerStats {
@@ -236,6 +353,13 @@ function applyFood(stats: OptimizerStats, food?: OptimizerFood): OptimizerStats 
     result[stat] = (result[stat] ?? 0) + increase;
   }
   return result;
+}
+
+function speedAfterFood(speed: number, input: GearOptimizationInput): number {
+  const maximum = input.food?.stats[input.speedStat];
+  if (maximum === undefined) return speed;
+  const rate = input.food?.statRates[input.speedStat];
+  return speed + (rate === undefined ? maximum : Math.min(maximum, floor(speed * rate / 100)));
 }
 
 export function calculateExpectedDamage(stats: OptimizerStats,
@@ -270,19 +394,36 @@ function reconstruct(state: SearchState): OptimizerGearChoice[] {
   return groups.reverse().flat();
 }
 
-export function optimizeNoSpeedGearset(input: NoSpeedOptimizationInput,
-  onProgress?: (progress: OptimizerProgress) => void): NoSpeedOptimizationResult {
-  const groups = buildGroups(input);
+export function optimizeGearset(input: GearOptimizationInput,
+  onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
+  if (!Number.isInteger(input.targetSpeed) || input.targetSpeed < 0) {
+    throw new Error('目标技速/咏速必须是非负整数。');
+  }
+  const groups = contractEquivalentGroups(buildGroups(input))
+    .sort((left, right) => left.length - right.length);
+  const minimumRemainingSpeed = Array.from({ length: groups.length + 1 }, () => 0);
+  const maximumRemainingSpeed = Array.from({ length: groups.length + 1 }, () => 0);
+  for (let index = groups.length - 1; index >= 0; index--) {
+    const speeds = groups[index].map(option => option.stats[input.speedStat] ?? 0);
+    minimumRemainingSpeed[index] = minimumRemainingSpeed[index + 1] + Math.min(...speeds);
+    maximumRemainingSpeed[index] = maximumRemainingSpeed[index + 1] + Math.max(...speeds);
+  }
   let exploredStates = 0;
   let states = new Map<string, SearchState>();
   states.set(statSignature(input.fixedStats), { stats: input.fixedStats, choices: [] });
 
-  for (let groupIndex = 0; groupIndex < groups.length; groupIndex++) {
+  // Keep the largest group last and score it as a stream. Materializing the
+  // final Cartesian product is unnecessary and can exceed V8's Map capacity.
+  for (let groupIndex = 0; groupIndex < groups.length - 1; groupIndex++) {
     const next = new Map<string, SearchState>();
     for (const state of states.values()) {
       for (const option of groups[groupIndex]) {
         exploredStates++;
         const stats = addStats(state.stats, option.stats);
+        const rawSpeed = stats[input.speedStat] ?? 0;
+        const minimumFinalSpeed = speedAfterFood(rawSpeed + minimumRemainingSpeed[groupIndex + 1], input);
+        const maximumFinalSpeed = speedAfterFood(rawSpeed + maximumRemainingSpeed[groupIndex + 1], input);
+        if (input.targetSpeed < minimumFinalSpeed || input.targetSpeed > maximumFinalSpeed) continue;
         const signature = statSignature(stats);
         if (!next.has(signature)) {
           next.set(signature, {
@@ -301,17 +442,31 @@ export function optimizeNoSpeedGearset(input: NoSpeedOptimizationInput,
   let bestState: SearchState | undefined;
   let bestStats: OptimizerStats | undefined;
   let bestDamage = -Infinity;
+  let finalCandidates = 0;
+  const finalGroup = groups[groups.length - 1];
   for (const state of states.values()) {
-    const stats = applyFood(state.stats, input.food);
-    const damage = calculateExpectedDamage(stats, input.damage);
-    if (damage > bestDamage) {
-      bestDamage = damage;
-      bestState = state;
-      bestStats = stats;
+    for (const option of finalGroup) {
+      exploredStates++;
+      const combinedStats = addStats(state.stats, option.stats);
+      const stats = applyFood(combinedStats, input.food);
+      if ((stats[input.speedStat] ?? 0) !== input.targetSpeed) continue;
+      const damage = calculateExpectedDamage(stats, input.damage);
+      if (damage > bestDamage) {
+        bestDamage = damage;
+        bestStats = stats;
+        bestState = {
+          stats: combinedStats,
+          choices: [],
+          previous: state,
+          selected: option.choices,
+        };
+      }
+      finalCandidates++;
     }
   }
+  onProgress?.({ completedGroups: groups.length, totalGroups: groups.length, states: finalCandidates });
   if (bestState === undefined || bestStats === undefined) {
-    throw new Error('没有找到满足条件的完整配装。');
+    throw new Error(`没有找到最终${input.speedStat === 'SKS' ? '技速' : '咏速'}为 ${input.targetSpeed} 的完整配装。`);
   }
   return {
     damage: bestDamage,

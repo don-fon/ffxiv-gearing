@@ -1,28 +1,46 @@
-.no-speed-optimization {
+.gear-optimization {
   width: 520px;
   max-height: 76vh;
   padding: 16px;
   overflow-y: auto;
   line-height: 20px;
 }
-.no-speed-optimization_intro {
+.gear-optimization_intro {
   font-size: 12px;
   color: rgb(var(--color-text-base), .72);
   p {
     margin: 0 0 4px;
   }
 }
-.no-speed-optimization_section-title {
+.gear-optimization_section-title {
   margin-top: 12px;
   font-weight: bold;
 }
-.no-speed-optimization_locks {
+.gear-optimization_constraint-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  input {
+    width: 96px;
+    border: 1px solid var(--color-divider-noalpha);
+    border-radius: 3px;
+    padding: 5px 7px;
+    background: transparent;
+    color: inherit;
+  }
+  span:last-child {
+    font-size: 12px;
+    color: rgb(var(--color-text-base), .60);
+  }
+}
+.gear-optimization_locks {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2px 12px;
   margin-top: 6px;
 }
-.no-speed-optimization_lock {
+.gear-optimization_lock {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -34,32 +52,32 @@
     white-space: nowrap;
   }
 }
-.no-speed-optimization_lock-slot {
+.gear-optimization_lock-slot {
   flex: 0 0 40px;
   color: rgb(var(--color-text-base), .60);
 }
-.no-speed-optimization_lock-tip,
-.no-speed-optimization_explored,
-.no-speed-optimization_empty {
+.gear-optimization_lock-tip,
+.gear-optimization_explored,
+.gear-optimization_empty {
   margin-top: 4px;
   font-size: 12px;
   color: rgb(var(--color-text-base), .60);
 }
-.no-speed-optimization_status {
+.gear-optimization_status {
   margin-top: 12px;
   color: var(--mdc-theme-primary);
 }
-.no-speed-optimization_error {
+.gear-optimization_error {
   margin-top: 10px;
   color: var(--mdc-theme-error);
 }
-.no-speed-optimization_result {
+.gear-optimization_result {
   margin-top: 12px;
   border-top: 1px solid var(--color-divider-noalpha);
   padding-top: 10px;
 }
-.no-speed-optimization_damage,
-.no-speed-optimization_stats {
+.gear-optimization_damage,
+.gear-optimization_stats {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 16px;
@@ -67,11 +85,11 @@
     color: #16833b;
   }
 }
-.no-speed-optimization_stats {
+.gear-optimization_stats {
   margin-top: 4px;
   font-size: 12px;
 }
-.no-speed-optimization_items {
+.gear-optimization_items {
   margin-top: 8px;
   border-top: 1px solid var(--color-divider-noalpha);
   > div {
@@ -81,11 +99,11 @@
     line-height: 28px;
   }
 }
-.no-speed-optimization_item-level,
-.no-speed-optimization_item-melds {
+.gear-optimization_item-level,
+.gear-optimization_item-melds {
   color: rgb(var(--color-text-base), .60);
 }
-.no-speed-optimization_actions {
+.gear-optimization_actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
