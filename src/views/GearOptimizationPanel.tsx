@@ -163,7 +163,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         <div className="gear-optimization_status">
           {progress === undefined
             ? '正在生成候选方案…'
-            : `已处理 ${progress.completedGroups}/${progress.totalGroups} 个部位，保留 ${progress.states} 个属性状态…`}
+            : `已处理 ${progress.completedGroups}/${progress.totalGroups} 个搜索组，保留 ${progress.states} 个属性状态…`}
         </div>
       )}
       {status === 'error' && <div className="gear-optimization_error">{error}</div>}

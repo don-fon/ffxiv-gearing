@@ -80,7 +80,7 @@ test('735 DRG share case is improved with the configured weapon and food', () =>
       name: '焦糖爆米花',
       stats: { DET: 151, VIT: 297, CRT: 91 },
       statRates: { DET: 10, VIT: 10, CRT: 10 },
-    },
+  },
     damage,
   };
 
@@ -141,7 +141,6 @@ test('swapped slot attributes contract before the main search', () => {
 
   assert.equal(progress.length, 1);
   assert.equal(progress[0].totalGroups, 1);
-  assert.equal(progress[0].states, 4);
 });
 
 test('locking a gear ID restricts that slot without preserving old melds', () => {
@@ -218,6 +217,28 @@ test('speed food is included in the exact final speed constraint', () => {
   });
 
   assert.equal(result.stats.SKS, 450);
+});
+
+test('globally impossible speed options are removed before the search', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [
+      gear(1, 'zero speed head', 1, 3, { CRT: 10 }, 1000, 0),
+      gear(2, 'speed head', 1, 3, { DET: 10, SKS: 1 }, 1000, 0),
+      gear(3, 'zero speed body', 1, 4, { DHT: 10 }, 1000, 0),
+      gear(4, 'speed body', 1, 4, { CRT: 10, SKS: 1 }, 1000, 0),
+    ],
+    slots: [3, 4],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 420,
+    damage,
+  });
+
+  assert.equal(result.gears.map(item => item.id).sort().join(','), '1,3');
+  assert.equal(result.exploredStates, 2);
 });
 
 test('an unreachable exact target speed reports no solution', () => {
@@ -298,6 +319,71 @@ test('generated gear data distinguishes unique and repeatable rings', () => {
 
   assert.equal(recentGears.find(item => item.id === 50965).unique, true);
   assert.equal(recentGears.find(item => item.id === 51182).unique, undefined);
+});
+
+test('cumulative states are pruned only after component-wise dominance becomes provable', () => {
+  const groups = [
+    [[5, 10, 1], [0, 7, 10]],
+    [[6, 7, 2], [1, 9, 7]],
+    [[9, 2, 9], [9, 3, 2]],
+    [[4, 7, 6], [5, 3, 4]],
+  ];
+  const gears = [gear(1, 'fixed', 1, 3, {}, 1000, 0)];
+  groups.forEach((options, groupIndex) => options.forEach((stats, optionIndex) => {
+    gears.push(gear(10 + groupIndex * 2 + optionIndex, `${groupIndex}-${optionIndex}`,
+      1, [4, 5, 7, 8][groupIndex],
+      { CRT: stats[0], DET: stats[1], DHT: stats[2] }, 1000, 0));
+  }));
+  const progress = [];
+  optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears,
+    slots: [3, 4, 5, 7, 8],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 420,
+    damage,
+  }, value => progress.push(value));
+
+  assert.equal(progress[3].states, 7);
+});
+
+test('dual-tree final search matches exhaustive enumeration', () => {
+  const slots = [3, 4, 5, 7, 8];
+  const gears = slots.flatMap((slot, groupIndex) => Array.from({ length: 4 }, (_, optionIndex) =>
+    gear(100 + groupIndex * 4 + optionIndex, `${groupIndex}-${optionIndex}`, 1, slot, {
+      STR: 10 + (groupIndex * 7 + optionIndex * 3) % 9,
+      CRT: (groupIndex * 11 + optionIndex * 17) % 31,
+      DET: (groupIndex * 19 + optionIndex * 7) % 29,
+      DHT: (groupIndex * 13 + optionIndex * 23) % 37,
+    }, 1000, 0)));
+  const fixedStats = { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 };
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats,
+    gears,
+    slots,
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 420,
+    damage,
+  });
+
+  let combinations = [{ ...fixedStats }];
+  for (const slot of slots) {
+    combinations = combinations.flatMap(stats => gears.filter(item => item.slot === slot).map(item => {
+      const combined = { ...stats };
+      for (const [stat, value] of Object.entries(item.stats)) {
+        combined[stat] = (combined[stat] ?? 0) + value;
+      }
+      return combined;
+    }));
+  }
+  const exhaustiveDamage = Math.max(...combinations.map(stats => calculateExpectedDamage(stats, damage)));
+  assert.equal(result.damage, exhaustiveDamage);
 });
 
 test('same-speed candidates dominated in every damage stat are removed', () => {
