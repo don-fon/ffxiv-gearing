@@ -6,6 +6,7 @@ import { loadGearDataOfLevelRange } from '../stores';
 import { createGearOptimizationInput } from '../optimizerInput';
 import type {
   GearOptimizationResult,
+  GearOptimizationPlan,
   OptimizerProgress,
   OptimizerStat,
 } from '../optimizer';
@@ -14,7 +15,7 @@ import { useStore } from './components/contexts';
 
 type Status = 'idle' | 'loading' | 'running' | 'done' | 'error';
 type WorkerResponse =
-  { type: 'plan', contributions: number[] } |
+  { type: 'plan', plan: GearOptimizationPlan } |
   { type: 'progress', progress: OptimizerProgress } |
   { type: 'result', result: GearOptimizationResult } |
   { type: 'error', message: string };
@@ -107,14 +108,14 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       }
       if (event.data.type !== 'plan') return;
       planner.terminate();
-      const contributions = event.data.contributions;
-      if (contributions.length === 0) {
+      const { partitions, heuristicResult } = event.data.plan;
+      if (partitions.length === 0) {
         fail(`没有找到最终 GCD 为 ${parsedTargetGcd.toFixed(2)} 秒的完整配装。`);
         return;
       }
 
       const workerCount = Math.min(
-        contributions.length, Math.max(1, navigator.hardwareConcurrency ?? 4), 4);
+        partitions.length, Math.max(1, navigator.hardwareConcurrency ?? 4), 4);
       const workers = Array.from({ length: workerCount }, () =>
         new Worker(new URL('../optimizer.worker.ts', import.meta.url)));
       workersRef.current = workers;
@@ -122,22 +123,22 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       let nextIndex = 0;
       let completed = 0;
       let exploredStates = 0;
-      let bestResult: GearOptimizationResult | undefined;
+      let bestResult: GearOptimizationResult = heuristicResult;
       const updateProgress = () => setProgress({
         completedGroups: completed,
-        totalGroups: contributions.length,
+        totalGroups: partitions.length,
         states: Array.from(activeProgress.values()).reduce((total, value) => total + value.states, 0),
       });
       const assign = (worker: Worker) => {
-        if (nextIndex >= contributions.length) {
+        if (nextIndex >= partitions.length) {
           worker.terminate();
           return;
         }
-        const targetSpeedContribution = contributions[nextIndex++];
+        const targetSpeedContribution = partitions[nextIndex++].contribution;
         activeProgress.delete(worker);
         worker.postMessage({
           type: 'optimize',
-          input: { ...input, targetSpeedContribution },
+          input: { ...input, targetSpeedContribution, globalMinimumDamage: bestResult.damage },
         });
       };
       for (const worker of workers) {
@@ -152,15 +153,15 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           } else if (workerEvent.data.type === 'result') {
             completed++;
             exploredStates += workerEvent.data.result.exploredStates;
-            if (bestResult === undefined || workerEvent.data.result.damage > bestResult.damage) {
+            if (workerEvent.data.result.damage > bestResult.damage) {
               bestResult = workerEvent.data.result;
             }
             activeProgress.delete(worker);
             updateProgress();
-            if (completed === contributions.length) {
+            if (completed === partitions.length) {
               workers.forEach(item => item.terminate());
               workersRef.current = [];
-              setResult({ ...bestResult!, exploredStates });
+              setResult({ ...bestResult, exploredStates });
               setStatus('done');
             } else {
               assign(worker);

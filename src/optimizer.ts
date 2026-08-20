@@ -61,8 +61,20 @@ export interface GearOptimizationInput {
   speedStat: 'SKS' | 'SPS';
   targetGcd: number;
   targetSpeedContribution?: number;
+  globalMinimumDamage?: number;
   food?: OptimizerFood;
   damage: OptimizerDamageContext;
+}
+
+export interface OptimizerSpeedPartition {
+  contribution: number;
+  heuristicDamage: number;
+  estimatedWork: number;
+}
+
+export interface GearOptimizationPlan {
+  partitions: OptimizerSpeedPartition[];
+  heuristicResult: GearOptimizationResult;
 }
 
 export interface OptimizerMeld {
@@ -131,9 +143,9 @@ const damageStats: OptimizerStat[] = [
   'STR', 'DEX', 'INT', 'MND', 'CRT', 'DET', 'DHT', 'TEN', 'SKS', 'SPS', 'PDMG', 'MDMG',
 ];
 const scoredStats = damageStats.filter(stat => stat !== 'SKS' && stat !== 'SPS');
-const maximumContractionProduct = 50_000;
-const maximumContractedOptions = 50_000;
-const maximumGroupContractions = 5;
+const maximumContractionProduct = 250_000;
+const maximumContractedOptions = 100_000;
+const maximumGroupContractions = 6;
 const dominanceLeafSize = 32;
 const finalOptionLeafSize = 1;
 
@@ -318,7 +330,7 @@ function pruneDominatedOptions<T extends GearOption>(options: T[], speedStat: 'S
 
   const result: T[] = [];
   for (const sameSpeed of bySpeed.values()) {
-    result.push(...paretoFrontier(sameSpeed as T[]));
+    for (const option of paretoFrontier(sameSpeed as T[])) result.push(option);
   }
   return result;
 }
@@ -346,8 +358,10 @@ function deduplicateEquivalentGears(gears: OptimizerGear[], maximumPerSignature:
   for (const equivalent of bySignature.values()) {
     const locked = equivalent.filter(gear => lockedGearIds.has(gear.id));
     const unlocked = equivalent.filter(gear => !lockedGearIds.has(gear.id));
-    result.push(...locked);
-    result.push(...unlocked.slice(0, Math.max(0, maximumPerSignature - locked.length)));
+    for (const gear of locked) result.push(gear);
+    for (const gear of unlocked.slice(0, Math.max(0, maximumPerSignature - locked.length))) {
+      result.push(gear);
+    }
   }
   return result;
 }
@@ -508,9 +522,11 @@ function filterInfeasibleSpeedOptions(groups: GearOption[][],
 function maximumOptionStats(options: GearOption[]): OptimizerStats {
   const maxima: OptimizerStats = {};
   for (const stat of damageStats) {
-    if (options.some(option => option.stats[stat] !== undefined)) {
-      maxima[stat] = Math.max(...options.map(option => option.stats[stat] ?? 0));
+    let maximum = -Infinity;
+    for (const option of options) {
+      if (option.stats[stat] !== undefined) maximum = Math.max(maximum, option.stats[stat]!);
     }
+    if (maximum !== -Infinity) maxima[stat] = maximum;
   }
   return maxima;
 }
@@ -771,6 +787,64 @@ function calculateCombinedExpectedDamage(left: OptimizerStats, right: OptimizerS
     input.damage);
 }
 
+function createCombinedDamageCalculator(input: GearOptimizationInput):
+  (left: OptimizerStats, right: OptimizerStats) => number {
+  const context = input.damage;
+  if (context.job === 'BLU') {
+    return (left, right) => calculateCombinedExpectedDamage(left, right, input);
+  }
+  const { main, sub, div, det, detTrunc } = context.level;
+  const attackMainStat = context.mainStat === 'VIT' ? 'STR' : context.mainStat;
+  const weaponStat = context.mainStat === 'MND' || context.mainStat === 'INT' ? 'MDMG' : 'PDMG';
+  const mainFactors: number[] = [];
+  const criticalFactors: number[] = [];
+  const determinationFactors: number[] = [];
+  const directHitFactors: number[] = [];
+  const tenacityFactors: number[] = [];
+  const weaponFactors: number[] = [];
+  const adjustedValue = (raw: number, stat: OptimizerStat): number => {
+    const maximum = input.food?.stats[stat];
+    if (maximum === undefined) return raw;
+    const rate = input.food?.statRates[stat];
+    return raw + (rate === undefined ? maximum : Math.min(maximum, floor(raw * rate / 100)));
+  };
+  const rawValue = (left: OptimizerStats, right: OptimizerStats, stat: OptimizerStat): number =>
+    (left[stat] ?? 0) + (right[stat] ?? 0);
+  const cached = (values: number[], raw: number, calculate: (adjusted: number) => number,
+    stat: OptimizerStat): number => {
+    let value = values[raw];
+    if (value === undefined) {
+      value = calculate(adjustedValue(raw, stat));
+      values[raw] = value;
+    }
+    return value;
+  };
+  return (left, right) => {
+    const mainDamage = cached(mainFactors, rawValue(left, right, attackMainStat), value =>
+      floor((context.mainStat === 'VIT' ? context.level.apTank : context.level.ap) *
+        (floor(value * (context.partyBonus ?? 1.05)) - main) / main + 100) / 100,
+    attackMainStat);
+    const critical = cached(criticalFactors, rawValue(left, right, 'CRT'), value => {
+      const chance = floor(200 * (value - sub) / div + 50) / 1000;
+      const damage = floor(200 * (value - sub) / div + 1400) / 1000;
+      return (damage - 1) * chance + 1;
+    }, 'CRT');
+    const determination = cached(determinationFactors, rawValue(left, right, 'DET'), value =>
+      floor((140 * (value - main) / det + 1000) / detTrunc) * detTrunc / 1000, 'DET');
+    const directHit = cached(directHitFactors, rawValue(left, right, 'DHT'), value =>
+      0.25 * floor(550 * (value - sub) / div) / 1000 + 1, 'DHT');
+    const rawTenacity = left.TEN === undefined && right.TEN === undefined
+      ? undefined
+      : rawValue(left, right, 'TEN');
+    const tenacity = rawTenacity === undefined ? 1 : cached(tenacityFactors, rawTenacity, value =>
+      floor(112 * (value - sub) / div + 1000) / 1000, 'TEN');
+    const weaponDamage = cached(weaponFactors, rawValue(left, right, weaponStat), value =>
+      floor(main * context.statModifiers[attackMainStat]! / 1000) + value, weaponStat);
+    return 0.01 * weaponDamage * mainDamage * determination * tenacity *
+      context.traitDamageMultiplier * critical * directHit;
+  };
+}
+
 function reconstruct(state: SearchState): OptimizerGearChoice[] {
   const groups: OptimizerGearChoice[][] = [];
   let current: SearchState | undefined = state;
@@ -844,14 +918,81 @@ export function findTargetSpeedContributions(input: GearOptimizationInput): numb
   return buildSpeedSearchPlan(groups, planningInput).targetContributions;
 }
 
+function estimatePartitionWork(plan: SpeedSearchPlan): number {
+  let prefixes = new Map<number, number>([[0, 1]]);
+  for (let index = 0; index < plan.optionsBySpeed.length; index++) {
+    const next = new Map<number, number>();
+    for (const [prefix, count] of prefixes) {
+      for (const speed of plan.allowedOptionSpeeds[index].get(prefix) ?? []) {
+        const cumulative = prefix + speed;
+        const optionCount = plan.optionsBySpeed[index].get(speed)!.length;
+        const routes = Math.min(Number.MAX_SAFE_INTEGER, count * optionCount);
+        next.set(cumulative, Math.min(Number.MAX_SAFE_INTEGER,
+          (next.get(cumulative) ?? 0) + routes));
+      }
+    }
+    prefixes = next;
+  }
+  return Array.from(prefixes.values()).reduce((total, count) =>
+    Math.min(Number.MAX_SAFE_INTEGER, total + count), 0);
+}
+
+export function planGearOptimization(input: GearOptimizationInput): GearOptimizationPlan {
+  validateOptimizationInput(input);
+  const planningInput = { ...input };
+  delete planningInput.targetSpeedContribution;
+  delete planningInput.globalMinimumDamage;
+  const groups = prepareSearchGroups(planningInput);
+  const contributions = buildSpeedSearchPlan(groups, planningInput).targetContributions;
+  let heuristicResult: GearOptimizationResult | undefined;
+  const partitions = contributions.map(contribution => {
+    const partitionInput = { ...planningInput, targetSpeedContribution: contribution };
+    const speedPlan = buildSpeedSearchPlan(groups, partitionInput);
+    const state = findGreedySolution(partitionInput, speedPlan);
+    const stats = applyFood(state.stats, input.food);
+    const damage = calculateExpectedDamage(stats, input.damage);
+    if (heuristicResult === undefined || damage > heuristicResult.damage) {
+      heuristicResult = {
+        damage,
+        stats,
+        gears: reconstruct(state),
+        exploredStates: 0,
+      };
+    }
+    return {
+      contribution,
+      heuristicDamage: damage,
+      estimatedWork: estimatePartitionWork(speedPlan),
+    };
+  });
+  if (heuristicResult === undefined) {
+    throw new Error(`No complete gearset reaches GCD ${input.targetGcd.toFixed(2)}.`);
+  }
+  const promisingContributions = new Set(Array.from(partitions)
+    .sort((left, right) => right.heuristicDamage - left.heuristicDamage)
+    .slice(0, 4)
+    .map(partition => partition.contribution));
+  partitions.sort((left, right) => {
+    const leftPromising = promisingContributions.has(left.contribution);
+    const rightPromising = promisingContributions.has(right.contribution);
+    if (leftPromising && rightPromising) return right.heuristicDamage - left.heuristicDamage;
+    if (leftPromising) return -1;
+    if (rightPromising) return 1;
+    return right.estimatedWork - left.estimatedWork;
+  });
+  return { partitions, heuristicResult };
+}
+
 export function optimizeGearset(input: GearOptimizationInput,
   onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
   validateOptimizationInput(input);
   const groups = prepareSearchGroups(input);
   const speedPlan = buildSpeedSearchPlan(groups, input);
+  const combinedDamage = createCombinedDamageCalculator(input);
   let bestState: SearchState | undefined = findGreedySolution(input, speedPlan);
   let bestStats: OptimizerStats | undefined = applyFood(bestState.stats, input.food);
   let bestDamage = calculateExpectedDamage(bestStats, input.damage);
+  let pruningDamage = Math.max(bestDamage, input.globalMinimumDamage ?? -Infinity);
   let exploredStates = 0;
   let states: SearchState[] = [{ stats: input.fixedStats, choices: [] }];
 
@@ -868,7 +1009,7 @@ export function optimizeGearset(input: GearOptimizationInput,
           const stats = addStats(state.stats, option.stats);
           const nextPrefix = prefixSpeed + speed;
           const remaining = speedPlan.completionMaxima[groupIndex + 1].get(nextPrefix)!;
-          if (calculateCombinedExpectedDamage(stats, remaining, input) <= bestDamage) continue;
+          if (combinedDamage(stats, remaining) <= pruningDamage) continue;
           const signature = statSignature(stats);
           if (!next.has(signature)) {
             next.set(signature, {
@@ -903,20 +1044,21 @@ export function optimizeGearset(input: GearOptimizationInput,
 
   const upperDamage = (stateNode: AttributeTreeNode<SearchState>,
     optionNode: AttributeTreeNode<GearOption>): number =>
-    calculateCombinedExpectedDamage(stateNode.maxima, optionNode.maxima, input);
+    combinedDamage(stateNode.maxima, optionNode.maxima);
   const searchFinalOptions = (stateNode: AttributeTreeNode<SearchState>,
     optionNode: AttributeTreeNode<GearOption>,
     bound = upperDamage(stateNode, optionNode)): void => {
-    if (bound <= bestDamage) return;
+    if (bound <= pruningDamage) return;
     if (stateNode.items !== undefined && optionNode.items !== undefined) {
       for (const state of stateNode.items) {
         for (const option of optionNode.items) {
           exploredStates++;
-          const damage = calculateCombinedExpectedDamage(state.stats, option.stats, input);
+          const damage = combinedDamage(state.stats, option.stats);
           if (damage > bestDamage) {
             const combinedStats = addStats(state.stats, option.stats);
             const stats = applyFood(combinedStats, input.food);
             bestDamage = damage;
+            pruningDamage = Math.max(pruningDamage, damage);
             bestStats = stats;
             bestState = {
               stats: combinedStats,

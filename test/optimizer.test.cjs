@@ -18,6 +18,7 @@ const {
   calculateExpectedDamage,
   findTargetSpeedContributions,
   optimizeGearset,
+  planGearOptimization,
 } = optimizer;
 
 const damage = {
@@ -341,6 +342,15 @@ test('exact speed partitions cover the complete target GCD search', () => {
 
   assert.equal(contributions.join(','), '40,60,80,100');
   assert.equal(Math.max(...partitioned.map(result => result.damage)), complete.damage);
+
+  const plan = planGearOptimization(input);
+  const bounded = plan.partitions.map(partition => optimizeGearset({
+    ...input,
+    targetSpeedContribution: partition.contribution,
+    globalMinimumDamage: plan.heuristicResult.damage,
+  }));
+  assert.equal(Math.max(plan.heuristicResult.damage, ...bounded.map(result => result.damage)),
+    complete.damage);
 });
 
 test('equivalent synced rings collapse before distinct-ID pairing', () => {

@@ -1,4 +1,4 @@
-import { findTargetSpeedContributions, optimizeGearset } from './optimizer';
+import { optimizeGearset, planGearOptimization } from './optimizer';
 import type { GearOptimizationInput } from './optimizer';
 
 /* eslint-disable no-restricted-globals */
@@ -10,8 +10,8 @@ type WorkerRequest =
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {
   try {
     if (event.data.type === 'plan') {
-      const contributions = findTargetSpeedContributions(event.data.input);
-      self.postMessage({ type: 'plan', contributions });
+      const plan = planGearOptimization(event.data.input);
+      self.postMessage({ type: 'plan', plan });
       return;
     }
     const result = optimizeGearset(event.data.input, progress => {
