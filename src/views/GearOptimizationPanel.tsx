@@ -216,6 +216,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         <p>非同步装备优先使用同步品级及低5品级；治疗职业缺少足够无信仰装备时，会按筛选范围向下放宽品级。</p>
         <p>{`魔晶石使用各孔最高值，并精确枚举暴击、信念、直击、坚韧和${speedName}。`}</p>
         <p>装备、魔晶石和当前食物生效后计算出的 GCD 必须精确等于目标值。</p>
+        <p>特殊武器的属性需要提前手动输入，食物需要提前手动选择；求解器会沿用当前配置。</p>
       </div>
 
       <div className="gear-optimization_constraint-row">
