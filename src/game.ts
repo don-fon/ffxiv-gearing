@@ -11,6 +11,7 @@ export interface GearBase {
 }
 export interface Gear extends GearBase {
   rarity: number,
+  unique?: true,
   rawSlot?: number,
   role: number,
   equipLevel: number,

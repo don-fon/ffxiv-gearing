@@ -38,12 +38,13 @@ const damage = {
   bluMdmgAdditions: [],
 };
 
-function gear(id, name, level, slot, stats, cap, materiaSlot) {
+function gear(id, name, level, slot, stats, cap, materiaSlot, unique = true) {
   return {
     id,
     name,
     level,
     slot,
+    unique,
     stats,
     caps: { CRT: cap, DET: cap, DHT: cap },
     materiaSlots: Array.from({ length: materiaSlot }, () => ({ grade: 12, value: 54 })),
@@ -115,6 +116,7 @@ test('swapped slot attributes contract before the main search', () => {
     name: String(id),
     level: 1,
     slot,
+    unique: true,
     stats: { STR: 1, CRT: crt, DET: det, DHT: 0, PDMG: 1 },
     caps: {},
     materiaSlots: [],
@@ -253,6 +255,49 @@ test('equivalent synced rings collapse before distinct-ID pairing', () => {
   assert.equal(result.gears.length, 2);
   assert.notEqual(result.gears[0].id, result.gears[1].id);
   assert.equal(result.exploredStates, 1);
+});
+
+test('a repeatable ring can occupy both slots with independent melds', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'repeatable', 1, 12, {}, 1000, 1, false)],
+    slots: [12],
+    lockedGearIds: [1, 1],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 474,
+    damage,
+  });
+
+  assert.equal(result.gears.length, 2);
+  assert.equal(result.gears.map(item => item.id).join(','), '1,1');
+  assert.equal(result.gears.map(item => item.melds[0].stat).sort().join(','), 'DHT,SKS');
+});
+
+test('a unique ring cannot occupy both slots', () => {
+  assert.throws(() => optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'unique', 1, 12, {}, 1000, 0, true)],
+    slots: [12],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetSpeed: 420,
+    damage,
+  }), /唯一品/);
+});
+
+test('generated gear data distinguishes unique and repeatable rings', () => {
+  const gearModule = { exports: undefined };
+  const gearSource = fs.readFileSync(require.resolve('../data/out/gears-recent.js'), 'utf8')
+    .replace(/^export default /, 'module.exports = ');
+  vm.runInNewContext(gearSource, { module: gearModule });
+  const recentGears = gearModule.exports;
+
+  assert.equal(recentGears.find(item => item.id === 50965).unique, true);
+  assert.equal(recentGears.find(item => item.id === 51182).unique, undefined);
 });
 
 test('same-speed candidates dominated in every damage stat are removed', () => {

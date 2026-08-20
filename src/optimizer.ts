@@ -15,6 +15,7 @@ export interface OptimizerGear {
   name: string;
   level: number;
   slot: number;
+  unique: boolean;
   stats: OptimizerStats;
   caps: OptimizerStats;
   materiaSlots: OptimizerMateriaSlot[];
@@ -73,6 +74,7 @@ export interface OptimizerGearChoice {
   name: string;
   level: number;
   slot: number;
+  unique: boolean;
   synced: boolean;
   melds: OptimizerMeld[];
 }
@@ -140,6 +142,7 @@ function gearOptions(gear: OptimizerGear,
       name: gear.name,
       level: gear.level,
       slot: gear.slot,
+      unique: gear.unique,
       synced: gear.synced,
       melds: [],
     }],
@@ -207,10 +210,11 @@ function pruneDominatedOptions(options: GearOption[], speedStat: 'SKS' | 'SPS'):
 
 function equivalentGearSignature(gear: OptimizerGear,
   materiaStats: GearOptimizationInput['materiaStats']): string {
-  if (gear.synced) return `synced|${statSignature(gear.stats)}`;
+  const uniqueness = gear.unique ? 'unique' : 'repeatable';
+  if (gear.synced) return `synced|${uniqueness}|${statSignature(gear.stats)}`;
   const caps = materiaStats.map(stat => gear.caps[stat] ?? '').join(',');
   const materiaSlots = gear.materiaSlots.map(slot => `${slot.grade}:${slot.value}`).join(',');
-  return `${statSignature(gear.stats)}|${caps}|${materiaSlots}`;
+  return `${uniqueness}|${statSignature(gear.stats)}|${caps}|${materiaSlots}`;
 }
 
 function deduplicateEquivalentGears(gears: OptimizerGear[], maximumPerSignature: number,
@@ -231,6 +235,16 @@ function deduplicateEquivalentGears(gears: OptimizerGear[], maximumPerSignature:
     result.push(...unlocked.slice(0, Math.max(0, maximumPerSignature - locked.length)));
   }
   return result;
+}
+
+function matchesLockedRings(left: OptimizerGearChoice, right: OptimizerGearChoice,
+  lockedRingIds: number[]): boolean {
+  if (lockedRingIds.length === 0) return true;
+  if (lockedRingIds.length === 1) {
+    return left.id === lockedRingIds[0] || right.id === lockedRingIds[0];
+  }
+  return (left.id === lockedRingIds[0] && right.id === lockedRingIds[1]) ||
+    (left.id === lockedRingIds[1] && right.id === lockedRingIds[0]);
 }
 
 function buildGroups(input: GearOptimizationInput): GearOption[][] {
@@ -257,7 +271,7 @@ function buildGroups(input: GearOptimizationInput): GearOption[][] {
     }
     // Equivalent synced gear is common across a wide item-level range. Collapse
     // it before materia expansion and ring pairing. Rings retain two IDs per
-    // signature because a legal pair must use two different item IDs.
+    // signature so unique rings can still form a legal pair.
     gears = deduplicateEquivalentGears(gears, slot === 12 ? 2 : 1, lockedGearIds, input.materiaStats);
     const options = gears.flatMap(gear =>
       pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat));
@@ -266,14 +280,17 @@ function buildGroups(input: GearOptimizationInput): GearOption[][] {
       continue;
     }
 
-    // Rings form one group. Pair before deduplication so two damage-equivalent
-    // rings with different IDs are still available as a legal pair.
+    // Rings form one group. A non-unique ring may pair with itself, including
+    // with different melds on its two copies. Unique rings still require two IDs.
+    const lockedRingIds = input.lockedGearIds.filter(id =>
+      lockedGears.some(gear => gear.id === id));
     const pairs: GearOption[] = [];
     for (let i = 0; i < options.length; i++) {
-      for (let j = i + 1; j < options.length; j++) {
-        if (options[i].choices[0].id === options[j].choices[0].id) continue;
-        const selectedIds = new Set([options[i].choices[0].id, options[j].choices[0].id]);
-        if (lockedGears.some(gear => !selectedIds.has(gear.id))) continue;
+      for (let j = i; j < options.length; j++) {
+        const left = options[i].choices[0];
+        const right = options[j].choices[0];
+        if (left.id === right.id && left.unique) continue;
+        if (!matchesLockedRings(left, right, lockedRingIds)) continue;
         pairs.push({
           stats: addStats(options[i].stats, options[j].stats),
           choices: options[i].choices.concat(options[j].choices),
@@ -281,7 +298,7 @@ function buildGroups(input: GearOptimizationInput): GearOption[][] {
       }
     }
     if (pairs.length === 0) {
-      throw new Error('没有两枚不同 ID 且满足条件的戒指。');
+      throw new Error('没有两枚满足条件且不违反唯一品限制的戒指。');
     }
     groups.push(pruneDominatedOptions(deduplicateOptions(pairs), input.speedStat));
   }

@@ -133,6 +133,7 @@ const gears = Item
       // ret.occupiedSlots = slotComposite[ret.slot].slice(1);
       ret.slot = slotComposite[ret.slot][0];
     }
+    ret.unique = ret.slot === 12 && x['IsUnique'] === 'True' ? true : undefined;
     ret.role = +x['BaseParamModifier'];
     ret.jobCategory = +x['ClassJobCategory'];
     ret.equipLevel = +x['LevelEquip'];

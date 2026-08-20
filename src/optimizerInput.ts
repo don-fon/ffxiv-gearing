@@ -79,6 +79,7 @@ function prepareGear(store: IStore, gear: G.Gear, current?: IGear): OptimizerGea
     name: gear.name,
     level: gear.level,
     slot: gear.slot,
+    unique: gear.unique === true,
     stats,
     caps,
     materiaSlots,
@@ -121,8 +122,10 @@ export function createGearOptimizationInput(store: IStore,
   const lockedModels = lockedSlots.map(slot => store.equippedGears.get(slot.toString()))
     .filter((gear): gear is IGear => gear !== undefined && !gear.isFood);
   const lockedGearIds = lockedModels.map(gear => Math.abs(gear.id));
-  if (new Set(lockedGearIds).size !== lockedGearIds.length) {
-    throw new Error('两枚戒指不能锁定为相同的装备 ID。');
+  const duplicateLockedGear = lockedModels.find((gear, index) =>
+    lockedGearIds.indexOf(Math.abs(gear.id)) !== index);
+  if (duplicateLockedGear?.data.unique) {
+    throw new Error('唯一品戒指不能同时装备两枚。');
   }
   const lockedIdSet = new Set(lockedGearIds);
   const currentById = new Map<number, IGear>();
