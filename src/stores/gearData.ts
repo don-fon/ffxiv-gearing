@@ -39,13 +39,15 @@ const gearGroups = require('../../data/out/gearGroups').default as number[];
 export const loadGearDataOfGearId = (gearId: G.GearId) => loadGearData(gearGroups[gearId]);
 
 const gearGroupBasis = require('../../data/out/gearGroupBasis').default as number[];
-export const loadGearDataOfLevelRange = (minLevel: number, maxLevel: number) => {
+export const loadGearDataOfLevelRange = async (minLevel: number, maxLevel: number) => {
+  const loads: Promise<void>[] = [];
   let i = 0;
   while (gearGroupBasis[i + 1] <= minLevel) i++;
   while (gearGroupBasis[i] <= maxLevel) {
-    loadGearData(gearGroupBasis[i]);
+    loads.push(loadGearData(gearGroupBasis[i]));
     i++;
   }
+  await Promise.all(loads);
 };
 gearDataLoadStatus.set(gearGroupBasis[gearGroupBasis.length - 1], 'finished');
 

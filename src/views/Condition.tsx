@@ -17,6 +17,7 @@ import { MateriaOverallPanel } from './MateriaOverallPanel';
 import { SharePanel } from './SharePanel';
 import { ImportPanel } from './ImportPanel';
 import { SettingPanel } from './SettingPanel';
+import { NoSpeedOptimizationPanel } from './NoSpeedOptimizationPanel';
 
 declare const __PATCH__: string;
 
@@ -133,6 +134,15 @@ export const Condition = mobxReact.observer(() => {
             </Button>
           )}
           popper={MateriaOverallPanel}
+          placement="bottom-start"
+        />
+      )}
+      {editing && store.schema.mainStat !== undefined && (
+        <Dropdown
+          label={({ ref, toggle }) => (
+            <Button ref={ref} className="condition_button" onClick={toggle}>自动配装</Button>
+          )}
+          popper={NoSpeedOptimizationPanel}
           placement="bottom-start"
         />
       )}

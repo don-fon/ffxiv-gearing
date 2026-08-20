@@ -5,6 +5,7 @@ import * as share from '../share';
 import { floor, ceil, Setting, Promotion, GearUnion, GearUnionReference,
   gearDataOrdered, gearDataLoading, loadGearDataOfGearId, loadGearDataOfLevelRange } from '.';
 import type { IGear, IFood, IGearUnion, IMateria } from '.';
+import type { NoSpeedOptimizationResult } from '../optimizer';
 
 const clanStorageKey = 'ffxiv-gearing.dt.clan';
 const tiersShownStorageKey = 'ffxiv-gearing.dt.tiers-shown';
@@ -38,6 +39,7 @@ export const Store = mst.types
     tiersShown: localStorage.getItem(tiersShownStorageKey) === 'true',
     materiaOverallActiveTab: 0,
     autoSelectScheduled: false,
+    optimizationDataLoading: false,
   }))
   .views(self => ({
     get filteredIds(): G.GearId[] {
@@ -78,7 +80,7 @@ export const Store = mst.types
   .views(self => ({
     get loadingStatus() {
       return gearDataLoading.get()
-        ? self.minLevelIncoming !== undefined || self.maxLevelIncoming !== undefined
+        ? self.optimizationDataLoading || self.minLevelIncoming !== undefined || self.maxLevelIncoming !== undefined
           ? 'appending'  // keep rendered when loading
           : 'loading'
         : 'ready';
@@ -722,6 +724,32 @@ export const Store = mst.types
             materia.grade = materia.meldableGrades[0];
           }
         }
+      }
+    },
+    setOptimizationDataLoading(loading: boolean): void {
+      self.optimizationDataLoading = loading;
+    },
+    applyNoSpeedOptimization(result: NoSpeedOptimizationResult): void {
+      let ringCount = 0;
+      for (const choice of result.gears) {
+        const slot = choice.slot === 12 && ringCount++ > 0 ? -12 : choice.slot;
+        const id = (slot < 0 ? -choice.id : choice.id) as G.GearId;
+        let gear = self.gears.get(id.toString()) as IGear | undefined;
+        if (gear === undefined) {
+          self.gears.put(GearUnion.create({
+            id,
+            materias: choice.melds.map(meld => ({
+              stat: meld.stat as G.Stat,
+              grade: meld.grade as G.MateriaGrade,
+            })),
+          } as any));
+          gear = self.gears.get(id.toString()) as IGear;
+        }
+        for (let index = 0; index < gear.materias.length; index++) {
+          const meld = choice.melds[index];
+          gear.materias[index].meld(meld?.stat, meld?.grade as G.MateriaGrade | undefined);
+        }
+        self.equippedGears.set(slot.toString(), gear);
       }
     },
     toggleShowAllMaterias(): void {

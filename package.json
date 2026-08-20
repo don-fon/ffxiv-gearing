@@ -18,6 +18,7 @@
     "data-fetch": "node data/fetch.ts",
     "data-convert": "node data/convert.ts",
     "lint": "eslint --ext .js,.cjs,.ts,.tsx .",
+    "test:optimizer": "node --test test/optimizer.test.cjs",
     "test": "playwright test -c test/"
   },
   "dependencies": {
