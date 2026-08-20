@@ -59,7 +59,8 @@ export interface GearOptimizationInput {
   lockedGearIds: number[];
   materiaStats: OptimizerMateriaStat[];
   speedStat: 'SKS' | 'SPS';
-  targetSpeed: number;
+  targetGcd: number;
+  targetSpeedContribution?: number;
   food?: OptimizerFood;
   damage: OptimizerDamageContext;
 }
@@ -116,6 +117,14 @@ interface AttributeTreeNode<T extends GearOption> {
   items?: T[];
   left?: AttributeTreeNode<T>;
   right?: AttributeTreeNode<T>;
+}
+
+interface SpeedSearchPlan {
+  fixedSpeed: number;
+  targetContributions: number[];
+  allowedOptionSpeeds: Map<number, number[]>[];
+  optionsBySpeed: Map<number, GearOption[]>[];
+  completionMaxima: Map<number, OptimizerStats>[];
 }
 
 const damageStats: OptimizerStat[] = [
@@ -473,23 +482,21 @@ function filterInfeasibleSpeedOptions(groups: GearOption[][],
   let changed = true;
   while (changed) {
     changed = false;
-    const minimumSpeeds = filtered.map(group =>
-      Math.min(...group.map(option => option.stats[input.speedStat] ?? 0)));
-    const maximumSpeeds = filtered.map(group =>
-      Math.max(...group.map(option => option.stats[input.speedStat] ?? 0)));
+    const minimumSpeeds = filtered.map(group => group.reduce((minimum, option) =>
+      Math.min(minimum, option.stats[input.speedStat] ?? 0), Infinity));
+    const maximumSpeeds = filtered.map(group => group.reduce((maximum, option) =>
+      Math.max(maximum, option.stats[input.speedStat] ?? 0), -Infinity));
     const totalMinimum = minimumSpeeds.reduce((total, speed) => total + speed, 0);
     const totalMaximum = maximumSpeeds.reduce((total, speed) => total + speed, 0);
     filtered = filtered.map((group, index) => {
       const next = group.filter(option => {
         const speed = option.stats[input.speedStat] ?? 0;
-        const minimumFinal = speedAfterFood(
-          fixedSpeed + speed + totalMinimum - minimumSpeeds[index], input);
-        const maximumFinal = speedAfterFood(
-          fixedSpeed + speed + totalMaximum - maximumSpeeds[index], input);
-        return input.targetSpeed >= minimumFinal && input.targetSpeed <= maximumFinal;
+        const minimumFinal = fixedSpeed + speed + totalMinimum - minimumSpeeds[index];
+        const maximumFinal = fixedSpeed + speed + totalMaximum - maximumSpeeds[index];
+        return speedRangeCanReachTargetGcd(minimumFinal, maximumFinal, input);
       });
       if (next.length === 0) {
-        throw new Error(`没有找到最终${input.speedStat === 'SKS' ? '技速' : '咏速'}为 ${input.targetSpeed} 的完整配装。`);
+        throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
       }
       if (next.length !== group.length) changed = true;
       return next;
@@ -557,6 +564,144 @@ function speedAfterFood(speed: number, input: GearOptimizationInput): number {
   if (maximum === undefined) return speed;
   const rate = input.food?.statRates[input.speedStat];
   return speed + (rate === undefined ? maximum : Math.min(maximum, floor(speed * rate / 100)));
+}
+
+function gcdHundredths(speed: number, input: GearOptimizationInput): number {
+  const { sub, div } = input.damage.level;
+  const jobModifier = input.damage.jobLevel >= 80
+    ? input.damage.statModifiers.gcd ?? 100
+    : 100;
+  return floor(floor((1000 - floor(130 * (speed - sub) / div)) * 2500 / 1000) *
+    jobModifier / 1000);
+}
+
+function targetGcdHundredths(input: GearOptimizationInput): number {
+  return Math.round(input.targetGcd * 100);
+}
+
+function speedRangeCanReachTargetGcd(minimumSpeed: number, maximumSpeed: number,
+  input: GearOptimizationInput): boolean {
+  const target = targetGcdHundredths(input);
+  const fastest = gcdHundredths(speedAfterFood(maximumSpeed, input), input);
+  const slowest = gcdHundredths(speedAfterFood(minimumSpeed, input), input);
+  return target >= fastest && target <= slowest;
+}
+
+function buildSpeedSearchPlan(groups: GearOption[][],
+  input: GearOptimizationInput): SpeedSearchPlan {
+  const fixedSpeed = input.fixedStats[input.speedStat] ?? 0;
+  const optionsBySpeed = groups.map(group => {
+    const buckets = new Map<number, GearOption[]>();
+    for (const option of group) {
+      const speed = option.stats[input.speedStat] ?? 0;
+      const bucket = buckets.get(speed) ?? [];
+      bucket.push(option);
+      buckets.set(speed, bucket);
+    }
+    return buckets;
+  });
+  const groupSpeeds = optionsBySpeed.map(buckets => Array.from(buckets.keys()));
+  const minimumRemaining = Array.from({ length: groups.length + 1 }, () => 0);
+  const maximumRemaining = Array.from({ length: groups.length + 1 }, () => 0);
+  for (let index = groups.length - 1; index >= 0; index--) {
+    minimumRemaining[index] = minimumRemaining[index + 1] + Math.min(...groupSpeeds[index]);
+    maximumRemaining[index] = maximumRemaining[index + 1] + Math.max(...groupSpeeds[index]);
+  }
+
+  let minimumTargetContribution = Infinity;
+  let maximumTargetContribution = -Infinity;
+  const minimumTotalSpeed = fixedSpeed + minimumRemaining[0];
+  const maximumTotalSpeed = fixedSpeed + maximumRemaining[0];
+  const targetGcd = targetGcdHundredths(input);
+  for (let speed = minimumTotalSpeed; speed <= maximumTotalSpeed; speed++) {
+    if (gcdHundredths(speedAfterFood(speed, input), input) === targetGcd) {
+      minimumTargetContribution = Math.min(minimumTargetContribution, speed - fixedSpeed);
+      maximumTargetContribution = Math.max(maximumTargetContribution, speed - fixedSpeed);
+    }
+  }
+  if (!Number.isFinite(minimumTargetContribution)) {
+    throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+  }
+
+  // First enumerate only distinct cumulative speed contributions. The reverse
+  // pass then keeps prefixes that have an exact route into the target GCD tier.
+  const reachablePrefixes: Set<number>[] = [new Set([0])];
+  for (let index = 0; index < groups.length; index++) {
+    const next = new Set<number>();
+    for (const prefix of reachablePrefixes[index]) {
+      for (const speed of groupSpeeds[index]) {
+        const cumulative = prefix + speed;
+        if (cumulative + minimumRemaining[index + 1] > maximumTargetContribution ||
+            cumulative + maximumRemaining[index + 1] < minimumTargetContribution) continue;
+        next.add(cumulative);
+      }
+    }
+    reachablePrefixes.push(next);
+  }
+
+  const targetContributions: number[] = [];
+  const viablePrefixes = Array.from({ length: groups.length + 1 }, () => new Set<number>());
+  for (const contribution of reachablePrefixes[groups.length]) {
+    const finalSpeed = speedAfterFood(fixedSpeed + contribution, input);
+    if (gcdHundredths(finalSpeed, input) === targetGcd) targetContributions.push(contribution);
+    if (gcdHundredths(finalSpeed, input) === targetGcd &&
+        (input.targetSpeedContribution === undefined ||
+          contribution === input.targetSpeedContribution)) {
+      viablePrefixes[groups.length].add(contribution);
+    }
+  }
+  const allowedOptionSpeeds = Array.from(
+    { length: groups.length }, () => new Map<number, number[]>());
+  for (let index = groups.length - 1; index >= 0; index--) {
+    for (const prefix of reachablePrefixes[index]) {
+      const allowed = groupSpeeds[index].filter(speed =>
+        viablePrefixes[index + 1].has(prefix + speed));
+      if (allowed.length > 0) {
+        viablePrefixes[index].add(prefix);
+        allowedOptionSpeeds[index].set(prefix, allowed);
+      }
+    }
+  }
+  if (!viablePrefixes[0].has(0)) {
+    throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+  }
+
+  const completionMaxima = Array.from(
+    { length: groups.length + 1 }, () => new Map<number, OptimizerStats>());
+  for (const prefix of viablePrefixes[groups.length]) {
+    completionMaxima[groups.length].set(prefix, {});
+  }
+  for (let index = groups.length - 1; index >= 0; index--) {
+    const bucketMaxima = new Map(Array.from(optionsBySpeed[index], ([ speed, options ]) =>
+      [speed, maximumOptionStats(options)] as const));
+    for (const [ prefix, allowedSpeeds ] of allowedOptionSpeeds[index]) {
+      const maxima: OptimizerStats = {};
+      for (const speed of allowedSpeeds) {
+        const tail = completionMaxima[index + 1].get(prefix + speed)!;
+        const route = addStats(bucketMaxima.get(speed)!, tail);
+        for (const stat of damageStats) {
+          if (route[stat] !== undefined) {
+            maxima[stat] = Math.max(maxima[stat] ?? -Infinity, route[stat]!);
+          }
+        }
+      }
+      completionMaxima[index].set(prefix, maxima);
+    }
+  }
+  targetContributions.sort((left, right) => left - right);
+  return { fixedSpeed, targetContributions, allowedOptionSpeeds, optionsBySpeed, completionMaxima };
+}
+
+function filterToViableSpeedOptions(groups: GearOption[][],
+  input: GearOptimizationInput): GearOption[][] {
+  const plan = buildSpeedSearchPlan(groups, input);
+  return groups.map((group, index) => {
+    const viableSpeeds = new Set<number>();
+    for (const speeds of plan.allowedOptionSpeeds[index].values()) {
+      for (const speed of speeds) viableSpeeds.add(speed);
+    }
+    return group.filter(option => viableSpeeds.has(option.stats[input.speedStat] ?? 0));
+  });
 }
 
 export function calculateExpectedDamage(stats: OptimizerStats,
@@ -636,45 +781,103 @@ function reconstruct(state: SearchState): OptimizerGearChoice[] {
   return groups.reverse().flat();
 }
 
-export function optimizeGearset(input: GearOptimizationInput,
-  onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
-  if (!Number.isInteger(input.targetSpeed) || input.targetSpeed < 0) {
-    throw new Error('目标技速/咏速必须是非负整数。');
-  }
-  let groups = filterInfeasibleSpeedOptions(buildGroups(input), input);
-  groups = filterInfeasibleSpeedOptions(
-    contractEquivalentGroups(groups, input.speedStat), input)
-    .sort((left, right) => left.length - right.length);
-  const minimumRemainingSpeed = Array.from({ length: groups.length + 1 }, () => 0);
-  const maximumRemainingSpeed = Array.from({ length: groups.length + 1 }, () => 0);
-  for (let index = groups.length - 1; index >= 0; index--) {
-    const speeds = groups[index].map(option => option.stats[input.speedStat] ?? 0);
-    minimumRemainingSpeed[index] = minimumRemainingSpeed[index + 1] + Math.min(...speeds);
-    maximumRemainingSpeed[index] = maximumRemainingSpeed[index + 1] + Math.max(...speeds);
-  }
-  let exploredStates = 0;
-  let states: SearchState[] = [{ stats: input.fixedStats, choices: [] }];
-
-  // Keep the largest group last and score it as a stream. Materializing the
-  // final Cartesian product is unnecessary and can exceed V8's Map capacity.
-  for (let groupIndex = 0; groupIndex < groups.length - 1; groupIndex++) {
-    const next = new Map<string, SearchState>();
-    for (const state of states) {
-      for (const option of groups[groupIndex]) {
-        exploredStates++;
+function findGreedySolution(input: GearOptimizationInput,
+  speedPlan: SpeedSearchPlan): SearchState {
+  let state: SearchState = { stats: input.fixedStats, choices: [] };
+  let prefixSpeed = 0;
+  for (let groupIndex = 0; groupIndex < speedPlan.optionsBySpeed.length; groupIndex++) {
+    let bestNext: SearchState | undefined;
+    let bestNextPrefix = 0;
+    let bestBound = -Infinity;
+    const allowedSpeeds = speedPlan.allowedOptionSpeeds[groupIndex].get(prefixSpeed) ?? [];
+    for (const speed of allowedSpeeds) {
+      const nextPrefix = prefixSpeed + speed;
+      const remaining = speedPlan.completionMaxima[groupIndex + 1].get(nextPrefix)!;
+      for (const option of speedPlan.optionsBySpeed[groupIndex].get(speed)!) {
         const stats = addStats(state.stats, option.stats);
-        const rawSpeed = stats[input.speedStat] ?? 0;
-        const minimumFinalSpeed = speedAfterFood(rawSpeed + minimumRemainingSpeed[groupIndex + 1], input);
-        const maximumFinalSpeed = speedAfterFood(rawSpeed + maximumRemainingSpeed[groupIndex + 1], input);
-        if (input.targetSpeed < minimumFinalSpeed || input.targetSpeed > maximumFinalSpeed) continue;
-        const signature = statSignature(stats);
-        if (!next.has(signature)) {
-          next.set(signature, {
+        const bound = calculateCombinedExpectedDamage(stats, remaining, input);
+        if (bound > bestBound) {
+          bestBound = bound;
+          bestNextPrefix = nextPrefix;
+          bestNext = {
             stats,
             choices: [],
             previous: state,
             selected: option.choices,
-          });
+          };
+        }
+      }
+    }
+    if (bestNext === undefined) {
+      throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+    }
+    state = bestNext;
+    prefixSpeed = bestNextPrefix;
+  }
+  return state;
+}
+
+function validateOptimizationInput(input: GearOptimizationInput): void {
+  if (!Number.isFinite(input.targetGcd) || input.targetGcd <= 0 ||
+      Math.abs(input.targetGcd * 100 - Math.round(input.targetGcd * 100)) > 1e-7) {
+    throw new Error('目标 GCD 必须是大于 0 且最多包含两位小数的秒数。');
+  }
+  if (input.targetSpeedContribution !== undefined &&
+      !Number.isInteger(input.targetSpeedContribution)) {
+    throw new Error('速度搜索分片参数无效。');
+  }
+}
+
+function prepareSearchGroups(input: GearOptimizationInput): GearOption[][] {
+  let groups = filterInfeasibleSpeedOptions(buildGroups(input), input);
+  groups = filterToViableSpeedOptions(groups, input);
+  return filterInfeasibleSpeedOptions(
+    contractEquivalentGroups(groups, input.speedStat), input)
+    .sort((left, right) => left.length - right.length);
+}
+
+export function findTargetSpeedContributions(input: GearOptimizationInput): number[] {
+  validateOptimizationInput(input);
+  const planningInput = { ...input };
+  delete planningInput.targetSpeedContribution;
+  const groups = prepareSearchGroups(planningInput);
+  return buildSpeedSearchPlan(groups, planningInput).targetContributions;
+}
+
+export function optimizeGearset(input: GearOptimizationInput,
+  onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
+  validateOptimizationInput(input);
+  const groups = prepareSearchGroups(input);
+  const speedPlan = buildSpeedSearchPlan(groups, input);
+  let bestState: SearchState | undefined = findGreedySolution(input, speedPlan);
+  let bestStats: OptimizerStats | undefined = applyFood(bestState.stats, input.food);
+  let bestDamage = calculateExpectedDamage(bestStats, input.damage);
+  let exploredStates = 0;
+  let states: SearchState[] = [{ stats: input.fixedStats, choices: [] }];
+
+  // Keep the largest group for the final tree search. GCD tiers with several
+  // reachable exact speeds are split into independent worker tasks by the UI.
+  for (let groupIndex = 0; groupIndex < groups.length - 1; groupIndex++) {
+    const next = new Map<string, SearchState>();
+    for (const state of states) {
+      const prefixSpeed = (state.stats[input.speedStat] ?? 0) - speedPlan.fixedSpeed;
+      const allowedSpeeds = speedPlan.allowedOptionSpeeds[groupIndex].get(prefixSpeed) ?? [];
+      for (const speed of allowedSpeeds) {
+        for (const option of speedPlan.optionsBySpeed[groupIndex].get(speed)!) {
+          exploredStates++;
+          const stats = addStats(state.stats, option.stats);
+          const nextPrefix = prefixSpeed + speed;
+          const remaining = speedPlan.completionMaxima[groupIndex + 1].get(nextPrefix)!;
+          if (calculateCombinedExpectedDamage(stats, remaining, input) <= bestDamage) continue;
+          const signature = statSignature(stats);
+          if (!next.has(signature)) {
+            next.set(signature, {
+              stats,
+              choices: [],
+              previous: state,
+              selected: option.choices,
+            });
+          }
         }
       }
     }
@@ -684,22 +887,7 @@ export function optimizeGearset(input: GearOptimizationInput,
     onProgress?.({ completedGroups: groupIndex + 1, totalGroups: groups.length, states: states.length });
   }
 
-  let bestState: SearchState | undefined;
-  let bestStats: OptimizerStats | undefined;
-  let bestDamage = -Infinity;
   let finalCandidates = 0;
-  const finalGroup = groups[groups.length - 1];
-  const finalOptionsBySpeed = new Map<number, GearOption[]>();
-  for (const option of finalGroup) {
-    const speed = option.stats[input.speedStat] ?? 0;
-    const sameSpeed = finalOptionsBySpeed.get(speed) ?? [];
-    sameSpeed.push(option);
-    finalOptionsBySpeed.set(speed, sameSpeed);
-  }
-  const finalTrees = Array.from(finalOptionsBySpeed, ([ speed, options ]) => ({
-    speed,
-    tree: buildAttributeTree(options),
-  }));
 
   const statesBySpeed = new Map<number, SearchState[]>();
   for (const state of states) {
@@ -759,28 +947,36 @@ export function optimizeGearset(input: GearOptimizationInput,
     }
   };
 
-  const finalSearches: Array<{
-    stateTree: AttributeTreeNode<SearchState>,
-    optionTree: AttributeTreeNode<GearOption>,
-    bound: number,
-  }> = [];
-  for (const { speed: stateSpeed, tree: stateTree } of stateTrees) {
-    for (const { speed: optionSpeed, tree: optionTree } of finalTrees) {
-      if (speedAfterFood(stateSpeed + optionSpeed, input) !== input.targetSpeed) continue;
-      finalSearches.push({
-        stateTree,
-        optionTree,
-        bound: upperDamage(stateTree, optionTree),
-      });
+  {
+    const finalGroupIndex = groups.length - 1;
+    const finalTrees = new Map(Array.from(
+      speedPlan.optionsBySpeed[finalGroupIndex], ([ speed, options ]) =>
+        [speed, buildAttributeTree(options)] as const));
+    const finalSearches: Array<{
+      stateTree: AttributeTreeNode<SearchState>,
+      optionTree: AttributeTreeNode<GearOption>,
+      bound: number,
+    }> = [];
+    for (const { speed: stateSpeed, tree: stateTree } of stateTrees) {
+      const prefixSpeed = stateSpeed - speedPlan.fixedSpeed;
+      const allowedSpeeds = speedPlan.allowedOptionSpeeds[finalGroupIndex].get(prefixSpeed) ?? [];
+      for (const optionSpeed of allowedSpeeds) {
+        const optionTree = finalTrees.get(optionSpeed)!;
+        finalSearches.push({
+          stateTree,
+          optionTree,
+          bound: upperDamage(stateTree, optionTree),
+        });
+      }
     }
-  }
-  finalSearches.sort((left, right) => right.bound - left.bound);
-  for (const { stateTree, optionTree, bound } of finalSearches) {
-    searchFinalOptions(stateTree, optionTree, bound);
+    finalSearches.sort((left, right) => right.bound - left.bound);
+    for (const { stateTree, optionTree, bound } of finalSearches) {
+      searchFinalOptions(stateTree, optionTree, bound);
+    }
   }
   onProgress?.({ completedGroups: groups.length, totalGroups: groups.length, states: finalCandidates });
   if (bestState === undefined || bestStats === undefined) {
-    throw new Error(`没有找到最终${input.speedStat === 'SKS' ? '技速' : '咏速'}为 ${input.targetSpeed} 的完整配装。`);
+    throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
   }
   return {
     damage: bestDamage,

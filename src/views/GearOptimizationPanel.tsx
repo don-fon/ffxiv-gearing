@@ -14,6 +14,7 @@ import { useStore } from './components/contexts';
 
 type Status = 'idle' | 'loading' | 'running' | 'done' | 'error';
 type WorkerResponse =
+  { type: 'plan', contributions: number[] } |
   { type: 'progress', progress: OptimizerProgress } |
   { type: 'result', result: GearOptimizationResult } |
   { type: 'error', message: string };
@@ -22,20 +23,20 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const store = useStore();
   const speedStat: 'SKS' | 'SPS' = store.schema.stats.includes('SKS') ? 'SKS' : 'SPS';
   const speedName = G.statNames[speedStat];
-  const currentSpeed = store.equippedStats[speedStat] ?? store.baseStats[speedStat] ?? 0;
+  const initialGcd = store.equippedEffects?.gcd ?? 2.5;
   const [ lockedSlots, setLockedSlots ] = React.useState<number[]>([]);
-  const [ targetSpeed, setTargetSpeed ] = React.useState(String(currentSpeed));
+  const [ targetGcd, setTargetGcd ] = React.useState(initialGcd.toFixed(2));
   const [ status, setStatus ] = React.useState<Status>('idle');
   const [ progress, setProgress ] = React.useState<OptimizerProgress>();
   const [ result, setResult ] = React.useState<GearOptimizationResult>();
   const [ baselineDamage, setBaselineDamage ] = React.useState<number>();
   const [ error, setError ] = React.useState('');
-  const workerRef = React.useRef<Worker | null>(null);
+  const workersRef = React.useRef<Worker[]>([]);
   const mountedRef = React.useRef(true);
 
   React.useEffect(() => () => {
     mountedRef.current = false;
-    workerRef.current?.terminate();
+    workersRef.current.forEach(worker => worker.terminate());
   }, []);
 
   const lockable = store.schema.slots.flatMap(slot => {
@@ -52,13 +53,15 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   };
 
   const start = async () => {
-    const parsedTargetSpeed = targetSpeed.trim() === '' ? NaN : Number(targetSpeed);
-    if (!Number.isInteger(parsedTargetSpeed) || parsedTargetSpeed < 0) {
-      setError(`请输入有效的目标${speedName}整数。`);
+    const parsedTargetGcd = targetGcd.trim() === '' ? NaN : Number(targetGcd);
+    if (!Number.isFinite(parsedTargetGcd) || parsedTargetGcd <= 0 ||
+        Math.abs(parsedTargetGcd * 100 - Math.round(parsedTargetGcd * 100)) > 1e-7) {
+      setError('请输入大于 0 且最多包含两位小数的目标 GCD。');
       setStatus('error');
       return;
     }
-    workerRef.current?.terminate();
+    workersRef.current.forEach(worker => worker.terminate());
+    workersRef.current = [];
     setStatus('loading');
     setResult(undefined);
     setProgress(undefined);
@@ -78,7 +81,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
 
     let input;
     try {
-      input = createGearOptimizationInput(store, lockedSlots, parsedTargetSpeed);
+      input = createGearOptimizationInput(store, lockedSlots, parsedTargetGcd);
     } catch (inputError) {
       setError(inputError instanceof Error ? inputError.message : String(inputError));
       setStatus('error');
@@ -86,57 +89,118 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     }
 
     setStatus('running');
-    const worker = new Worker(new URL('../optimizer.worker.ts', import.meta.url));
-    workerRef.current = worker;
-    worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
+    const fail = (message: string) => {
       if (!mountedRef.current) return;
-      if (event.data.type === 'progress') {
-        setProgress(event.data.progress);
-      } else if (event.data.type === 'result') {
-        setResult(event.data.result);
-        setStatus('done');
-        worker.terminate();
-      } else {
-        setError(event.data.message);
-        setStatus('error');
-        worker.terminate();
+      workersRef.current.forEach(worker => worker.terminate());
+      workersRef.current = [];
+      setError(message);
+      setStatus('error');
+    };
+    const planner = new Worker(new URL('../optimizer.worker.ts', import.meta.url));
+    workersRef.current = [planner];
+    planner.onerror = event => fail(event.message || '自动配装计算失败。');
+    planner.onmessage = (event: MessageEvent<WorkerResponse>) => {
+      if (!mountedRef.current) return;
+      if (event.data.type === 'error') {
+        fail(event.data.message);
+        return;
+      }
+      if (event.data.type !== 'plan') return;
+      planner.terminate();
+      const contributions = event.data.contributions;
+      if (contributions.length === 0) {
+        fail(`没有找到最终 GCD 为 ${parsedTargetGcd.toFixed(2)} 秒的完整配装。`);
+        return;
+      }
+
+      const workerCount = Math.min(
+        contributions.length, Math.max(1, navigator.hardwareConcurrency ?? 4), 4);
+      const workers = Array.from({ length: workerCount }, () =>
+        new Worker(new URL('../optimizer.worker.ts', import.meta.url)));
+      workersRef.current = workers;
+      const activeProgress = new Map<Worker, OptimizerProgress>();
+      let nextIndex = 0;
+      let completed = 0;
+      let exploredStates = 0;
+      let bestResult: GearOptimizationResult | undefined;
+      const updateProgress = () => setProgress({
+        completedGroups: completed,
+        totalGroups: contributions.length,
+        states: Array.from(activeProgress.values()).reduce((total, value) => total + value.states, 0),
+      });
+      const assign = (worker: Worker) => {
+        if (nextIndex >= contributions.length) {
+          worker.terminate();
+          return;
+        }
+        const targetSpeedContribution = contributions[nextIndex++];
+        activeProgress.delete(worker);
+        worker.postMessage({
+          type: 'optimize',
+          input: { ...input, targetSpeedContribution },
+        });
+      };
+      for (const worker of workers) {
+        worker.onerror = workerError => fail(workerError.message || '自动配装计算失败。');
+        worker.onmessage = (workerEvent: MessageEvent<WorkerResponse>) => {
+          if (!mountedRef.current) return;
+          if (workerEvent.data.type === 'error') {
+            fail(workerEvent.data.message);
+          } else if (workerEvent.data.type === 'progress') {
+            activeProgress.set(worker, workerEvent.data.progress);
+            updateProgress();
+          } else if (workerEvent.data.type === 'result') {
+            completed++;
+            exploredStates += workerEvent.data.result.exploredStates;
+            if (bestResult === undefined || workerEvent.data.result.damage > bestResult.damage) {
+              bestResult = workerEvent.data.result;
+            }
+            activeProgress.delete(worker);
+            updateProgress();
+            if (completed === contributions.length) {
+              workers.forEach(item => item.terminate());
+              workersRef.current = [];
+              setResult({ ...bestResult!, exploredStates });
+              setStatus('done');
+            } else {
+              assign(worker);
+            }
+          }
+        };
+        assign(worker);
       }
     };
-    worker.onerror = event => {
-      setError(event.message || '自动配装计算失败。');
-      setStatus('error');
-      worker.terminate();
-    };
-    worker.postMessage(input);
+    planner.postMessage({ type: 'plan', input });
   };
 
   const busy = status === 'loading' || status === 'running';
-  const parsedTargetSpeed = targetSpeed.trim() === '' ? NaN : Number(targetSpeed);
-  const targetSpeedValid = Number.isInteger(parsedTargetSpeed) && parsedTargetSpeed >= 0;
+  const parsedTargetGcd = targetGcd.trim() === '' ? NaN : Number(targetGcd);
+  const targetGcdValid = Number.isFinite(parsedTargetGcd) && parsedTargetGcd > 0 &&
+    Math.abs(parsedTargetGcd * 100 - Math.round(parsedTargetGcd * 100)) <= 1e-7;
   return (
     <div className="gear-optimization card">
       <div className="gear-optimization_intro">
-        <p>{`在指定最终${speedName}下，搜索最高每威力伤害期望配装。`}</p>
+        <p>{`在指定最终 GCD 下，搜索最高每威力伤害期望配装（使用${speedName}计算）。`}</p>
         <p>非同步装备仅使用同步品级及低5品级；高品级装备同步后必须有两项满值副属性。</p>
         <p>{`魔晶石使用各孔最高值，并精确枚举暴击、信念、直击、坚韧和${speedName}。`}</p>
-        <p>{`装备、魔晶石和当前食物生效后的${speedName}必须精确等于目标值。`}</p>
+        <p>装备、魔晶石和当前食物生效后计算出的 GCD 必须精确等于目标值。</p>
       </div>
 
       <label className="gear-optimization_constraint-row">
-        <span>{`目标${speedName}`}</span>
+        <span>目标 GCD</span>
         <input
           type="number"
-          min={store.baseStats[speedStat] ?? 0}
-          step="1"
-          value={targetSpeed}
+          min="0.01"
+          step="0.01"
+          value={targetGcd}
           disabled={busy}
           onChange={event => {
-            setTargetSpeed(event.target.value);
+            setTargetGcd(event.target.value);
             setStatus('idle');
             setResult(undefined);
           }}
         />
-        <span>{`当前 ${currentSpeed}`}</span>
+        <span>{`当前 ${initialGcd.toFixed(2)} 秒`}</span>
       </label>
 
       <div className="gear-optimization_section-title">锁定当前装备（可选）</div>
@@ -162,8 +226,8 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       {status === 'running' && (
         <div className="gear-optimization_status">
           {progress === undefined
-            ? '正在生成候选方案…'
-            : `已处理 ${progress.completedGroups}/${progress.totalGroups} 个搜索组，保留 ${progress.states} 个属性状态…`}
+            ? '正在分析可达速度值…'
+            : `已完成 ${progress.completedGroups}/${progress.totalGroups} 个可达速度值，当前保留 ${progress.states} 个属性状态…`}
         </div>
       )}
       {status === 'error' && <div className="gear-optimization_error">{error}</div>}
@@ -200,7 +264,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       )}
 
       <div className="gear-optimization_actions">
-        <Button disabled={busy || store.syncLevel === undefined || !targetSpeedValid} onClick={start}>
+        <Button disabled={busy || store.syncLevel === undefined || !targetGcdValid} onClick={start}>
           {result === undefined ? '开始计算' : '重新计算'}
         </Button>
         {result !== undefined && (

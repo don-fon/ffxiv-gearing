@@ -97,7 +97,7 @@ function isEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear, syncLe
 }
 
 export function createGearOptimizationInput(store: IStore,
-  lockedSlots: number[], targetSpeed: number): GearOptimizationInput {
+  lockedSlots: number[], targetGcd: number): GearOptimizationInput {
   if (store.job === undefined || store.schema.mainStat === undefined ||
       store.schema.statModifiers === undefined || store.schema.traitDamageMultiplier === undefined) {
     throw new Error('仅支持具有每威力伤害期望的战斗职业。');
@@ -105,16 +105,13 @@ export function createGearOptimizationInput(store: IStore,
   if (store.syncLevel === undefined) {
     throw new Error('请先选择一个明确的品级同步值。');
   }
-  if (!Number.isInteger(targetSpeed) || targetSpeed < 0) {
-    throw new Error('目标技速/咏速必须是非负整数。');
+  if (!Number.isFinite(targetGcd) || targetGcd <= 0 ||
+      Math.abs(targetGcd * 100 - Math.round(targetGcd * 100)) > 1e-7) {
+    throw new Error('目标 GCD 必须是大于 0 且最多包含两位小数的秒数。');
   }
 
   const speedStat: 'SKS' | 'SPS' = store.schema.stats.includes('SKS') ? 'SKS' : 'SPS';
   const secondaryStats: OptimizerMateriaStat[] = damageSecondaryStats.concat(speedStat);
-  const baseSpeed = store.baseStats[speedStat] ?? 0;
-  if (targetSpeed < baseSpeed) {
-    throw new Error(`目标${speedStat === 'SKS' ? '技速' : '咏速'}不能低于基础值 ${baseSpeed}。`);
-  }
 
   const slots = Array.from(new Set(store.schema.slots
     .filter(slot => slot.slot > 0 && slot.levelWeight !== 0)
@@ -176,7 +173,7 @@ export function createGearOptimizationInput(store: IStore,
     lockedGearIds,
     materiaStats,
     speedStat,
-    targetSpeed,
+    targetGcd,
     food,
     damage: {
       job: store.job,

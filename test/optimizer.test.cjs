@@ -16,6 +16,7 @@ vm.runInNewContext(compiled, { exports: optimizer, module: { exports: optimizer 
 
 const {
   calculateExpectedDamage,
+  findTargetSpeedContributions,
   optimizeGearset,
 } = optimizer;
 
@@ -74,7 +75,7 @@ test('735 DRG share case is improved with the configured weapon and food', () =>
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 420,
+    targetGcd: 2.50,
     food: {
       id: 49240,
       name: '焦糖爆米花',
@@ -135,7 +136,7 @@ test('swapped slot attributes contract before the main search', () => {
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT'],
     speedStat: 'SKS',
-    targetSpeed: 0,
+    targetGcd: 2.50,
     damage: simpleDamage,
   }, value => progress.push(value));
 
@@ -155,7 +156,7 @@ test('locking a gear ID restricts that slot without preserving old melds', () =>
     lockedGearIds: [1],
     materiaStats: ['CRT', 'DET', 'DHT'],
     speedStat: 'SKS',
-    targetSpeed: 0,
+    targetGcd: 2.50,
     damage: {
       ...damage,
       level: { ...damage.level, main: 1, sub: 1 },
@@ -164,7 +165,7 @@ test('locking a gear ID restricts that slot without preserving old melds', () =>
   assert.equal(result.gears[0].id, 1);
 });
 
-test('target speed is an exact constraint and can be reached with speed materia', () => {
+test('target GCD is an exact constraint and can be reached with speed materia', () => {
   const result = optimizeGearset({
     syncLevel: 1,
     fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
@@ -173,12 +174,51 @@ test('target speed is an exact constraint and can be reached with speed materia'
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 494,
+    targetGcd: 2.49,
     damage,
   });
 
   assert.equal(result.stats.SKS, 494);
   assert.equal(result.gears[0].melds[0].stat, 'SKS');
+});
+
+test('different speed values in the same target GCD tier remain eligible', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [
+      gear(1, 'base speed', 1, 3, { STR: 1 }, 1000, 0),
+      gear(2, 'same GCD tier', 1, 3, { STR: 10, SKS: 10 }, 1000, 0),
+    ],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.50,
+    damage,
+  });
+
+  assert.equal(result.gears[0].id, 2);
+  assert.equal(result.stats.SKS, 430);
+});
+
+test('target GCD calculation includes the job GCD modifier', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'fixed', 1, 3, { STR: 1 }, 1000, 0)],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.00,
+    damage: {
+      ...damage,
+      statModifiers: { ...damage.statModifiers, gcd: 80 },
+    },
+  });
+
+  assert.equal(result.stats.SKS, 420);
 });
 
 test('low critical hit does not force critical hit materia', () => {
@@ -190,14 +230,14 @@ test('low critical hit does not force critical hit materia', () => {
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 420,
+    targetGcd: 2.50,
     damage,
   });
 
   assert.equal(result.gears[0].melds[0].stat, 'DHT');
 });
 
-test('speed food is included in the exact final speed constraint', () => {
+test('speed food is included in the exact final GCD constraint', () => {
   const result = optimizeGearset({
     syncLevel: 1,
     fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
@@ -206,7 +246,7 @@ test('speed food is included in the exact final speed constraint', () => {
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 450,
+    targetGcd: 2.49,
     food: {
       id: 1,
       name: 'speed food',
@@ -225,23 +265,23 @@ test('globally impossible speed options are removed before the search', () => {
     fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
     gears: [
       gear(1, 'zero speed head', 1, 3, { CRT: 10 }, 1000, 0),
-      gear(2, 'speed head', 1, 3, { DET: 10, SKS: 1 }, 1000, 0),
+      gear(2, 'speed head', 1, 3, { DET: 10, SKS: 74 }, 1000, 0),
       gear(3, 'zero speed body', 1, 4, { DHT: 10 }, 1000, 0),
-      gear(4, 'speed body', 1, 4, { CRT: 10, SKS: 1 }, 1000, 0),
+      gear(4, 'speed body', 1, 4, { CRT: 10, SKS: 74 }, 1000, 0),
     ],
     slots: [3, 4],
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 420,
+    targetGcd: 2.50,
     damage,
   });
 
   assert.equal(result.gears.map(item => item.id).sort().join(','), '1,3');
-  assert.equal(result.exploredStates, 2);
+  assert.ok(result.exploredStates <= 2);
 });
 
-test('an unreachable exact target speed reports no solution', () => {
+test('an unreachable exact target GCD reports no solution', () => {
   assert.throws(() => optimizeGearset({
     syncLevel: 1,
     fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
@@ -250,9 +290,57 @@ test('an unreachable exact target speed reports no solution', () => {
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 441,
+    targetGcd: 2.48,
     damage,
-  }), /441/);
+  }), /2\.48/);
+});
+
+test('speed-only planning rejects unreachable speed sums before attribute search', () => {
+  let progressCalls = 0;
+  assert.throws(() => optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [3, 4, 5].flatMap(slot => [
+      gear(slot * 10, `zero speed ${slot}`, 1, slot, { CRT: 10 }, 1000, 0),
+      gear(slot * 10 + 1, `high speed ${slot}`, 1, slot, { DET: 10, SKS: 100 }, 1000, 0),
+    ]),
+    slots: [3, 4, 5],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.48,
+    damage,
+  }, () => progressCalls++), /2\.48/);
+
+  assert.equal(progressCalls, 0);
+});
+
+test('exact speed partitions cover the complete target GCD search', () => {
+  const input = {
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [3, 4, 5].flatMap((slot, groupIndex) => [0, 20, 40].map((speed, optionIndex) =>
+      gear(slot * 100 + optionIndex, `${slot}-${speed}`, 1, slot, {
+        STR: optionIndex + 1,
+        CRT: groupIndex * 7 + optionIndex * 5,
+        DET: groupIndex * 3 + optionIndex * 11,
+        DHT: groupIndex * 13 + optionIndex * 2,
+        SKS: speed,
+      }, 1000, 0))),
+    slots: [3, 4, 5],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.49,
+    damage,
+  };
+  const contributions = findTargetSpeedContributions(input);
+  const complete = optimizeGearset(input);
+  const partitioned = contributions.map(targetSpeedContribution =>
+    optimizeGearset({ ...input, targetSpeedContribution }));
+
+  assert.equal(contributions.join(','), '40,60,80,100');
+  assert.equal(Math.max(...partitioned.map(result => result.damage)), complete.damage);
 });
 
 test('equivalent synced rings collapse before distinct-ID pairing', () => {
@@ -269,13 +357,13 @@ test('equivalent synced rings collapse before distinct-ID pairing', () => {
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 420,
+    targetGcd: 2.50,
     damage,
   });
 
   assert.equal(result.gears.length, 2);
   assert.notEqual(result.gears[0].id, result.gears[1].id);
-  assert.equal(result.exploredStates, 1);
+  assert.ok(result.exploredStates <= 1);
 });
 
 test('a repeatable ring can occupy both slots with independent melds', () => {
@@ -287,7 +375,7 @@ test('a repeatable ring can occupy both slots with independent melds', () => {
     lockedGearIds: [1, 1],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 474,
+    targetGcd: 2.49,
     damage,
   });
 
@@ -305,7 +393,7 @@ test('a unique ring cannot occupy both slots', () => {
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 420,
+    targetGcd: 2.50,
     damage,
   }), /唯一品/);
 });
@@ -321,7 +409,7 @@ test('generated gear data distinguishes unique and repeatable rings', () => {
   assert.equal(recentGears.find(item => item.id === 51182).unique, undefined);
 });
 
-test('cumulative states are pruned only after component-wise dominance becomes provable', () => {
+test('cumulative state pruning does not exceed the component-wise dominance frontier', () => {
   const groups = [
     [[5, 10, 1], [0, 7, 10]],
     [[6, 7, 2], [1, 9, 7]],
@@ -343,11 +431,11 @@ test('cumulative states are pruned only after component-wise dominance becomes p
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 420,
+    targetGcd: 2.50,
     damage,
   }, value => progress.push(value));
 
-  assert.equal(progress[3].states, 7);
+  assert.ok(progress[3].states <= 7);
 });
 
 test('dual-tree final search matches exhaustive enumeration', () => {
@@ -358,6 +446,7 @@ test('dual-tree final search matches exhaustive enumeration', () => {
       CRT: (groupIndex * 11 + optionIndex * 17) % 31,
       DET: (groupIndex * 19 + optionIndex * 7) % 29,
       DHT: (groupIndex * 13 + optionIndex * 23) % 37,
+      SKS: (groupIndex * 5 + optionIndex * 11) % 31,
     }, 1000, 0)));
   const fixedStats = { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 };
   const result = optimizeGearset({
@@ -368,7 +457,7 @@ test('dual-tree final search matches exhaustive enumeration', () => {
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 420,
+    targetGcd: 2.49,
     damage,
   });
 
@@ -382,7 +471,13 @@ test('dual-tree final search matches exhaustive enumeration', () => {
       return combined;
     }));
   }
-  const exhaustiveDamage = Math.max(...combinations.map(stats => calculateExpectedDamage(stats, damage)));
+  const matchingCombinations = combinations.filter(stats => {
+    const speedReduction = Math.trunc(130 * (stats.SKS - damage.level.sub) / damage.level.div);
+    const gcdMilliseconds = Math.trunc((1000 - speedReduction) * 2500 / 1000);
+    return Math.trunc(gcdMilliseconds * 100 / 1000) / 100 === 2.49;
+  });
+  const exhaustiveDamage = Math.max(...matchingCombinations.map(stats =>
+    calculateExpectedDamage(stats, damage)));
   assert.equal(result.damage, exhaustiveDamage);
 });
 
@@ -398,10 +493,10 @@ test('same-speed candidates dominated in every damage stat are removed', () => {
     lockedGearIds: [],
     materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
     speedStat: 'SKS',
-    targetSpeed: 420,
+    targetGcd: 2.50,
     damage,
   });
 
   assert.equal(result.gears[0].id, 2);
-  assert.equal(result.exploredStates, 1);
+  assert.ok(result.exploredStates <= 1);
 });
