@@ -9,6 +9,7 @@ import type {
   OptimizerStat,
   OptimizerStats,
 } from './optimizer';
+import { selectPieFreeFallbacks } from './optimizerPieFallbacks';
 
 const damageSecondaryStats: OptimizerMateriaStat[] = ['CRT', 'DET', 'DHT', 'TEN'];
 
@@ -132,16 +133,27 @@ export function createGearOptimizationInput(store: IStore,
     }
   }
 
-  const gears: OptimizerGear[] = [];
+  const preparedGears: Array<{ data: G.Gear, optimizer: OptimizerGear }> = [];
   for (const item of gearDataOrdered.get()) {
     if (item.slot <= 0 || !slots.includes(item.slot) || !G.jobCategories[item.jobCategory][store.job]) continue;
     const gear = item as G.Gear;
     const current = currentById.get(gear.id);
     if (gear.customizable && current === undefined) continue;
     const prepared = prepareGear(store, gear, current);
-    if (lockedIdSet.has(gear.id) || isEligible(store, gear, prepared, store.syncLevel, secondaryStats)) {
-      gears.push(prepared);
-    }
+    preparedGears.push({ data: gear, optimizer: prepared });
+  }
+
+  const preferredCandidates = preparedGears.filter(({ data, optimizer }) =>
+    lockedIdSet.has(data.id) || isEligible(store, data, optimizer, store.syncLevel!, secondaryStats));
+  const gears = preferredCandidates.map(candidate => candidate.optimizer);
+  if (store.schema.stats.includes('PIE') && store.minLevel <= store.maxLevel) {
+    const preferredCandidateIds = new Set(preferredCandidates.map(candidate => candidate.data.id));
+    const lowerLevelPieFreeCandidates = preparedGears.filter(({ data, optimizer }) =>
+      !preferredCandidateIds.has(data.id) && !optimizer.synced && data.level < store.syncLevel! - 5 &&
+      data.level >= store.minLevel && data.level <= store.maxLevel &&
+      !(data.obsolete && store.setting.hideObsoleteGears) && (optimizer.stats.PIE ?? 0) === 0)
+      .map(candidate => candidate.optimizer);
+    gears.push(...selectPieFreeFallbacks(gears, lowerLevelPieFreeCandidates, slots));
   }
 
   for (const gear of lockedModels) {

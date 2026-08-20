@@ -70,7 +70,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     setBaselineDamage(store.equippedEffects?.damage);
     store.setOptimizationDataLoading(true);
     try {
-      await loadGearDataOfLevelRange(store.syncLevel! - 5, Infinity);
+      const minimumLevel = store.minLevel > 0
+        ? Math.min(store.minLevel, store.syncLevel! - 5)
+        : store.syncLevel! - 5;
+      await loadGearDataOfLevelRange(minimumLevel, Infinity);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : String(loadError));
       setStatus('error');
@@ -182,7 +185,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     <div className="gear-optimization card">
       <div className="gear-optimization_intro">
         <p>{`在指定最终 GCD 下，搜索最高每威力伤害期望配装（使用${speedName}计算）。`}</p>
-        <p>非同步装备仅使用同步品级及低5品级；高品级装备同步后必须有两项满值副属性。</p>
+        <p>非同步装备优先使用同步品级及低5品级；治疗职业缺少足够无信仰装备时，会按筛选范围向下放宽品级。</p>
         <p>{`魔晶石使用各孔最高值，并精确枚举暴击、信念、直击、坚韧和${speedName}。`}</p>
         <p>装备、魔晶石和当前食物生效后计算出的 GCD 必须精确等于目标值。</p>
       </div>
