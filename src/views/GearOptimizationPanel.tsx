@@ -38,19 +38,19 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const workersRef = React.useRef<Worker[]>([]);
   const mountedRef = React.useRef(true);
 
-  const weaponSlots = new Set(store.schema.slots
+  const incompleteCustomWeapons = store.schema.slots
     .filter(slot => slot.uiGroup === 'weapon')
-    .map(slot => slot.slot));
-  const incompleteCustomWeapons = gearDataOrdered.get().flatMap(item => {
-    if (!weaponSlots.has(item.slot) || item.level < store.minLevel || item.level > store.maxLevel ||
-        !G.jobCategories[item.jobCategory][store.job!] ||
-        (item.obsolete && store.setting.hideObsoleteGears) || !(item as G.Gear).customizable) {
-      return [];
-    }
-    const gear = store.gears.get(item.id.toString());
-    if (gear !== undefined && !gear.isFood && (gear.customStats?.size ?? 0) > 0) return [];
-    return [item.name];
-  });
+    .flatMap(slot => {
+      const customWeapons = gearDataOrdered.get().filter(item =>
+        item.slot === slot.slot && item.level >= store.minLevel && item.level <= store.maxLevel &&
+        G.jobCategories[item.jobCategory][store.job!] &&
+        (!item.obsolete || !store.setting.hideObsoleteGears) && (item as G.Gear).customizable);
+      if (customWeapons.length === 0 || customWeapons.some(item => {
+        const gear = store.gears.get(item.id.toString());
+        return gear !== undefined && !gear.isFood && (gear.customStats?.size ?? 0) > 0;
+      })) return [];
+      return customWeapons.map(item => item.name);
+    });
   const hasCompleteGearset = store.schema.slots
     .filter(slot => slot.slot > 0 || slot.slot === -12)
     .every(slot => store.equippedGears.get(slot.slot.toString()) !== undefined);
