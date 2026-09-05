@@ -731,6 +731,15 @@ export const Store = mst.types
       self.optimizationDataLoading = loading;
     },
     applyGearOptimization(result: GearOptimizationResult): void {
+      if (result.food !== undefined) {
+        const foodId = result.food.id as G.GearId;
+        let food = self.gears.get(foodId.toString()) as IFood | undefined;
+        if (food === undefined) {
+          self.gears.put(GearUnion.create({ id: foodId }));
+          food = self.gears.get(foodId.toString()) as IFood;
+        }
+        self.equippedGears.set('-1', food);
+      }
       let ringCount = 0;
       for (const choice of result.gears) {
         const slot = choice.slot === 12 && ringCount++ > 0 ? -12 : choice.slot;

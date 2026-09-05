@@ -12,6 +12,13 @@
     margin: 0 0 4px;
   }
 }
+.gear-optimization_warning {
+  margin-top: 10px;
+  border-left: 3px solid var(--mdc-theme-error);
+  padding: 7px 9px;
+  background: rgb(var(--color-text-base), .06);
+  color: var(--mdc-theme-error);
+}
 .gear-optimization_section-title {
   margin-top: 12px;
   font-weight: bold;

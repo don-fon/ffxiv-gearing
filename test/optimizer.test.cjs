@@ -409,6 +409,31 @@ test('speed food is included in the exact final GCD constraint', () => {
   assert.equal(result.stats.SKS, 450);
 });
 
+test('automatic food selection maximizes damage without violating the exact GCD', () => {
+  const input = {
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'fixed', 1, 3, {}, 1000, 0)],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.50,
+    foods: [
+      { id: 10, name: 'weak food', stats: { DET: 1 }, statRates: {} },
+      { id: 11, name: 'damage food', stats: { DET: 100 }, statRates: {} },
+      { id: 12, name: 'speed food', stats: { SKS: 100 }, statRates: {} },
+    ],
+    damage,
+  };
+
+  const plan = planGearOptimization(input);
+  const result = optimizeGearset(input);
+
+  assert.equal(new Set(plan.partitions.map(partition => partition.foodId)).has(12), false);
+  assert.equal(result.food.id, 11);
+});
+
 test('globally impossible speed options are removed before the search', () => {
   const result = optimizeGearset({
     syncLevel: 1,

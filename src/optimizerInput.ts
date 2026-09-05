@@ -97,6 +97,40 @@ function isEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear, syncLe
     (prepared.stats[stat] ?? 0) >= (syncCaps[stat as G.Stat] ?? Infinity)).length >= 2;
 }
 
+function prepareFood(store: IStore, food: G.Food): OptimizerFood {
+  return {
+    id: food.id,
+    name: food.name,
+    stats: concretizeStats(store, food.stats),
+    statRates: concretizeStats(store, food.statRates),
+  };
+}
+
+function optimizerFoods(store: IStore, locked: boolean): OptimizerFood[] {
+  const equippedFood = store.equippedGears.get('-1') as IFood | undefined;
+  if (locked && equippedFood !== undefined) {
+    if ((equippedFood.data.stats.PIE ?? 0) > 0) {
+      throw new Error('自动配装不考虑信仰食物，请取消食物锁定或更换食物。');
+    }
+    return [prepareFood(store, equippedFood.data)];
+  }
+  const eligible = gearDataOrdered.get().filter((item): item is G.Food =>
+    item.slot === -1 && G.jobCategories[item.jobCategory][store.job!] === true &&
+    (item as G.Food).best === true && (item.stats.PIE ?? 0) === 0);
+  const maximumLevel = Math.max(...eligible.map(food => food.level));
+  const candidates = eligible.filter(food => food.level === maximumLevel);
+  const unique = new Map<string, { food: OptimizerFood, level: number }>();
+  for (const food of candidates) {
+    const prepared = prepareFood(store, food);
+    const signature = JSON.stringify([prepared.stats, prepared.statRates]);
+    const previous = unique.get(signature);
+    if (previous === undefined || food.level > previous.level) {
+      unique.set(signature, { food: prepared, level: food.level });
+    }
+  }
+  return Array.from(unique.values(), item => item.food);
+}
+
 export function createGearOptimizationInput(store: IStore,
   lockedSlots: number[], targetGcd: number): GearOptimizationInput {
   if (store.job === undefined || store.schema.mainStat === undefined ||
@@ -126,10 +160,10 @@ export function createGearOptimizationInput(store: IStore,
     throw new Error('唯一品戒指不能同时装备两枚。');
   }
   const lockedIdSet = new Set(lockedGearIds);
-  const currentById = new Map<number, IGear>();
-  for (const gear of store.equippedGears.values()) {
+  const configuredById = new Map<number, IGear>();
+  for (const gear of store.gears.values()) {
     if (gear !== undefined && !gear.isFood) {
-      currentById.set(Math.abs(gear.id), gear);
+      configuredById.set(Math.abs(gear.id), gear);
     }
   }
 
@@ -137,9 +171,9 @@ export function createGearOptimizationInput(store: IStore,
   for (const item of gearDataOrdered.get()) {
     if (item.slot <= 0 || !slots.includes(item.slot) || !G.jobCategories[item.jobCategory][store.job]) continue;
     const gear = item as G.Gear;
-    const current = currentById.get(gear.id);
-    if (gear.customizable && current === undefined) continue;
-    const prepared = prepareGear(store, gear, current);
+    const configured = configuredById.get(gear.id);
+    if (gear.customizable && (configured?.customStats?.size ?? 0) === 0) continue;
+    const prepared = prepareGear(store, gear, configured);
     preparedGears.push({ data: gear, optimizer: prepared });
   }
 
@@ -162,17 +196,7 @@ export function createGearOptimizationInput(store: IStore,
     }
   }
 
-  let food: OptimizerFood | undefined;
-  const equippedFood = store.equippedGears.get('-1') as IFood | undefined;
-  if (equippedFood !== undefined) {
-    const stats = concretizeStats(store, equippedFood.stats);
-    food = {
-      id: equippedFood.id,
-      name: equippedFood.name,
-      stats,
-      statRates: concretizeStats(store, equippedFood.statRates),
-    };
-  }
+  const foods = optimizerFoods(store, lockedSlots.includes(-1));
 
   const materiaStats = store.schema.stats.filter((stat): stat is OptimizerMateriaStat =>
     secondaryStats.includes(stat as OptimizerMateriaStat));
@@ -186,7 +210,7 @@ export function createGearOptimizationInput(store: IStore,
     materiaStats,
     speedStat,
     targetGcd,
-    food,
+    foods,
     damage: {
       job: store.job,
       jobLevel: store.jobLevel,

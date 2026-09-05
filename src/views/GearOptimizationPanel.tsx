@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as mobxReact from 'mobx-react-lite';
 import { Button } from './@rmwc/button';
 import * as G from '../game';
-import { loadGearDataOfLevelRange } from '../stores';
+import { gearDataOrdered, loadGearDataOfLevelRange } from '../stores';
 import { createGearOptimizationInput } from '../optimizerInput';
 import type {
   GearOptimizationInput,
@@ -38,15 +38,32 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const workersRef = React.useRef<Worker[]>([]);
   const mountedRef = React.useRef(true);
 
+  const weaponSlots = new Set(store.schema.slots
+    .filter(slot => slot.uiGroup === 'weapon')
+    .map(slot => slot.slot));
+  const incompleteCustomWeapons = gearDataOrdered.get().flatMap(item => {
+    if (!weaponSlots.has(item.slot) || item.level < store.minLevel || item.level > store.maxLevel ||
+        !G.jobCategories[item.jobCategory][store.job!] ||
+        (item.obsolete && store.setting.hideObsoleteGears) || !(item as G.Gear).customizable) {
+      return [];
+    }
+    const gear = store.gears.get(item.id.toString());
+    if (gear !== undefined && !gear.isFood && (gear.customStats?.size ?? 0) > 0) return [];
+    return [item.name];
+  });
+  const hasCompleteGearset = store.schema.slots
+    .filter(slot => slot.slot > 0 || slot.slot === -12)
+    .every(slot => store.equippedGears.get(slot.slot.toString()) !== undefined);
+
   React.useEffect(() => () => {
     mountedRef.current = false;
     workersRef.current.forEach(worker => worker.terminate());
   }, []);
 
   const lockable = store.schema.slots.flatMap(slot => {
-    if (slot.slot <= 0 && slot.slot !== -12) return [];
+    if (slot.slot <= 0 && slot.slot !== -12 && slot.slot !== -1) return [];
     const gear = store.equippedGears.get(slot.slot.toString());
-    if (gear === undefined || gear.isFood) return [];
+    if (gear === undefined) return [];
     return [{ slot: slot.slot, name: `${slot.name}${slot.slot === -12 ? '（右）' : ''}`, gear }];
   });
 
@@ -80,7 +97,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     setResult(undefined);
     setProgress(undefined);
     setError('');
-    setBaselineDamage(store.equippedEffects?.damage);
+    setBaselineDamage(hasCompleteGearset ? store.equippedEffects?.damage : undefined);
     store.setOptimizationDataLoading(true);
     try {
       const minimumLevel = store.minLevel > 0
@@ -159,11 +176,21 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           worker.terminate();
           return;
         }
-        const targetSpeedContribution = partitions[nextIndex++].contribution;
+        const partition = partitions[nextIndex++];
+        const targetSpeedContribution = partition.contribution;
+        const food = partition.foodId === undefined
+          ? input.food
+          : input.foods?.find(candidate => candidate.id === partition.foodId);
         activeProgress.delete(worker);
         worker.postMessage({
           type: 'optimize',
-          input: { ...input, targetSpeedContribution, globalMinimumDamage: bestResult.damage },
+          input: {
+            ...input,
+            food,
+            foods: undefined,
+            targetSpeedContribution,
+            globalMinimumDamage: bestResult.damage,
+          },
         });
       };
       for (const worker of workers) {
@@ -215,9 +242,13 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         <p>{`在指定最终 GCD 下，搜索最高每威力伤害期望配装（使用${speedName}计算）。`}</p>
         <p>非同步装备优先使用同步品级及低5品级；治疗职业缺少足够无信仰装备时，会按筛选范围向下放宽品级。</p>
         <p>{`魔晶石使用各孔最高值，并精确枚举暴击、信念、直击、坚韧和${speedName}。`}</p>
-        <p>装备、魔晶石和当前食物生效后计算出的 GCD 必须精确等于目标值。</p>
-        <p>特殊武器的属性需要提前手动输入，食物需要提前手动选择；求解器会沿用当前配置。</p>
       </div>
+      {incompleteCustomWeapons.length > 0 && (
+        <div className="gear-optimization_warning" role="alert">
+          <strong>请先填写特殊武器属性：</strong>
+          当前筛选范围内的{incompleteCustomWeapons.join('、')}尚未填写自定义属性，因此不会参与自动配装。
+        </div>
+      )}
 
       <div className="gear-optimization_constraint-row">
         <span>目标 GCD</span>
@@ -274,14 +305,16 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           <span className="gear-optimization_empty">当前没有可锁定的装备</span>
         )}
       </div>
-      <div className="gear-optimization_lock-tip">锁定装备 ID，但仍会重新优化其魔晶石。</div>
+      <div className="gear-optimization_lock-tip">
+        锁定装备或食物 ID；装备的魔晶石仍会重新优化。
+      </div>
 
       {status === 'loading' && <div className="gear-optimization_status">正在加载候选装备数据…</div>}
       {status === 'running' && (
         <div className="gear-optimization_status">
           {progress === undefined
-            ? '正在分析可达速度值…'
-            : `已完成 ${progress.completedGroups}/${progress.totalGroups} 个可达速度值，当前保留 ${progress.states} 个属性状态…`}
+            ? '正在分析候选食物和可达速度值…'
+            : `已完成 ${progress.completedGroups}/${progress.totalGroups} 个食物/速度分片，当前保留 ${progress.states} 个属性状态…`}
         </div>
       )}
       {status === 'error' && <div className="gear-optimization_error">{error}</div>}
@@ -289,7 +322,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       {result !== undefined && (
         <div className="gear-optimization_result">
           <div className="gear-optimization_damage">
-            <span>当前 {baselineDamage?.toFixed(5) ?? '—'}</span>
+            {baselineDamage !== undefined && <span>当前 {baselineDamage.toFixed(5)}</span>}
             <span>最优 {result.damage.toFixed(5)}</span>
             {baselineDamage !== undefined && (
               <span className={result.damage > baselineDamage ? '-better' : ''}>
@@ -306,6 +339,15 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             ))}
           </div>
           <div className="gear-optimization_items">
+            {result.food !== undefined && (
+              <div>
+                <span>{result.food.name}</span>
+                <span className="gear-optimization_item-level">食物</span>
+                <span className="gear-optimization_item-melds">
+                  {lockedSlots.includes(-1) ? '已锁定' : '自动选择'}
+                </span>
+              </div>
+            )}
             {result.gears.map((gear, index) => (
               <div key={`${gear.slot}-${gear.id}-${index}`}>
                 <span>{gear.name}</span>

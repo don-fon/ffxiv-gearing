@@ -68,6 +68,7 @@ export interface GearOptimizationInput {
   globalMinimumDamage?: number;
   objective?: GearOptimizationObjective;
   food?: OptimizerFood;
+  foods?: OptimizerFood[];
   damage: OptimizerDamageContext;
 }
 
@@ -76,6 +77,7 @@ export type GearOptimizationObjective =
   { type: 'minimumTenacity', minimumTenacityMitigation: number };
 
 export interface OptimizerSpeedPartition {
+  foodId?: number;
   contribution: number;
   heuristicDamage: number;
   estimatedWork: number;
@@ -106,6 +108,7 @@ export interface GearOptimizationResult {
   tenacityMitigation: number;
   stats: OptimizerStats;
   gears: OptimizerGearChoice[];
+  food?: OptimizerFood;
   exploredStates: number;
 }
 
@@ -527,7 +530,7 @@ function filterInfeasibleSpeedOptions(groups: GearOption[][],
         return speedRangeCanReachTargetGcd(minimumFinal, maximumFinal, input);
       });
       if (next.length === 0) {
-        throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+        throw new NoFeasibleOptimizationSolution();
       }
       if (next.length !== group.length) changed = true;
       return next;
@@ -653,7 +656,7 @@ function buildSpeedSearchPlan(groups: GearOption[][],
     }
   }
   if (!Number.isFinite(minimumTargetContribution)) {
-    throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+    throw new NoFeasibleOptimizationSolution();
   }
 
   // First enumerate only distinct cumulative speed contributions. The reverse
@@ -696,7 +699,7 @@ function buildSpeedSearchPlan(groups: GearOption[][],
     }
   }
   if (!viablePrefixes[0].has(0)) {
-    throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+    throw new NoFeasibleOptimizationSolution();
   }
 
   const completionMaxima = Array.from(
@@ -1011,7 +1014,7 @@ function estimatePartitionWork(plan: SpeedSearchPlan): number {
     Math.min(Number.MAX_SAFE_INTEGER, total + count), 0);
 }
 
-export function planGearOptimization(input: GearOptimizationInput): GearOptimizationPlan {
+function planFixedFoodGearOptimization(input: GearOptimizationInput): GearOptimizationPlan {
   validateOptimizationInput(input);
   const planningInput = { ...input };
   delete planningInput.targetSpeedContribution;
@@ -1038,22 +1041,19 @@ export function planGearOptimization(input: GearOptimizationInput): GearOptimiza
         ...evaluation,
         stats,
         gears: reconstruct(state),
+        food: input.food,
         exploredStates: 0,
       };
     }
     partitions.push({
+      foodId: input.food?.id,
       contribution,
       heuristicDamage: evaluation.damage,
       estimatedWork: estimatePartitionWork(speedPlan),
     });
   }
   if (heuristicResult === undefined) {
-    if (input.objective?.type === 'minimumTenacity') {
-      throw new Error(`没有找到坚韧减伤不低于 ` +
-        `${(input.objective.minimumTenacityMitigation * 100).toFixed(1)}%` +
-        ` 且最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
-    }
-    throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+    throw new NoFeasibleOptimizationSolution();
   }
   const promisingContributions = new Set(Array.from(partitions)
     .sort((left, right) => right.heuristicDamage - left.heuristicDamage)
@@ -1070,7 +1070,7 @@ export function planGearOptimization(input: GearOptimizationInput): GearOptimiza
   return { partitions, heuristicResult };
 }
 
-export function optimizeGearset(input: GearOptimizationInput,
+function optimizeFixedFoodGearset(input: GearOptimizationInput,
   onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
   validateOptimizationInput(input);
   const groups = prepareSearchGroups(input);
@@ -1206,12 +1206,69 @@ export function optimizeGearset(input: GearOptimizationInput,
   }
   onProgress?.({ completedGroups: groups.length, totalGroups: groups.length, states: finalCandidates });
   if (bestState === undefined || bestStats === undefined) {
-    throw new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+    throw new NoFeasibleOptimizationSolution();
   }
   return {
     ...bestEvaluation,
     stats: bestStats,
     gears: reconstruct(bestState),
+    food: input.food,
     exploredStates,
   };
+}
+
+function noFeasibleOptimizationError(input: GearOptimizationInput): Error {
+  if (input.objective?.type === 'minimumTenacity') {
+    return new Error(`没有找到坚韧减伤不低于 ` +
+      `${(input.objective.minimumTenacityMitigation * 100).toFixed(1)}%` +
+      ` 且最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+  }
+  return new Error(`没有找到最终 GCD 为 ${input.targetGcd.toFixed(2)} 秒的完整配装。`);
+}
+
+function fixedFoodInputs(input: GearOptimizationInput): GearOptimizationInput[] {
+  if (input.foods === undefined) return [input];
+  if (input.foods.length === 0) return [{ ...input, foods: undefined }];
+  return input.foods.map(food => ({ ...input, food, foods: undefined }));
+}
+
+export function planGearOptimization(input: GearOptimizationInput): GearOptimizationPlan {
+  validateOptimizationInput(input);
+  const plans: GearOptimizationPlan[] = [];
+  for (const fixedInput of fixedFoodInputs(input)) {
+    try {
+      plans.push(planFixedFoodGearOptimization(fixedInput));
+    } catch (error) {
+      if (!(error instanceof NoFeasibleOptimizationSolution)) throw error;
+    }
+  }
+  if (plans.length === 0) throw noFeasibleOptimizationError(input);
+  const partitions = plans.flatMap(plan => plan.partitions)
+    .sort((left, right) => right.heuristicDamage - left.heuristicDamage ||
+      right.estimatedWork - left.estimatedWork);
+  const heuristicResult = plans.map(plan => plan.heuristicResult)
+    .reduce((best, candidate) => candidate.damage > best.damage ? candidate : best);
+  return { partitions, heuristicResult };
+}
+
+export function optimizeGearset(input: GearOptimizationInput,
+  onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
+  validateOptimizationInput(input);
+  let best: GearOptimizationResult | undefined;
+  let exploredStates = 0;
+  for (const fixedInput of fixedFoodInputs(input)) {
+    try {
+      const result = optimizeFixedFoodGearset({
+        ...fixedInput,
+        globalMinimumDamage: Math.max(
+          fixedInput.globalMinimumDamage ?? -Infinity, best?.damage ?? -Infinity),
+      }, onProgress);
+      exploredStates += result.exploredStates;
+      if (best === undefined || result.damage > best.damage) best = result;
+    } catch (error) {
+      if (!(error instanceof NoFeasibleOptimizationSolution)) throw error;
+    }
+  }
+  if (best === undefined) throw noFeasibleOptimizationError(input);
+  return { ...best, exploredStates };
 }
