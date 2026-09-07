@@ -88,10 +88,12 @@ function prepareGear(store: IStore, gear: G.Gear, current?: IGear): OptimizerGea
   };
 }
 
-function isEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear, syncLevel: number,
+export function isOptimizerGearEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear, syncLevel: number,
   secondaryStats: OptimizerMateriaStat[]): boolean {
   if (gear.level === syncLevel || gear.level === syncLevel - 5) return true;
   if (gear.level <= syncLevel || !prepared.synced) return false;
+  const nearMaximumLevel = Math.max(store.minLevel, store.maxLevel - 15);
+  if (gear.level >= nearMaximumLevel && gear.level <= store.maxLevel) return true;
   const syncCaps = G.getCaps(gear, syncLevel);
   return secondaryStats.filter(stat =>
     (prepared.stats[stat] ?? 0) >= (syncCaps[stat as G.Stat] ?? Infinity)).length >= 2;
@@ -178,7 +180,8 @@ export function createGearOptimizationInput(store: IStore,
   }
 
   const preferredCandidates = preparedGears.filter(({ data, optimizer }) =>
-    lockedIdSet.has(data.id) || isEligible(store, data, optimizer, store.syncLevel!, secondaryStats));
+    lockedIdSet.has(data.id) ||
+    isOptimizerGearEligible(store, data, optimizer, store.syncLevel!, secondaryStats));
   const gears = preferredCandidates.map(candidate => candidate.optimizer);
   if (store.schema.stats.includes('PIE') && store.minLevel <= store.maxLevel) {
     const preferredCandidateIds = new Set(preferredCandidates.map(candidate => candidate.data.id));
