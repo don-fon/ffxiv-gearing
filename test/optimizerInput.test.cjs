@@ -15,7 +15,9 @@ vm.runInNewContext(compiled, {
   require: request => {
     if (request === './game') return { getCaps: gear => gear.syncCaps };
     if (request === './stores') return { gearDataOrdered: { get: () => [] } };
-    if (request === './optimizerPieFallbacks') return { selectPieFreeFallbacks: () => [] };
+    if (request === './optimizerCandidateFallbacks') {
+      return { selectPieFreeFallbacks: () => [], selectRequiredSlotFallbacks: () => [] };
+    }
     return require(request);
   },
 });

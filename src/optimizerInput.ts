@@ -9,9 +9,19 @@ import type {
   OptimizerStat,
   OptimizerStats,
 } from './optimizer';
-import { selectPieFreeFallbacks } from './optimizerPieFallbacks';
+import { selectPieFreeFallbacks, selectRequiredSlotFallbacks } from './optimizerCandidateFallbacks';
 
 const damageSecondaryStats: OptimizerMateriaStat[] = ['CRT', 'DET', 'DHT', 'TEN'];
+
+function isBaselineGcd(store: IStore, speedStat: 'SKS' | 'SPS', targetGcd: number): boolean {
+  const { sub, div } = G.jobLevelModifiers[store.jobLevel];
+  const speed = store.baseStats[speedStat] ?? sub;
+  const gcdModifier = store.jobLevel >= 80 ? store.schema.statModifiers?.gcd ?? 100 : 100;
+  const floor = (value: number) => Math.trunc(value + 1e-7);
+  const gcdHundredths = floor(floor((1000 - floor(130 * (speed - sub) / div)) * 2500 / 1000) *
+    gcdModifier / 1000);
+  return Math.round(targetGcd * 100) === gcdHundredths;
+}
 
 function concretizeStat(store: IStore, stat: G.Stat): OptimizerStat {
   if (stat === 'main') return store.schema.mainStat!;
@@ -189,13 +199,24 @@ export function createGearOptimizationInput(store: IStore,
     lockedIdSet.has(data.id) ||
     isOptimizerGearEligible(store, data, optimizer, store.syncLevel!, secondaryStats));
   const gears = preferredCandidates.map(candidate => candidate.optimizer);
+  const preferredCandidateIds = new Set(preferredCandidates.map(candidate => candidate.data.id));
+  const lowerLevelCandidates = preparedGears.filter(({ data, optimizer }) =>
+    !preferredCandidateIds.has(data.id) && !optimizer.synced && data.level < store.syncLevel! - 5 &&
+    data.level >= store.minLevel && data.level <= store.maxLevel &&
+    !(data.obsolete && store.setting.hideObsoleteGears))
+    .map(candidate => candidate.optimizer);
+  gears.push(...selectRequiredSlotFallbacks(gears, lowerLevelCandidates, slots));
+  if (isBaselineGcd(store, speedStat, targetGcd)) {
+    const selectedCandidateIds = new Set(gears.map(candidate => candidate.id));
+    const lowerLevelSpeedFreeCandidates = lowerLevelCandidates.filter(candidate =>
+      !selectedCandidateIds.has(candidate.id) && (candidate.stats[speedStat] ?? 0) === 0);
+    gears.push(...selectRequiredSlotFallbacks(gears, lowerLevelSpeedFreeCandidates, slots,
+      candidate => (candidate.stats[speedStat] ?? 0) === 0));
+  }
   if (store.schema.stats.includes('PIE') && store.minLevel <= store.maxLevel) {
-    const preferredCandidateIds = new Set(preferredCandidates.map(candidate => candidate.data.id));
-    const lowerLevelPieFreeCandidates = preparedGears.filter(({ data, optimizer }) =>
-      !preferredCandidateIds.has(data.id) && !optimizer.synced && data.level < store.syncLevel! - 5 &&
-      data.level >= store.minLevel && data.level <= store.maxLevel &&
-      !(data.obsolete && store.setting.hideObsoleteGears) && (optimizer.stats.PIE ?? 0) === 0)
-      .map(candidate => candidate.optimizer);
+    const selectedCandidateIds = new Set(gears.map(candidate => candidate.id));
+    const lowerLevelPieFreeCandidates = lowerLevelCandidates.filter(candidate =>
+      !selectedCandidateIds.has(candidate.id) && (candidate.stats.PIE ?? 0) === 0);
     gears.push(...selectPieFreeFallbacks(gears, lowerLevelPieFreeCandidates, slots));
   }
 
