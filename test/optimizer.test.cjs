@@ -315,6 +315,43 @@ test('locking a gear ID restricts that slot without preserving old melds', () =>
   assert.equal(result.gears[0].id, 1);
 });
 
+test('excluding multiple gear IDs returns the best remaining gearset', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [
+      gear(1, 'best head', 1, 3, { STR: 20, CRT: 20 }, 1000, 0),
+      gear(2, 'second head', 1, 3, { STR: 10, CRT: 10 }, 1000, 0),
+      gear(3, 'best body', 1, 4, { STR: 20, CRT: 20 }, 1000, 0),
+      gear(4, 'second body', 1, 4, { STR: 10, CRT: 10 }, 1000, 0),
+    ],
+    slots: [3, 4],
+    lockedGearIds: [],
+    excludedGearIds: [1, 3],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.50,
+    damage,
+  });
+
+  assert.equal(result.gears.map(item => item.id).sort().join(','), '2,4');
+});
+
+test('the same gear ID cannot be locked and excluded', () => {
+  assert.throws(() => optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'conflicting head', 1, 3, { STR: 10, CRT: 10 }, 1000, 0)],
+    slots: [3],
+    lockedGearIds: [1],
+    excludedGearIds: [1],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.50,
+    damage,
+  }), /不能同时锁定和排除/);
+});
+
 test('target GCD is an exact constraint and can be reached with speed materia', () => {
   const result = optimizeGearset({
     syncLevel: 1,

@@ -61,6 +61,7 @@ export interface GearOptimizationInput {
   gears: OptimizerGear[];
   slots: number[];
   lockedGearIds: number[];
+  excludedGearIds?: number[];
   materiaStats: OptimizerMateriaStat[];
   speedStat: 'SKS' | 'SPS';
   targetGcd: number;
@@ -398,8 +399,14 @@ function matchesLockedRings(left: OptimizerGearChoice, right: OptimizerGearChoic
 
 function buildGroups(input: GearOptimizationInput): GearOption[][] {
   const lockedGearIds = new Set(input.lockedGearIds);
+  const excludedGearIds = new Set(input.excludedGearIds ?? []);
+  const excludedLockedGearId = input.lockedGearIds.find(id => excludedGearIds.has(id));
+  if (excludedLockedGearId !== undefined) {
+    throw new Error(`装备 ${excludedLockedGearId} 不能同时锁定和排除。`);
+  }
   const bySlot = new Map<number, OptimizerGear[]>();
   for (const gear of input.gears) {
+    if (excludedGearIds.has(gear.id)) continue;
     const gears = bySlot.get(gear.slot) ?? [];
     gears.push(gear);
     bySlot.set(gear.slot, gears);

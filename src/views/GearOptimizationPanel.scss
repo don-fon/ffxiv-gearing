@@ -69,6 +69,52 @@
   font-size: 12px;
   color: rgb(var(--color-text-base), .60);
 }
+.gear-optimization_exclusions {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 6px;
+}
+.gear-optimization_exclusion-list {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+  button {
+    display: flex;
+    max-width: 100%;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid var(--color-divider-noalpha);
+    border-radius: 12px;
+    padding: 2px 8px;
+    background: rgb(var(--color-text-base), .05);
+    color: inherit;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 18px;
+    span:first-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+.gear-optimization_clear-exclusions {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 3px 0;
+  background: transparent;
+  color: var(--mdc-theme-primary);
+  cursor: pointer;
+  font-size: 12px;
+}
+.gear-optimization_exclusion-list button:disabled,
+.gear-optimization_clear-exclusions:disabled {
+  cursor: default;
+  opacity: .5;
+}
 .gear-optimization_status {
   margin-top: 12px;
   color: var(--mdc-theme-primary);
@@ -81,6 +127,11 @@
   margin-top: 12px;
   border-top: 1px solid var(--color-divider-noalpha);
   padding-top: 10px;
+}
+.gear-optimization_result-stale {
+  margin-bottom: 6px;
+  color: var(--mdc-theme-primary);
+  font-size: 12px;
 }
 .gear-optimization_damage,
 .gear-optimization_stats {
@@ -100,14 +151,36 @@
   border-top: 1px solid var(--color-divider-noalpha);
   > div {
     display: grid;
-    grid-template-columns: 1fr 48px 110px;
+    grid-template-columns: minmax(0, 1fr) 48px 100px 48px;
     border-bottom: 1px solid var(--color-divider-noalpha);
     line-height: 28px;
+    &.-excluded .gears_name {
+      opacity: .55;
+      text-decoration: line-through;
+    }
+  }
+  .gears_name {
+    max-width: 100%;
   }
 }
 .gear-optimization_item-level,
 .gear-optimization_item-melds {
   color: rgb(var(--color-text-base), .60);
+}
+.gear-optimization_item-exclusion {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: rgb(var(--color-text-base), .60);
+  cursor: pointer;
+  font-size: 12px;
+  input {
+    margin: 0;
+  }
+  &.-disabled {
+    cursor: default;
+    opacity: .5;
+  }
 }
 .gear-optimization_actions {
   display: flex;

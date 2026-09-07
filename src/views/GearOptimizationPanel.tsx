@@ -21,6 +21,8 @@ type WorkerResponse =
   { type: 'result', result: GearOptimizationResult } |
   { type: 'error', message: string };
 
+const gearIdSetKey = (ids: number[]) => ids.slice().sort((left, right) => left - right).join(',');
+
 export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ toggle }) => {
   const store = useStore();
   const speedStat: 'SKS' | 'SPS' = store.schema.stats.includes('SKS') ? 'SKS' : 'SPS';
@@ -28,10 +30,12 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const isTank = store.schema.stats.includes('TEN');
   const initialGcd = store.equippedEffects?.gcd ?? 2.5;
   const [ lockedSlots, setLockedSlots ] = React.useState<number[]>([]);
+  const [ excludedGearIds, setExcludedGearIds ] = React.useState<number[]>([]);
   const [ targetGcd, setTargetGcd ] = React.useState(initialGcd.toFixed(2));
   const [ status, setStatus ] = React.useState<Status>('idle');
   const [ progress, setProgress ] = React.useState<OptimizerProgress>();
   const [ result, setResult ] = React.useState<GearOptimizationResult>();
+  const [ resultExcludedGearKey, setResultExcludedGearKey ] = React.useState<string>();
   const [ baselineDamage, setBaselineDamage ] = React.useState<number>();
   const [ minimumTenacityMitigation, setMinimumTenacityMitigation ] = React.useState('0.0');
   const [ error, setError ] = React.useState('');
@@ -66,14 +70,33 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     if (gear === undefined) return [];
     return [{ slot: slot.slot, name: `${slot.name}${slot.slot === -12 ? '（右）' : ''}`, gear }];
   });
+  const lockedGearIds = new Set<number>(lockable.flatMap(({ slot, gear }) =>
+    lockedSlots.includes(slot) && !gear.isFood ? [Math.abs(gear.id)] : []));
 
   const toggleLock = (slot: number) => {
+    if (!lockedSlots.includes(slot)) {
+      const gear = store.equippedGears.get(slot.toString());
+      if (gear !== undefined && !gear.isFood) {
+        setExcludedGearIds(ids => ids.filter(id => id !== Math.abs(gear.id)));
+      }
+    }
     setLockedSlots(slots => slots.includes(slot) ? slots.filter(value => value !== slot) : slots.concat(slot));
     setStatus('idle');
     setResult(undefined);
+    setResultExcludedGearKey(undefined);
+  };
+
+  const toggleExcludedGear = (gearId: number) => {
+    const id = Math.abs(gearId);
+    if (lockedGearIds.has(id)) return;
+    setExcludedGearIds(ids => ids.includes(id) ? ids.filter(value => value !== id) : ids.concat(id));
+    setStatus('idle');
+    setError('');
   };
 
   const start = async () => {
+    const calculationExcludedGearIds = excludedGearIds.slice();
+    const calculationExcludedGearKey = gearIdSetKey(calculationExcludedGearIds);
     const parsedTargetGcd = targetGcd.trim() === '' ? NaN : Number(targetGcd);
     const parsedMinimumTenacityMitigation = minimumTenacityMitigation.trim() === ''
       ? NaN
@@ -95,6 +118,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     workersRef.current = [];
     setStatus('loading');
     setResult(undefined);
+    setResultExcludedGearKey(undefined);
     setProgress(undefined);
     setError('');
     setBaselineDamage(hasCompleteGearset ? store.equippedEffects?.damage : undefined);
@@ -115,7 +139,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
 
     let input: GearOptimizationInput;
     try {
-      input = createGearOptimizationInput(store, lockedSlots, parsedTargetGcd);
+      input = createGearOptimizationInput(store, lockedSlots, parsedTargetGcd, calculationExcludedGearIds);
       input = isTank
         ? {
           ...input,
@@ -214,6 +238,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
               workers.forEach(item => item.terminate());
               workersRef.current = [];
               setResult({ ...bestResult, exploredStates });
+              setResultExcludedGearKey(calculationExcludedGearKey);
               setStatus('done');
             } else {
               assign(worker);
@@ -236,6 +261,9 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const minimumTenacityMitigationValid = Number.isFinite(parsedMinimumTenacityMitigation) &&
     parsedMinimumTenacityMitigation >= 0 && parsedMinimumTenacityMitigation < 100;
   const tankObjectiveValid = !isTank || minimumTenacityMitigationValid;
+  const excludedGearKey = gearIdSetKey(excludedGearIds);
+  const excludedGearIdSet = new Set(excludedGearIds);
+  const resultIsStale = result !== undefined && resultExcludedGearKey !== excludedGearKey;
   const slotOrder = new Map<number, number>();
   for (const [ index, slot ] of store.schema.slots.entries()) {
     if (slot.slot === -1) continue;
@@ -271,6 +299,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             setTargetGcd(event.target.value);
             setStatus('idle');
             setResult(undefined);
+            setResultExcludedGearKey(undefined);
           }}
         />
       </div>
@@ -290,6 +319,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
               setMinimumTenacityMitigation(event.target.value);
               setStatus('idle');
               setResult(undefined);
+              setResultExcludedGearKey(undefined);
             }}
           />
           <span>%</span>
@@ -317,6 +347,39 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         锁定装备或食物 ID；装备的魔晶石仍会重新优化。
       </div>
 
+      <div className="gear-optimization_section-title">排除装备（可多选）</div>
+      {excludedGearIds.length === 0 ? (
+        <div className="gear-optimization_empty">计算后可在结果中勾选要排除的装备。</div>
+      ) : (
+        <div className="gear-optimization_exclusions">
+          <div className="gear-optimization_exclusion-list">
+            {excludedGearIds.map(id => (
+              <button
+                key={id}
+                type="button"
+                disabled={busy}
+                title="恢复此装备"
+                onClick={() => toggleExcludedGear(id)}
+              >
+                <span>{gearData.get(id as G.GearId)?.name ?? `装备 ${id}`}</span>
+                <span aria-hidden="true">×</span>
+              </button>
+            ))}
+          </div>
+          <button
+            className="gear-optimization_clear-exclusions"
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setExcludedGearIds([]);
+              setStatus('idle');
+              setError('');
+            }}
+          >清空排除</button>
+        </div>
+      )}
+      <div className="gear-optimization_lock-tip">按装备 ID 排除；相同 ID 的两枚戒指会同时排除。</div>
+
       {status === 'loading' && <div className="gear-optimization_status">正在加载候选装备数据…</div>}
       {status === 'running' && (
         <div className="gear-optimization_status">
@@ -329,6 +392,9 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
 
       {result !== undefined && (
         <div className="gear-optimization_result">
+          {resultIsStale && (
+            <div className="gear-optimization_result-stale">排除条件已更改，请重新计算。</div>
+          )}
           <div className="gear-optimization_damage">
             {baselineDamage !== undefined && <span>当前 {baselineDamage.toFixed(5)}</span>}
             <span>最优 {result.damage.toFixed(5)}</span>
@@ -352,13 +418,31 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
               const color = data === undefined
                 ? 'white'
                 : resolveGearColor(data, store.setting.gearColorScheme);
+              const excluded = excludedGearIdSet.has(gear.id);
+              const exclusionDisabled = busy || lockedGearIds.has(gear.id);
               return (
-                <div key={`${gear.slot}-${gear.id}-${index}`} className={`gears_color-${color}`}>
+                <div
+                  key={`${gear.slot}-${gear.id}-${index}`}
+                  className={`gears_color-${color}${excluded ? ' -excluded' : ''}`}
+                >
                   <span className="gears_name">{gear.name}</span>
                   <span className="gear-optimization_item-level">il{gear.level}</span>
                   <span className="gear-optimization_item-melds">
                     {gear.synced ? '同步' : gear.melds.map(meld => G.statNames[meld.stat]).join('、') || '无孔'}
                   </span>
+                  <label
+                    className={`gear-optimization_item-exclusion${exclusionDisabled ? ' -disabled' : ''}`}
+                    title={lockedGearIds.has(gear.id) ? '已锁定的装备不能排除' : undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      aria-label={`排除${gear.name}`}
+                      checked={excluded}
+                      disabled={exclusionDisabled}
+                      onChange={() => toggleExcludedGear(gear.id)}
+                    />
+                    <span>排除</span>
+                  </label>
                 </div>
               );
             })}
@@ -369,6 +453,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
                 <span className="gear-optimization_item-melds">
                   {lockedSlots.includes(-1) ? '已锁定' : '自动选择'}
                 </span>
+                <span />
               </div>
             )}
           </div>
@@ -381,10 +466,13 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           disabled={busy || store.syncLevel === undefined || !targetGcdValid || !tankObjectiveValid}
           onClick={start}
         >
-          {result === undefined ? '开始计算' : '重新计算'}
+          {result === undefined
+            ? excludedGearIds.length > 0 ? `计算排除方案（${excludedGearIds.length}）` : '开始计算'
+            : resultIsStale ? '按排除条件重新计算' : '重新计算'}
         </Button>
         {result !== undefined && (
           <Button
+            disabled={resultIsStale}
             onClick={() => {
               store.applyGearOptimization(result);
               toggle();

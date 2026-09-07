@@ -134,7 +134,7 @@ function optimizerFoods(store: IStore, locked: boolean): OptimizerFood[] {
 }
 
 export function createGearOptimizationInput(store: IStore,
-  lockedSlots: number[], targetGcd: number): GearOptimizationInput {
+  lockedSlots: number[], targetGcd: number, excludedGearIds: number[] = []): GearOptimizationInput {
   if (store.job === undefined || store.schema.mainStat === undefined ||
       store.schema.statModifiers === undefined || store.schema.traitDamageMultiplier === undefined) {
     throw new Error('仅支持具有每威力伤害期望的战斗职业。');
@@ -156,6 +156,11 @@ export function createGearOptimizationInput(store: IStore,
   const lockedModels = lockedSlots.map(slot => store.equippedGears.get(slot.toString()))
     .filter((gear): gear is IGear => gear !== undefined && !gear.isFood);
   const lockedGearIds = lockedModels.map(gear => Math.abs(gear.id));
+  const excludedIdSet = new Set(excludedGearIds.map(id => Math.abs(id)));
+  const excludedLockedGear = lockedModels.find(gear => excludedIdSet.has(Math.abs(gear.id)));
+  if (excludedLockedGear !== undefined) {
+    throw new Error(`“${excludedLockedGear.name}”不能同时锁定和排除。`);
+  }
   const duplicateLockedGear = lockedModels.find((gear, index) =>
     lockedGearIds.indexOf(Math.abs(gear.id)) !== index);
   if (duplicateLockedGear?.data.unique) {
@@ -173,6 +178,7 @@ export function createGearOptimizationInput(store: IStore,
   for (const item of gearDataOrdered.get()) {
     if (item.slot <= 0 || !slots.includes(item.slot) || !G.jobCategories[item.jobCategory][store.job]) continue;
     const gear = item as G.Gear;
+    if (excludedIdSet.has(gear.id)) continue;
     const configured = configuredById.get(gear.id);
     if (gear.customizable && (configured?.customStats?.size ?? 0) === 0) continue;
     const prepared = prepareGear(store, gear, configured);
@@ -210,6 +216,7 @@ export function createGearOptimizationInput(store: IStore,
     gears,
     slots,
     lockedGearIds,
+    excludedGearIds: Array.from(excludedIdSet),
     materiaStats,
     speedStat,
     targetGcd,
