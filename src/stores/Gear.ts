@@ -3,6 +3,7 @@ import * as mst from 'mobx-state-tree';
 import * as G from '../game';
 import { Materia, Store, gearData } from '.';
 import type { IStore } from '.';
+import type { GearColorScheme } from './Setting';
 
 export type GearColor = 'white' | 'red' | 'green' | 'blue' | 'purple';
 
@@ -40,10 +41,7 @@ export const Gear = mst.types
     get customizable() { return self.data.customizable; },
     get source() { return self.data.source; },
     get color(): GearColor {
-      const { gearColorScheme } = self.store.setting;
-      if (gearColorScheme === 'none') return 'white';
-      const { rarity, source='' } = self.data;
-      return gearColorScheme === 'source' && sourceColors[(source).slice(0, 2)] || rarityColors[rarity];
+      return resolveGearColor(self.data, self.store.setting.gearColorScheme);
     },
     get syncedLevel(): number | undefined {
       const { jobLevel, syncLevel=Infinity } = self.store;
@@ -169,5 +167,12 @@ const sourceColors: { [index: string]: GearColor } = {
   '天书': 'purple',
   '绝境': 'purple',
 };
+
+export function resolveGearColor(gear: Pick<G.Gear, 'rarity' | 'source'>,
+  colorScheme: GearColorScheme): GearColor {
+  if (colorScheme === 'none') return 'white';
+  const { rarity, source='' } = gear;
+  return colorScheme === 'source' && sourceColors[source.slice(0, 2)] || rarityColors[rarity];
+}
 
 export interface IGear extends mst.Instance<typeof Gear> {}

@@ -23,7 +23,7 @@ export { Promotion } from './Promotion';
 export type { IPromotion } from './Promotion';
 export { Materia } from './Materia';
 export type { IMateria } from './Materia';
-export { Gear } from './Gear';
+export { Gear, resolveGearColor } from './Gear';
 export type { IGear, GearColor } from './Gear';
 export { Food } from './Food';
 export type { IFood } from './Food';

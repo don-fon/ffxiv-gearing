@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as mobxReact from 'mobx-react-lite';
 import { Button } from './@rmwc/button';
 import * as G from '../game';
-import { gearDataOrdered, loadGearDataOfLevelRange } from '../stores';
+import { gearData, gearDataOrdered, loadGearDataOfLevelRange, resolveGearColor } from '../stores';
 import { createGearOptimizationInput } from '../optimizerInput';
 import type {
   GearOptimizationInput,
@@ -236,6 +236,14 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const minimumTenacityMitigationValid = Number.isFinite(parsedMinimumTenacityMitigation) &&
     parsedMinimumTenacityMitigation >= 0 && parsedMinimumTenacityMitigation < 100;
   const tankObjectiveValid = !isTank || minimumTenacityMitigationValid;
+  const slotOrder = new Map<number, number>();
+  for (const [ index, slot ] of store.schema.slots.entries()) {
+    if (slot.slot === -1) continue;
+    const normalizedSlot = Math.abs(slot.slot);
+    if (!slotOrder.has(normalizedSlot)) slotOrder.set(normalizedSlot, index);
+  }
+  const orderedResultGears = result?.gears.slice().sort((left, right) =>
+    (slotOrder.get(left.slot) ?? Infinity) - (slotOrder.get(right.slot) ?? Infinity));
   return (
     <div className="gear-optimization card">
       <div className="gear-optimization_intro">
@@ -339,6 +347,21 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             ))}
           </div>
           <div className="gear-optimization_items">
+            {orderedResultGears?.map((gear, index) => {
+              const data = gearData.get(gear.id as G.GearId) as G.Gear | undefined;
+              const color = data === undefined
+                ? 'white'
+                : resolveGearColor(data, store.setting.gearColorScheme);
+              return (
+                <div key={`${gear.slot}-${gear.id}-${index}`} className={`gears_color-${color}`}>
+                  <span className="gears_name">{gear.name}</span>
+                  <span className="gear-optimization_item-level">il{gear.level}</span>
+                  <span className="gear-optimization_item-melds">
+                    {gear.synced ? '同步' : gear.melds.map(meld => G.statNames[meld.stat]).join('、') || '无孔'}
+                  </span>
+                </div>
+              );
+            })}
             {result.food !== undefined && (
               <div>
                 <span>{result.food.name}</span>
@@ -348,15 +371,6 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
                 </span>
               </div>
             )}
-            {result.gears.map((gear, index) => (
-              <div key={`${gear.slot}-${gear.id}-${index}`}>
-                <span>{gear.name}</span>
-                <span className="gear-optimization_item-level">il{gear.level}</span>
-                <span className="gear-optimization_item-melds">
-                  {gear.synced ? '同步' : gear.melds.map(meld => G.statNames[meld.stat]).join('、') || '无孔'}
-                </span>
-              </div>
-            ))}
           </div>
           <div className="gear-optimization_explored">共检查 {result.exploredStates} 个组合状态。</div>
         </div>

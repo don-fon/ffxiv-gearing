@@ -1,7 +1,7 @@
 import * as mst from 'mobx-state-tree';
 
 type GearDisplayName = 'name' | 'source';
-type GearColorScheme = 'source' | 'rarity' | 'none';
+export type GearColorScheme = 'source' | 'rarity' | 'none';
 type MateriaDisplayName = 'stat' | 'materia';
 type AppTheme = 'light' | 'light-hs' | 'dark';
 
