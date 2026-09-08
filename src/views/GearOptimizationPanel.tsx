@@ -38,6 +38,8 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const [ resultExcludedGearKey, setResultExcludedGearKey ] = React.useState<string>();
   const [ baselineDamage, setBaselineDamage ] = React.useState<number>();
   const [ minimumTenacityMitigation, setMinimumTenacityMitigation ] = React.useState('0.0');
+  const [ selectedWorkerCount, setSelectedWorkerCount ] = React.useState(() => Math.min(
+    Math.max(1, typeof navigator === 'undefined' ? 4 : navigator.hardwareConcurrency || 4), 4));
   const [ error, setError ] = React.useState('');
   const workersRef = React.useRef<Worker[]>([]);
   const mountedRef = React.useRef(true);
@@ -180,8 +182,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         return;
       }
 
-      const workerCount = Math.min(
-        partitions.length, Math.max(1, navigator.hardwareConcurrency ?? 4), 4);
+      const workerCount = Math.min(partitions.length, selectedWorkerCount);
       const workers = Array.from({ length: workerCount }, () =>
         new Worker(new URL('../optimizer.worker.ts', import.meta.url)));
       workersRef.current = workers;
@@ -325,6 +326,20 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           <span>%</span>
         </div>
       )}
+      <div className="gear-optimization_constraint-row">
+        <span>Worker 数量</span>
+        <select
+          aria-label="Worker 数量"
+          value={selectedWorkerCount}
+          disabled={busy}
+          onChange={event => setSelectedWorkerCount(Number(event.target.value))}
+        >
+          {[ 1, 2, 3, 4 ].map(count => <option key={count} value={count}>{count}</option>)}
+        </select>
+      </div>
+      <div className="gear-optimization_worker-tip">
+        更多 Worker 通常计算更快，但会提高内存峰值；内存不足或出现 Out of Memory 时请选择 1–2。
+      </div>
 
       <div className="gear-optimization_section-title">锁定当前装备（可选）</div>
       <div className="gear-optimization_locks">

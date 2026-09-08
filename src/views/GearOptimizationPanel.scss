@@ -28,7 +28,8 @@
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-  input {
+  input,
+  select {
     width: 96px;
     border: 1px solid var(--color-divider-noalpha);
     border-radius: 3px;
@@ -38,6 +39,9 @@
   }
   input.gear-optimization_minimum-tenacity-mitigation {
     width: 56px;
+  }
+  select {
+    width: 64px;
   }
 }
 .gear-optimization_locks {
@@ -63,6 +67,7 @@
   color: rgb(var(--color-text-base), .60);
 }
 .gear-optimization_lock-tip,
+.gear-optimization_worker-tip,
 .gear-optimization_explored,
 .gear-optimization_empty {
   margin-top: 4px;
