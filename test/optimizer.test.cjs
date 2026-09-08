@@ -446,6 +446,46 @@ test('speed food is included in the exact final GCD constraint', () => {
   assert.equal(result.stats.SKS, 450);
 });
 
+test('a speed partition requiring a removable speed meld is discarded', () => {
+  const plan = planGearOptimization({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'redundant speed meld', 1, 3, { STR: 1, SKS: 46 }, 1000, 1)],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.49,
+    damage,
+  });
+
+  assert.equal(plan.partitions.map(partition => partition.contribution).join(','), '46');
+});
+
+test('speed-food loss is included when deciding whether a speed meld is removable', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 380, PDMG: 100 },
+    gears: [gear(1, 'necessary speed meld', 1, 3, { STR: 1, SKS: 21 }, 1000, 1)],
+    slots: [3],
+    lockedGearIds: [],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.49,
+    targetSpeedContribution: 75,
+    food: {
+      id: 1,
+      name: 'uncapped speed food',
+      stats: { SKS: 1000 },
+      statRates: { SKS: 10 },
+    },
+    damage,
+  });
+
+  assert.equal(result.stats.SKS, 500);
+  assert.equal(result.gears[0].melds[0].stat, 'SKS');
+});
+
 test('automatic food selection maximizes damage without violating the exact GCD', () => {
   const input = {
     syncLevel: 1,

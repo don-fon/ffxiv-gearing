@@ -92,6 +92,7 @@ export interface GearOptimizationPlan {
 export interface OptimizerMeld {
   stat: OptimizerMateriaStat;
   grade: number;
+  value: number;
 }
 
 export interface OptimizerGearChoice {
@@ -218,7 +219,7 @@ function gearOptions(gear: OptimizerGear,
           stats: meldedStats,
           choices: [{
             ...choice,
-            melds: choice.melds.concat({ stat, grade: materia.grade }),
+            melds: choice.melds.concat({ stat, grade: materia.grade, value: materia.value }),
           }],
         };
         next.set(statSignature(meldedStats), melded);
@@ -395,6 +396,25 @@ function matchesLockedRings(left: OptimizerGearChoice, right: OptimizerGearChoic
   }
   return (left.id === lockedRingIds[0] && right.id === lockedRingIds[1]) ||
     (left.id === lockedRingIds[1] && right.id === lockedRingIds[0]);
+}
+
+function hasRemovableSpeedMeld(option: GearOption, input: GearOptimizationInput): boolean {
+  if (input.targetSpeedContribution === undefined ||
+      !input.materiaStats.some(stat => stat !== input.speedStat)) return false;
+  const rawSpeed = (input.fixedStats[input.speedStat] ?? 0) + input.targetSpeedContribution;
+  // Replacing this meld with a damage materia is dominating only when the
+  // resulting speed, including the changed food bonus, stays in the GCD tier.
+  return option.choices.some(choice => choice.melds.some(meld =>
+    meld.stat === input.speedStat &&
+    gcdHundredths(speedAfterFood(rawSpeed - meld.value, input), input) === targetGcdHundredths(input)));
+}
+
+function filterRemovableSpeedMeldOptions(groups: GearOption[][],
+  input: GearOptimizationInput): GearOption[][] {
+  if (input.targetSpeedContribution === undefined) return groups;
+  const filtered = groups.map(group => group.filter(option => !hasRemovableSpeedMeld(option, input)));
+  if (filtered.some(group => group.length === 0)) throw new NoFeasibleOptimizationSolution();
+  return filtered;
 }
 
 function buildGroups(input: GearOptimizationInput): GearOption[][] {
@@ -987,7 +1007,8 @@ function validateOptimizationInput(input: GearOptimizationInput): void {
 }
 
 function prepareSearchGroups(input: GearOptimizationInput): GearOption[][] {
-  let groups = filterInfeasibleSpeedOptions(buildGroups(input), input);
+  let groups = filterRemovableSpeedMeldOptions(buildGroups(input), input);
+  groups = filterInfeasibleSpeedOptions(groups, input);
   groups = filterToViableSpeedOptions(groups, input);
   return filterInfeasibleSpeedOptions(
     contractEquivalentGroups(groups, input.speedStat), input)
@@ -1032,13 +1053,14 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput): GearOptimi
   const partitions: OptimizerSpeedPartition[] = [];
   for (const contribution of contributions) {
     const partitionInput = { ...planningInput, targetSpeedContribution: contribution };
-    const speedPlan = buildSpeedSearchPlan(groups, partitionInput);
+    let speedPlan: SpeedSearchPlan;
     let state: SearchState;
     try {
+      const partitionGroups = filterRemovableSpeedMeldOptions(groups, partitionInput);
+      speedPlan = buildSpeedSearchPlan(partitionGroups, partitionInput);
       state = findGreedySolution(partitionInput, speedPlan);
     } catch (error) {
-      if (planningInput.objective?.type === 'minimumTenacity' &&
-          error instanceof NoFeasibleOptimizationSolution) continue;
+      if (error instanceof NoFeasibleOptimizationSolution) continue;
       throw error;
     }
     const stats = applyFood(state.stats, input.food);
