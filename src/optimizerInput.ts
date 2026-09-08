@@ -13,6 +13,14 @@ import { selectPieFreeFallbacks, selectRequiredSlotFallbacks } from './optimizer
 
 const damageSecondaryStats: OptimizerMateriaStat[] = ['CRT', 'DET', 'DHT', 'TEN'];
 
+export function maximumMateriaGradeForSlot(gearLevel: number, materiaIndex: number,
+  materiaSlotCount: number): G.MateriaGrade | undefined {
+  const canUseRestrictedMateria = materiaIndex <= materiaSlotCount;
+  return G.materiaGrades.find(candidate =>
+    gearLevel >= G.materiaGradeRequiredLevels[candidate - 1] &&
+    (canUseRestrictedMateria || !G.materiaGradeIsRestricted[candidate]));
+}
+
 function isBaselineGcd(store: IStore, speedStat: 'SKS' | 'SPS', targetGcd: number): boolean {
   const { sub, div } = G.jobLevelModifiers[store.jobLevel];
   const speed = store.baseStats[speedStat] ?? sub;
@@ -76,10 +84,7 @@ function prepareGear(store: IStore, gear: G.Gear, current?: IGear): OptimizerGea
   if (gearSyncedLevel === undefined) {
     const slotCount = gear.materiaAdvanced ? 5 : gear.materiaSlot;
     for (let index = 0; index < slotCount; index++) {
-      const advanced = index >= gear.materiaSlot;
-      const grade = G.materiaGrades.find(candidate =>
-        gear.level >= G.materiaGradeRequiredLevels[candidate - 1] &&
-        (!advanced || !G.materiaGradeIsRestricted[candidate]));
+      const grade = maximumMateriaGradeForSlot(gear.level, index, gear.materiaSlot);
       if (grade !== undefined) {
         materiaSlots.push({ grade, value: G.materias.CRT![grade - 1] });
       }

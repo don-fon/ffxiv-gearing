@@ -13,7 +13,12 @@ vm.runInNewContext(compiled, {
   exports: optimizerInput,
   module: { exports: optimizerInput },
   require: request => {
-    if (request === './game') return { getCaps: gear => gear.syncCaps };
+    if (request === './game') return {
+      getCaps: gear => gear.syncCaps,
+      materiaGrades: [12, 11],
+      materiaGradeRequiredLevels: Array.from({ length: 12 }, () => 690),
+      materiaGradeIsRestricted: Object.assign(Array.from({ length: 13 }, () => false), { 12: true }),
+    };
     if (request === './stores') return { gearDataOrdered: { get: () => [] } };
     if (request === './optimizerCandidateFallbacks') {
       return { selectPieFreeFallbacks: () => [], selectRequiredSlotFallbacks: () => [] };
@@ -22,7 +27,7 @@ vm.runInNewContext(compiled, {
   },
 });
 
-const { isOptimizerGearEligible } = optimizerInput;
+const { isOptimizerGearEligible, maximumMateriaGradeForSlot } = optimizerInput;
 const store = { minLevel: 730, maxLevel: 795 };
 const secondaryStats = ['CRT', 'DET', 'DHT', 'SPS'];
 const oneCappedStat = {
@@ -38,6 +43,11 @@ const gear = level => ({ level, syncCaps: { CRT: 379, DET: 379, DHT: 379, SPS: 3
 test('synced gear within 15 item levels of the filter maximum remains eligible with stat loss', () => {
   assert.equal(isOptimizerGearEligible(store, gear(790), oneCappedStat, 735, secondaryStats), true);
   assert.equal(isOptimizerGearEligible(store, gear(780), oneCappedStat, 735, secondaryStats), true);
+});
+
+test('the first advanced meld slot accepts grade 12 materia', () => {
+  assert.deepEqual([0, 1, 2, 3, 4].map(index =>
+    maximumMateriaGradeForSlot(690, index, 2)), [12, 12, 12, 11, 11]);
 });
 
 test('the near-maximum exception does not extend below its inclusive boundary', () => {
