@@ -28,7 +28,7 @@ vm.runInNewContext(compiled, {
 });
 
 const { isOptimizerGearEligible, maximumMateriaGradeForSlot } = optimizerInput;
-const store = { minLevel: 730, maxLevel: 795 };
+const store = { minLevel: 730, maxLevel: 795, setting: { hideObsoleteGears: true } };
 const secondaryStats = ['CRT', 'DET', 'DHT', 'SPS'];
 const oneCappedStat = {
   synced: true,
@@ -58,4 +58,18 @@ test('the near-maximum exception does not extend below its inclusive boundary', 
 test('the near-maximum exception stays within the selected item-level range', () => {
   const narrowStore = { minLevel: 790, maxLevel: 795 };
   assert.equal(isOptimizerGearEligible(narrowStore, gear(780), oneCappedStat, 735, secondaryStats), false);
+});
+
+test('without item-level sync, gear is selected from the configured filter range', () => {
+  assert.equal(isOptimizerGearEligible(store, gear(730), oneCappedStat, undefined, secondaryStats), true);
+  assert.equal(isOptimizerGearEligible(store, gear(795), oneCappedStat, undefined, secondaryStats), true);
+  assert.equal(isOptimizerGearEligible(store, gear(725), oneCappedStat, undefined, secondaryStats), false);
+  assert.equal(isOptimizerGearEligible(store, gear(800), oneCappedStat, undefined, secondaryStats), false);
+});
+
+test('without item-level sync, obsolete gear follows the existing visibility setting', () => {
+  assert.equal(isOptimizerGearEligible(store, { ...gear(790), obsolete: true }, oneCappedStat,
+    undefined, secondaryStats), false);
+  assert.equal(isOptimizerGearEligible({ ...store, setting: { hideObsoleteGears: false } },
+    { ...gear(790), obsolete: true }, oneCappedStat, undefined, secondaryStats), true);
 });

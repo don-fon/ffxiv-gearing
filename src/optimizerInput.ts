@@ -103,8 +103,13 @@ function prepareGear(store: IStore, gear: G.Gear, current?: IGear): OptimizerGea
   };
 }
 
-export function isOptimizerGearEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear, syncLevel: number,
+export function isOptimizerGearEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear,
+  syncLevel: number | undefined,
   secondaryStats: OptimizerMateriaStat[]): boolean {
+  if (syncLevel === undefined) {
+    return gear.level >= store.minLevel && gear.level <= store.maxLevel &&
+      !(gear.obsolete && store.setting.hideObsoleteGears);
+  }
   if (gear.level === syncLevel || gear.level === syncLevel - 5) return true;
   if (gear.level <= syncLevel || !prepared.synced) return false;
   const nearMaximumLevel = Math.max(store.minLevel, store.maxLevel - 15);
@@ -154,9 +159,6 @@ export function createGearOptimizationInput(store: IStore,
       store.schema.statModifiers === undefined || store.schema.traitDamageMultiplier === undefined) {
     throw new Error('仅支持具有每威力伤害期望的战斗职业。');
   }
-  if (store.syncLevel === undefined) {
-    throw new Error('请先选择一个明确的品级同步值。');
-  }
   if (!Number.isFinite(targetGcd) || targetGcd <= 0 ||
       Math.abs(targetGcd * 100 - Math.round(targetGcd * 100)) > 1e-7) {
     throw new Error('目标 GCD 必须是大于 0 且最多包含两位小数的秒数。');
@@ -202,14 +204,16 @@ export function createGearOptimizationInput(store: IStore,
 
   const preferredCandidates = preparedGears.filter(({ data, optimizer }) =>
     lockedIdSet.has(data.id) ||
-    isOptimizerGearEligible(store, data, optimizer, store.syncLevel!, secondaryStats));
+    isOptimizerGearEligible(store, data, optimizer, store.syncLevel, secondaryStats));
   const gears = preferredCandidates.map(candidate => candidate.optimizer);
   const preferredCandidateIds = new Set(preferredCandidates.map(candidate => candidate.data.id));
-  const lowerLevelCandidates = preparedGears.filter(({ data, optimizer }) =>
-    !preferredCandidateIds.has(data.id) && !optimizer.synced && data.level < store.syncLevel! - 5 &&
-    data.level >= store.minLevel && data.level <= store.maxLevel &&
-    !(data.obsolete && store.setting.hideObsoleteGears))
-    .map(candidate => candidate.optimizer);
+  const lowerLevelCandidates = store.syncLevel === undefined
+    ? []
+    : preparedGears.filter(({ data, optimizer }) =>
+      !preferredCandidateIds.has(data.id) && !optimizer.synced && data.level < store.syncLevel! - 5 &&
+      data.level >= store.minLevel && data.level <= store.maxLevel &&
+      !(data.obsolete && store.setting.hideObsoleteGears))
+      .map(candidate => candidate.optimizer);
   gears.push(...selectRequiredSlotFallbacks(gears, lowerLevelCandidates, slots));
   if (isBaselineGcd(store, speedStat, targetGcd)) {
     const selectedCandidateIds = new Set(gears.map(candidate => candidate.id));

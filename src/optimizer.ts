@@ -56,7 +56,7 @@ export interface OptimizerDamageContext {
 export type OptimizerMateriaStat = 'CRT' | 'DET' | 'DHT' | 'TEN' | 'SKS' | 'SPS';
 
 export interface GearOptimizationInput {
-  syncLevel: number;
+  syncLevel?: number;
   fixedStats: OptimizerStats;
   gears: OptimizerGear[];
   slots: number[];

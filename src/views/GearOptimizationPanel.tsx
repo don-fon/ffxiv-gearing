@@ -126,10 +126,13 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     setBaselineDamage(hasCompleteGearset ? store.equippedEffects?.damage : undefined);
     store.setOptimizationDataLoading(true);
     try {
-      const minimumLevel = store.minLevel > 0
-        ? Math.min(store.minLevel, store.syncLevel! - 5)
-        : store.syncLevel! - 5;
-      await loadGearDataOfLevelRange(minimumLevel, Infinity);
+      const minimumLevel = store.syncLevel === undefined
+        ? store.minLevel
+        : store.minLevel > 0
+          ? Math.min(store.minLevel, store.syncLevel - 5)
+          : store.syncLevel - 5;
+      const maximumLevel = store.syncLevel === undefined ? store.maxLevel : Infinity;
+      await loadGearDataOfLevelRange(minimumLevel, maximumLevel);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : String(loadError));
       setStatus('error');
@@ -277,7 +280,11 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     <div className="gear-optimization card">
       <div className="gear-optimization_intro">
         <p>{`在指定最终 GCD 下，搜索最高每威力伤害期望配装（使用${speedName}计算）。`}</p>
-        <p>非同步装备优先使用同步品级及低5品级；治疗职业缺少足够无信仰装备时，会按筛选范围向下放宽品级。</p>
+        {store.syncLevel === undefined ? (
+          <p>未选择装等同步时，将在当前品级筛选范围内搜索。</p>
+        ) : (
+          <p>非同步装备优先使用同步品级及低5品级；治疗职业缺少足够无信仰装备时，会按筛选范围向下放宽品级。</p>
+        )}
         <p>{`魔晶石使用各孔最高值，并精确枚举暴击、信念、直击、坚韧和${speedName}。`}</p>
       </div>
       {incompleteCustomWeapons.length > 0 && (
@@ -478,7 +485,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
 
       <div className="gear-optimization_actions">
         <Button
-          disabled={busy || store.syncLevel === undefined || !targetGcdValid || !tankObjectiveValid}
+          disabled={busy || !targetGcdValid || !tankObjectiveValid}
           onClick={start}
         >
           {result === undefined
@@ -495,9 +502,6 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           >应用方案</Button>
         )}
       </div>
-      {store.syncLevel === undefined && (
-        <div className="gear-optimization_error">请先选择明确的品级同步值。</div>
-      )}
     </div>
   );
 });
