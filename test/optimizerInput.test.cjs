@@ -28,7 +28,12 @@ vm.runInNewContext(compiled, {
 });
 
 const { isOptimizerGearEligible, maximumMateriaGradeForSlot } = optimizerInput;
-const store = { minLevel: 730, maxLevel: 795, setting: { hideObsoleteGears: true } };
+const store = {
+  minLevel: 730,
+  maxLevel: 795,
+  schema: { jobLevel: 100 },
+  setting: { hideObsoleteGears: true },
+};
 const secondaryStats = ['CRT', 'DET', 'DHT', 'SPS'];
 const oneCappedStat = {
   synced: true,
@@ -38,7 +43,11 @@ const twoCappedStats = {
   synced: true,
   stats: { CRT: 379, DET: 379 },
 };
-const gear = level => ({ level, syncCaps: { CRT: 379, DET: 379, DHT: 379, SPS: 379 } });
+const gear = level => ({
+  level,
+  equipLevel: 1,
+  syncCaps: { CRT: 379, DET: 379, DHT: 379, SPS: 379 },
+});
 
 test('synced gear within 15 item levels of the filter maximum remains eligible with stat loss', () => {
   assert.equal(isOptimizerGearEligible(store, gear(790), oneCappedStat, 735, secondaryStats), true);
@@ -56,7 +65,7 @@ test('the near-maximum exception does not extend below its inclusive boundary', 
 });
 
 test('the near-maximum exception stays within the selected item-level range', () => {
-  const narrowStore = { minLevel: 790, maxLevel: 795 };
+  const narrowStore = { ...store, minLevel: 790, maxLevel: 795 };
   assert.equal(isOptimizerGearEligible(narrowStore, gear(780), oneCappedStat, 735, secondaryStats), false);
 });
 
@@ -72,4 +81,13 @@ test('without item-level sync, obsolete gear follows the existing visibility set
     undefined, secondaryStats), false);
   assert.equal(isOptimizerGearEligible({ ...store, setting: { hideObsoleteGears: false } },
     { ...gear(790), obsolete: true }, oneCappedStat, undefined, secondaryStats), true);
+});
+
+test('gear above the job level cap is never eligible for optimization', () => {
+  const beastmasterStore = { ...store, schema: { jobLevel: 50 } };
+  const level54Gear = { ...gear(133), equipLevel: 54 };
+  assert.equal(isOptimizerGearEligible(beastmasterStore, level54Gear, oneCappedStat,
+    undefined, secondaryStats), false);
+  assert.equal(isOptimizerGearEligible(beastmasterStore, level54Gear, oneCappedStat,
+    130, secondaryStats), false);
 });

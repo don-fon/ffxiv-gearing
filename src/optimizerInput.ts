@@ -106,6 +106,7 @@ function prepareGear(store: IStore, gear: G.Gear, current?: IGear): OptimizerGea
 export function isOptimizerGearEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear,
   syncLevel: number | undefined,
   secondaryStats: OptimizerMateriaStat[]): boolean {
+  if (gear.equipLevel > store.schema.jobLevel) return false;
   if (syncLevel === undefined) {
     return gear.level >= store.minLevel && gear.level <= store.maxLevel &&
       !(gear.obsolete && store.setting.hideObsoleteGears);
@@ -195,6 +196,7 @@ export function createGearOptimizationInput(store: IStore,
   for (const item of gearDataOrdered.get()) {
     if (item.slot <= 0 || !slots.includes(item.slot) || !G.jobCategories[item.jobCategory][store.job]) continue;
     const gear = item as G.Gear;
+    if (gear.equipLevel > store.schema.jobLevel) continue;
     if (excludedIdSet.has(gear.id)) continue;
     const configured = configuredById.get(gear.id);
     if (gear.customizable && (configured?.customStats?.size ?? 0) === 0) continue;
