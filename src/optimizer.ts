@@ -170,6 +170,7 @@ const maximumContractedOptions = 100_000;
 const maximumGroupContractions = 6;
 const dominanceLeafSize = 32;
 const finalOptionLeafSize = 1;
+const finalStateLeafSize = 16;
 
 const floor = (value: number) => Math.trunc(value + 1e-7);
 
@@ -578,12 +579,13 @@ function maximumOptionStats(options: GearOption[]): OptimizerStats {
   return maxima;
 }
 
-function buildAttributeTree<T extends GearOption>(options: T[]): AttributeTreeNode<T> {
+function buildAttributeTree<T extends GearOption>(options: T[],
+  leafSize = finalOptionLeafSize): AttributeTreeNode<T> {
   const node: AttributeTreeNode<T> = {
     maxima: maximumOptionStats(options),
     count: options.length,
   };
-  if (options.length <= finalOptionLeafSize) {
+  if (options.length <= leafSize) {
     node.items = options;
     return node;
   }
@@ -604,8 +606,8 @@ function buildAttributeTree<T extends GearOption>(options: T[]): AttributeTreeNo
   options.sort((left, right) =>
     (right.stats[splitStat] ?? 0) - (left.stats[splitStat] ?? 0));
   const middle = Math.ceil(options.length / 2);
-  node.left = buildAttributeTree(options.slice(0, middle));
-  node.right = buildAttributeTree(options.slice(middle));
+  node.left = buildAttributeTree(options.slice(0, middle), leafSize);
+  node.right = buildAttributeTree(options.slice(middle), leafSize);
   return node;
 }
 
@@ -1115,33 +1117,57 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   // Keep the largest group for the final tree search. GCD tiers with several
   // reachable exact speeds are split into independent worker tasks by the UI.
   for (let groupIndex = 0; groupIndex < groups.length - 1; groupIndex++) {
-    const next = new Map<string, SearchState>();
+    const statesByPrefix = new Map<number, SearchState[]>();
     for (const state of states) {
       const prefixSpeed = (state.stats[input.speedStat] ?? 0) - speedPlan.fixedSpeed;
+      const samePrefix = statesByPrefix.get(prefixSpeed) ?? [];
+      samePrefix.push(state);
+      statesByPrefix.set(prefixSpeed, samePrefix);
+    }
+    const routesByNextPrefix = new Map<number, Array<{
+      states: SearchState[],
+      options: GearOption[],
+    }>>();
+    for (const [ prefixSpeed, prefixStates ] of statesByPrefix) {
       const allowedSpeeds = speedPlan.allowedOptionSpeeds[groupIndex].get(prefixSpeed) ?? [];
       for (const speed of allowedSpeeds) {
-        for (const option of speedPlan.optionsBySpeed[groupIndex].get(speed)!) {
-          exploredStates++;
-          const stats = addStats(state.stats, option.stats);
-          const nextPrefix = prefixSpeed + speed;
-          const remaining = speedPlan.completionMaxima[groupIndex + 1].get(nextPrefix)!;
-          const bound = feasibleDamageBound(stats, remaining, input, combinedDamage);
-          if (bound <= pruningDamage) continue;
-          const signature = statSignature(stats);
-          if (!next.has(signature)) {
-            next.set(signature, {
-              stats,
-              choices: [],
-              previous: state,
-              selected: option.choices,
-            });
+        const nextPrefix = prefixSpeed + speed;
+        const routes = routesByNextPrefix.get(nextPrefix) ?? [];
+        routes.push({
+          states: prefixStates,
+          options: speedPlan.optionsBySpeed[groupIndex].get(speed)!,
+        });
+        routesByNextPrefix.set(nextPrefix, routes);
+      }
+    }
+    const frontier: SearchState[] = [];
+    // Dominance is only comparable at identical speed. Finish one cumulative
+    // speed bucket at a time so candidates from other speeds do not stay live.
+    for (const [ nextPrefix, routes ] of routesByNextPrefix) {
+      const next = new Map<string, SearchState>();
+      const remaining = speedPlan.completionMaxima[groupIndex + 1].get(nextPrefix)!;
+      for (const route of routes) {
+        for (const state of route.states) {
+          for (const option of route.options) {
+            exploredStates++;
+            const stats = addStats(state.stats, option.stats);
+            const bound = feasibleDamageBound(stats, remaining, input, combinedDamage);
+            if (bound <= pruningDamage) continue;
+            const signature = statSignature(stats);
+            if (!next.has(signature)) {
+              next.set(signature, {
+                stats,
+                choices: [],
+                previous: state,
+                selected: option.choices,
+              });
+            }
           }
         }
       }
+      for (const state of paretoFrontier(Array.from(next.values()))) frontier.push(state);
     }
-    const candidates = Array.from(next.values());
-    next.clear();
-    states = pruneDominatedOptions(candidates, input.speedStat);
+    states = frontier;
     onProgress?.({ completedGroups: groupIndex + 1, totalGroups: groups.length, states: states.length });
   }
 
@@ -1156,7 +1182,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   }
   const stateTrees = Array.from(statesBySpeed, ([ speed, sameSpeed ]) => ({
     speed,
-    tree: buildAttributeTree(sameSpeed),
+    tree: buildAttributeTree(sameSpeed, finalStateLeafSize),
   }));
 
   const upperDamage = (stateNode: AttributeTreeNode<SearchState>,
