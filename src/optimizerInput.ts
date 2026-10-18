@@ -5,6 +5,9 @@ import type {
   GearOptimizationInput,
   OptimizerFood,
   OptimizerGear,
+  OptimizerLockedGear,
+  OptimizerMeld,
+  OptimizerMeldStat,
   OptimizerMateriaStat,
   OptimizerStat,
   OptimizerStats,
@@ -129,6 +132,25 @@ function prepareFood(store: IStore, food: G.Food): OptimizerFood {
   };
 }
 
+const optimizerMeldStats: OptimizerMeldStat[] = [
+  'CRT', 'DET', 'DHT', 'TEN', 'PIE', 'SKS', 'SPS',
+];
+
+function prepareLockedMelds(store: IStore, gear: IGear): OptimizerMeld[] {
+  return gear.materias.flatMap((materia, slot) => {
+    if (materia.stat === undefined || materia.grade === undefined) return [];
+    const stat = concretizeStat(store, materia.stat);
+    if (!optimizerMeldStats.includes(stat as OptimizerMeldStat)) {
+      throw new Error(`“${gear.name}”上有自动配装不支持的魔晶石属性。`);
+    }
+    const value = G.materias[materia.stat]?.[materia.grade - 1];
+    if (value === undefined) {
+      throw new Error(`“${gear.name}”上有无效的魔晶石。`);
+    }
+    return [{ stat: stat as OptimizerMeldStat, grade: materia.grade, value, slot }];
+  });
+}
+
 function optimizerFoods(store: IStore, locked: boolean): OptimizerFood[] {
   const equippedFood = store.equippedGears.get('-1') as IFood | undefined;
   if (locked && equippedFood !== undefined) {
@@ -155,7 +177,8 @@ function optimizerFoods(store: IStore, locked: boolean): OptimizerFood[] {
 }
 
 export function createGearOptimizationInput(store: IStore,
-  lockedSlots: number[], targetGcd: number, excludedGearIds: number[] = []): GearOptimizationInput {
+  lockedSlots: number[], targetGcd: number, excludedGearIds: number[] = [],
+  lockedMateriaSlots: number[] = []): GearOptimizationInput {
   if (store.job === undefined || store.schema.mainStat === undefined ||
       store.schema.statModifiers === undefined || store.schema.traitDamageMultiplier === undefined) {
     throw new Error('仅支持具有每威力伤害期望的战斗职业。');
@@ -171,9 +194,23 @@ export function createGearOptimizationInput(store: IStore,
   const slots = Array.from(new Set(store.schema.slots
     .filter(slot => slot.slot > 0 && slot.levelWeight !== 0)
     .map(slot => Math.abs(slot.slot))));
-  const lockedModels = lockedSlots.map(slot => store.equippedGears.get(slot.toString()))
-    .filter((gear): gear is IGear => gear !== undefined && !gear.isFood);
+  const lockedEntries = lockedSlots.flatMap(slot => {
+    const gear = store.equippedGears.get(slot.toString());
+    return gear === undefined || gear.isFood ? [] : [{ slot, gear }];
+  });
+  const lockedModels = lockedEntries.map(entry => entry.gear);
   const lockedGearIds = lockedModels.map(gear => Math.abs(gear.id));
+  const lockedMateriaSlotSet = new Set(lockedMateriaSlots);
+  const invalidLockedMateriaSlot = lockedMateriaSlots.find(slot =>
+    !lockedEntries.some(entry => entry.slot === slot));
+  if (invalidLockedMateriaSlot !== undefined) {
+    throw new Error('只有已锁定的装备才能连带锁定魔晶石。');
+  }
+  const lockedGears: OptimizerLockedGear[] = lockedEntries.map(({ slot, gear }) => ({
+    id: Math.abs(gear.id),
+    slot,
+    melds: lockedMateriaSlotSet.has(slot) ? prepareLockedMelds(store, gear) : undefined,
+  }));
   const excludedIdSet = new Set(excludedGearIds.map(id => Math.abs(id)));
   const excludedLockedGear = lockedModels.find(gear => excludedIdSet.has(Math.abs(gear.id)));
   if (excludedLockedGear !== undefined) {
@@ -248,6 +285,7 @@ export function createGearOptimizationInput(store: IStore,
     gears,
     slots,
     lockedGearIds,
+    lockedGears,
     excludedGearIds: Array.from(excludedIdSet),
     materiaStats,
     speedStat,

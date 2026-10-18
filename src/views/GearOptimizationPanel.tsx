@@ -13,6 +13,7 @@ import type {
 } from '../optimizer';
 import type { DropdownPopperProps } from './components/Dropdown';
 import { useStore } from './components/contexts';
+import { Icon } from './components/Icon';
 
 type Status = 'idle' | 'loading' | 'running' | 'done' | 'error';
 type WorkerResponse =
@@ -30,6 +31,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const isTank = store.schema.stats.includes('TEN');
   const initialGcd = store.equippedEffects?.gcd ?? 2.5;
   const [ lockedSlots, setLockedSlots ] = React.useState<number[]>([]);
+  const [ lockedMateriaSlots, setLockedMateriaSlots ] = React.useState<number[]>([]);
   const [ excludedGearIds, setExcludedGearIds ] = React.useState<number[]>([]);
   const [ targetGcd, setTargetGcd ] = React.useState(initialGcd.toFixed(2));
   const [ status, setStatus ] = React.useState<Status>('idle');
@@ -82,7 +84,19 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         setExcludedGearIds(ids => ids.filter(id => id !== Math.abs(gear.id)));
       }
     }
+    if (lockedSlots.includes(slot)) {
+      setLockedMateriaSlots(slots => slots.filter(value => value !== slot));
+    }
     setLockedSlots(slots => slots.includes(slot) ? slots.filter(value => value !== slot) : slots.concat(slot));
+    setStatus('idle');
+    setResult(undefined);
+    setResultExcludedGearKey(undefined);
+  };
+
+  const toggleLockedMateria = (slot: number) => {
+    if (!lockedSlots.includes(slot)) return;
+    setLockedMateriaSlots(slots =>
+      slots.includes(slot) ? slots.filter(value => value !== slot) : slots.concat(slot));
     setStatus('idle');
     setResult(undefined);
     setResultExcludedGearKey(undefined);
@@ -144,7 +158,13 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
 
     let input: GearOptimizationInput;
     try {
-      input = createGearOptimizationInput(store, lockedSlots, parsedTargetGcd, calculationExcludedGearIds);
+      input = createGearOptimizationInput(
+        store,
+        lockedSlots,
+        parsedTargetGcd,
+        calculationExcludedGearIds,
+        lockedMateriaSlots,
+      );
       input = isTank
         ? {
           ...input,
@@ -350,23 +370,43 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
 
       <div className="gear-optimization_section-title">锁定当前装备（可选）</div>
       <div className="gear-optimization_locks">
-        {lockable.length > 0 ? lockable.map(({ slot, name, gear }) => (
-          <label key={slot} className="gear-optimization_lock">
-            <input
-              type="checkbox"
-              checked={lockedSlots.includes(slot)}
-              disabled={busy}
-              onChange={() => toggleLock(slot)}
-            />
-            <span className="gear-optimization_lock-slot">{name}</span>
-            <span>{gear.name}</span>
-          </label>
-        )) : (
+        {lockable.length > 0 ? lockable.map(({ slot, name, gear }) => {
+          const locked = lockedSlots.includes(slot);
+          const hasMateria = !gear.isFood && gear.materias.some(materia => materia.stat !== undefined);
+          const materiaLocked = lockedMateriaSlots.includes(slot);
+          return (
+            <div key={slot} className="gear-optimization_lock-entry">
+              <label className="gear-optimization_lock">
+                <input
+                  type="checkbox"
+                  checked={locked}
+                  disabled={busy}
+                  onChange={() => toggleLock(slot)}
+                />
+                <span className="gear-optimization_lock-slot">{name}</span>
+                <span className="gear-optimization_lock-name">{gear.name}</span>
+              </label>
+              {locked && hasMateria && (
+                <button
+                  type="button"
+                  className={`gear-optimization_lock-materia${materiaLocked ? ' -selected' : ''}`}
+                  aria-label={`${materiaLocked ? '取消' : ''}连带锁定${gear.name}的魔晶石`}
+                  aria-pressed={materiaLocked}
+                  title={materiaLocked ? '已连带锁定魔晶石；点击取消' : '点击连带锁定当前魔晶石'}
+                  disabled={busy}
+                  onClick={() => toggleLockedMateria(slot)}
+                >
+                  <Icon name="materia" />
+                </button>
+              )}
+            </div>
+          );
+        }) : (
           <span className="gear-optimization_empty">当前没有可锁定的装备</span>
         )}
       </div>
       <div className="gear-optimization_lock-tip">
-        锁定装备或食物 ID；装备的魔晶石仍会重新优化。
+        默认只锁定装备或食物 ID；锁定已镶嵌魔晶石的装备后，点亮右侧图标可同时保留当前魔晶石。
       </div>
 
       <div className="gear-optimization_section-title">排除装备（可多选）</div>

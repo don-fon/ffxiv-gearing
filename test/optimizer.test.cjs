@@ -315,6 +315,31 @@ test('locking a gear ID restricts that slot without preserving old melds', () =>
   assert.equal(result.gears[0].id, 1);
 });
 
+test('locking gear materia preserves its exact grades and slot positions', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'locked melds', 1, 3, { STR: 1 }, 1000, 2)],
+    slots: [3],
+    lockedGearIds: [1],
+    lockedGears: [{
+      id: 1,
+      slot: 3,
+      melds: [{ stat: 'DET', grade: 11, value: 18, slot: 1 }],
+    }],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.50,
+    damage,
+  });
+
+  assert.equal(result.gears[0].melds.length, 1);
+  assert.equal(result.gears[0].melds[0].stat, 'DET');
+  assert.equal(result.gears[0].melds[0].grade, 11);
+  assert.equal(result.gears[0].melds[0].slot, 1);
+  assert.equal(result.stats.DET, 458);
+});
+
 test('excluding multiple gear IDs returns the best remaining gearset', () => {
   const result = optimizeGearset({
     syncLevel: 1,
@@ -643,6 +668,30 @@ test('a repeatable ring can occupy both slots with independent melds', () => {
   assert.equal(result.gears.length, 2);
   assert.equal(result.gears.map(item => item.id).join(','), '1,1');
   assert.equal(result.gears.map(item => item.melds[0].stat).sort().join(','), 'DHT,SKS');
+});
+
+test('one ring can lock its materia while the other copy remains optimizable', () => {
+  const result = optimizeGearset({
+    syncLevel: 1,
+    fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100 },
+    gears: [gear(1, 'repeatable', 1, 12, {}, 1000, 1, false)],
+    slots: [12],
+    lockedGearIds: [1],
+    lockedGears: [{
+      id: 1,
+      slot: -12,
+      melds: [{ stat: 'DHT', grade: 11, value: 18, slot: 0 }],
+    }],
+    materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+    speedStat: 'SKS',
+    targetGcd: 2.49,
+    damage,
+  });
+
+  assert.equal(result.gears.length, 2);
+  assert.equal(result.gears[0].melds[0].stat, 'SKS');
+  assert.equal(result.gears[1].melds[0].stat, 'DHT');
+  assert.equal(result.gears[1].melds[0].grade, 11);
 });
 
 test('a unique ring cannot occupy both slots', () => {

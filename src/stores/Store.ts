@@ -748,19 +748,30 @@ export const Store = mst.types
       for (const choice of result.gears) {
         const slot = choice.slot === 12 && ringCount++ > 0 ? -12 : choice.slot;
         const id = (slot < 0 ? -choice.id : choice.id) as G.GearId;
+        const positionedMelds = choice.melds.some(meld => meld.slot !== undefined);
+        const meldAt = (index: number) => positionedMelds
+          ? choice.melds.find(meld => meld.slot === index)
+          : choice.melds[index];
         let gear = self.gears.get(id.toString()) as IGear | undefined;
         if (gear === undefined) {
-          self.gears.put(GearUnion.create({
-            id,
-            materias: choice.melds.map(meld => ({
+          const materiaCount = positionedMelds
+            ? Math.max(0, ...choice.melds.map(meld => (meld.slot ?? -1) + 1))
+            : choice.melds.length;
+          const materias = Array.from({ length: materiaCount }, (_, index) => {
+            const meld = meldAt(index);
+            return meld === undefined ? {} : {
               stat: meld.stat as G.Stat,
               grade: meld.grade as G.MateriaGrade,
-            })),
+            };
+          });
+          self.gears.put(GearUnion.create({
+            id,
+            materias,
           } as any));
           gear = self.gears.get(id.toString()) as IGear;
         }
         for (let index = 0; index < gear.materias.length; index++) {
-          const meld = choice.melds[index];
+          const meld = meldAt(index);
           gear.materias[index].meld(meld?.stat, meld?.grade as G.MateriaGrade | undefined);
         }
         self.equippedGears.set(slot.toString(), gear);

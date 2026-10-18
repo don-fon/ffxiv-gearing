@@ -55,12 +55,21 @@ export interface OptimizerDamageContext {
 
 export type OptimizerMateriaStat = 'CRT' | 'DET' | 'DHT' | 'TEN' | 'SKS' | 'SPS';
 
+export type OptimizerMeldStat = OptimizerMateriaStat | 'PIE';
+
+export interface OptimizerLockedGear {
+  id: number;
+  slot: number;
+  melds?: OptimizerMeld[];
+}
+
 export interface GearOptimizationInput {
   syncLevel?: number;
   fixedStats: OptimizerStats;
   gears: OptimizerGear[];
   slots: number[];
   lockedGearIds: number[];
+  lockedGears?: OptimizerLockedGear[];
   excludedGearIds?: number[];
   materiaStats: OptimizerMateriaStat[];
   speedStat: 'SKS' | 'SPS';
@@ -90,9 +99,10 @@ export interface GearOptimizationPlan {
 }
 
 export interface OptimizerMeld {
-  stat: OptimizerMateriaStat;
+  stat: OptimizerMeldStat;
   grade: number;
   value: number;
+  slot?: number;
 }
 
 export interface OptimizerGearChoice {
@@ -103,6 +113,7 @@ export interface OptimizerGearChoice {
   unique: boolean;
   synced: boolean;
   melds: OptimizerMeld[];
+  meldsLocked?: boolean;
 }
 
 export interface GearOptimizationResult {
@@ -187,7 +198,7 @@ function statSignature(stats: OptimizerStats): string {
 }
 
 function addMeld(stats: OptimizerStats, caps: OptimizerStats,
-  stat: OptimizerMateriaStat, value: number): OptimizerStats {
+  stat: OptimizerMeldStat, value: number): OptimizerStats {
   const current = stats[stat] ?? 0;
   return {
     ...stats,
@@ -210,7 +221,7 @@ function gearOptions(gear: OptimizerGear,
     }],
   }];
 
-  for (const materia of gear.materiaSlots) {
+  for (const [ materiaIndex, materia ] of gear.materiaSlots.entries()) {
     const next = new Map<string, GearOption>();
     for (const option of options) {
       for (const stat of materiaStats) {
@@ -220,7 +231,12 @@ function gearOptions(gear: OptimizerGear,
           stats: meldedStats,
           choices: [{
             ...choice,
-            melds: choice.melds.concat({ stat, grade: materia.grade, value: materia.value }),
+            melds: choice.melds.concat({
+              stat,
+              grade: materia.grade,
+              value: materia.value,
+              slot: materiaIndex,
+            }),
           }],
         };
         next.set(statSignature(meldedStats), melded);
@@ -229,6 +245,28 @@ function gearOptions(gear: OptimizerGear,
     options = Array.from(next.values());
   }
   return options;
+}
+
+function lockedGearOption(gear: OptimizerGear, melds: OptimizerMeld[]): GearOption {
+  let stats = gear.stats;
+  if (!gear.synced) {
+    for (const meld of melds) {
+      stats = addMeld(stats, gear.caps, meld.stat, meld.value);
+    }
+  }
+  return {
+    stats,
+    choices: [{
+      id: gear.id,
+      name: gear.name,
+      level: gear.level,
+      slot: gear.slot,
+      unique: gear.unique,
+      synced: gear.synced,
+      melds,
+      meldsLocked: true,
+    }],
+  };
 }
 
 function deduplicateOptions(options: GearOption[]): GearOption[] {
@@ -389,23 +427,13 @@ function deduplicateEquivalentGears(gears: OptimizerGear[], maximumPerSignature:
   return result;
 }
 
-function matchesLockedRings(left: OptimizerGearChoice, right: OptimizerGearChoice,
-  lockedRingIds: number[]): boolean {
-  if (lockedRingIds.length === 0) return true;
-  if (lockedRingIds.length === 1) {
-    return left.id === lockedRingIds[0] || right.id === lockedRingIds[0];
-  }
-  return (left.id === lockedRingIds[0] && right.id === lockedRingIds[1]) ||
-    (left.id === lockedRingIds[1] && right.id === lockedRingIds[0]);
-}
-
 function hasRemovableSpeedMeld(option: GearOption, input: GearOptimizationInput): boolean {
   if (input.targetSpeedContribution === undefined ||
       !input.materiaStats.some(stat => stat !== input.speedStat)) return false;
   const rawSpeed = (input.fixedStats[input.speedStat] ?? 0) + input.targetSpeedContribution;
   // Replacing this meld with a damage materia is dominating only when the
   // resulting speed, including the changed food bonus, stays in the GCD tier.
-  return option.choices.some(choice => choice.melds.some(meld =>
+  return option.choices.some(choice => !choice.meldsLocked && choice.melds.some(meld =>
     meld.stat === input.speedStat &&
     gcdHundredths(speedAfterFood(rawSpeed - meld.value, input), input) === targetGcdHundredths(input)));
 }
@@ -420,6 +448,14 @@ function filterRemovableSpeedMeldOptions(groups: GearOption[][],
 
 function buildGroups(input: GearOptimizationInput): GearOption[][] {
   const lockedGearIds = new Set(input.lockedGearIds);
+  let legacyRingIndex = 0;
+  const lockedGears: OptimizerLockedGear[] = input.lockedGears ?? input.lockedGearIds.map(id => {
+    const gearSlot = input.gears.find(gear => gear.id === id)?.slot ?? 0;
+    return {
+      id,
+      slot: gearSlot === 12 && legacyRingIndex++ > 0 ? -12 : gearSlot,
+    };
+  });
   const excludedGearIds = new Set(input.excludedGearIds ?? []);
   const excludedLockedGearId = input.lockedGearIds.find(id => excludedGearIds.has(id));
   if (excludedLockedGearId !== undefined) {
@@ -436,12 +472,12 @@ function buildGroups(input: GearOptimizationInput): GearOption[][] {
   const groups: GearOption[][] = [];
   for (const slot of input.slots) {
     let gears = bySlot.get(slot) ?? [];
-    const lockedGears = gears.filter(gear => lockedGearIds.has(gear.id));
-    if (slot !== 12 && lockedGears.length > 0) {
-      if (lockedGears.length > 1) {
+    const lockedSlotGears = gears.filter(gear => lockedGearIds.has(gear.id));
+    if (slot !== 12 && lockedSlotGears.length > 0) {
+      if (lockedSlotGears.length > 1) {
         throw new Error(`部位 ${slot} 同时锁定了多件装备。`);
       }
-      gears = lockedGears;
+      gears = lockedSlotGears;
     }
     if (gears.length === 0) {
       throw new Error(`部位 ${slot} 没有满足条件的装备。`);
@@ -450,27 +486,50 @@ function buildGroups(input: GearOptimizationInput): GearOption[][] {
     // it before materia expansion and ring pairing. Rings retain two IDs per
     // signature so unique rings can still form a legal pair.
     gears = deduplicateEquivalentGears(gears, slot === 12 ? 2 : 1, lockedGearIds, input.materiaStats);
-    const options = gears.flatMap(gear =>
-      pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat));
     if (slot !== 12) {
+      const locked = lockedGears.find(selection => Math.abs(selection.slot) === slot &&
+        selection.melds !== undefined);
+      if (locked !== undefined) {
+        const gear = gears.find(candidate => candidate.id === locked.id);
+        if (gear === undefined) throw new Error(`无法锁定装备 ${locked.id} 的魔晶石。`);
+        groups.push([lockedGearOption(gear, locked.melds!)]);
+        continue;
+      }
+      const options = gears.flatMap(gear =>
+        pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat));
       groups.push(pruneDominatedOptions(deduplicateOptions(options), input.speedStat));
       continue;
     }
 
     // Rings form one group. A non-unique ring may pair with itself, including
     // with different melds on its two copies. Unique rings still require two IDs.
-    const lockedRingIds = input.lockedGearIds.filter(id =>
-      lockedGears.some(gear => gear.id === id));
+    const options = gears.flatMap(gear =>
+      pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat));
+    const ringLocks = lockedGears.filter(selection => Math.abs(selection.slot) === 12);
     const pairs: GearOption[] = [];
-    for (let i = 0; i < options.length; i++) {
-      for (let j = i; j < options.length; j++) {
-        const left = options[i].choices[0];
-        const right = options[j].choices[0];
+    const ringOptions = (lock: OptimizerLockedGear | undefined): GearOption[] => {
+      if (lock === undefined) return options;
+      const gear = gears.find(candidate => candidate.id === lock.id);
+      if (gear === undefined) throw new Error(`无法锁定戒指 ${lock.id}。`);
+      return lock.melds === undefined
+        ? options.filter(option => option.choices[0].id === lock.id)
+        : [lockedGearOption(gear, lock.melds)];
+    };
+    const leftLock = ringLocks.find(lock => lock.slot === 12) ??
+      (input.lockedGears === undefined ? ringLocks[0] : undefined);
+    const rightLock = ringLocks.find(lock => lock.slot === -12) ??
+      (input.lockedGears === undefined ? ringLocks[1] : undefined);
+    const leftOptions = ringOptions(leftLock);
+    const rightOptions = ringOptions(rightLock);
+    for (let i = 0; i < leftOptions.length; i++) {
+      const firstRight = ringLocks.length === 0 ? i : 0;
+      for (let j = firstRight; j < rightOptions.length; j++) {
+        const left = leftOptions[i].choices[0];
+        const right = rightOptions[j].choices[0];
         if (left.id === right.id && left.unique) continue;
-        if (!matchesLockedRings(left, right, lockedRingIds)) continue;
         pairs.push({
-          stats: addStats(options[i].stats, options[j].stats),
-          choices: options[i].choices.concat(options[j].choices),
+          stats: addStats(leftOptions[i].stats, rightOptions[j].stats),
+          choices: leftOptions[i].choices.concat(rightOptions[j].choices),
         });
       }
     }
