@@ -178,7 +178,7 @@ const damageStats: OptimizerStat[] = [
 const scoredStats = damageStats.filter(stat => stat !== 'SKS' && stat !== 'SPS');
 const maximumContractionProduct = 250_000;
 const maximumContractedOptions = 100_000;
-const maximumGroupContractions = 6;
+const maximumGroupContractions = 7;
 const dominanceLeafSize = 32;
 const finalOptionLeafSize = 1;
 const finalStateLeafSize = 16;
