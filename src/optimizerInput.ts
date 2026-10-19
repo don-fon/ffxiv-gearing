@@ -16,6 +16,67 @@ import { selectPieFreeFallbacks, selectRequiredSlotFallbacks } from './optimizer
 
 const damageSecondaryStats: OptimizerMateriaStat[] = ['CRT', 'DET', 'DHT', 'TEN'];
 
+export type OptimizerGearCategory =
+  'zodiacWeapon' | 'animaWeapon' | 'eurekaWeapon' | 'resistanceWeapon' |
+  'mandervilleWeapon' | 'phantomWeapon' | 'savage' | 'dungeon' | 'normalRaid' |
+  'allianceRaid' | 'trial' | 'ultimate' | 'eurekaGear' | 'bozjaGear' |
+  'crescentIsleGear' | 'artifactGear' | 'wolfMarkGear' | 'deepDungeonGear' |
+  'wondrousTailsGear' | 'craftedGear';
+
+export const optimizerGearCategoryOptions: Array<{
+  id: OptimizerGearCategory,
+  label: string,
+}> = [
+  { id: 'phantomWeapon', label: '幻武' },
+  { id: 'mandervilleWeapon', label: '曼武' },
+  { id: 'eurekaWeapon', label: '优武' },
+  { id: 'resistanceWeapon', label: '义武' },
+  { id: 'zodiacWeapon', label: '古武' },
+  { id: 'animaWeapon', label: '魂武' },
+  { id: 'eurekaGear', label: '优装' },
+  { id: 'bozjaGear', label: '博兹雅' },
+  { id: 'crescentIsleGear', label: '新月岛' },
+  { id: 'artifactGear', label: '校服' },
+  { id: 'wolfMarkGear', label: '狼印' },
+  { id: 'deepDungeonGear', label: '深层' },
+  { id: 'wondrousTailsGear', label: '天书' },
+  { id: 'savage', label: '零式' },
+  { id: 'ultimate', label: '绝本' },
+  { id: 'dungeon', label: '四人' },
+  { id: 'normalRaid', label: '大型' },
+  { id: 'allianceRaid', label: '团本' },
+  { id: 'trial', label: '极神' },
+  { id: 'craftedGear', label: '制作' },
+];
+
+export function optimizerGearCategoryOf(
+  gear: Pick<G.Gear, 'slot' | 'source'>): OptimizerGearCategory | undefined {
+  const source = gear.source ?? '';
+  const weapon = gear.slot === 1 || gear.slot === 2 || gear.slot === 13;
+  if (weapon && source.startsWith('古武')) return 'zodiacWeapon';
+  if (weapon && source.startsWith('魂武')) return 'animaWeapon';
+  if (weapon && source.startsWith('优雷卡')) return 'eurekaWeapon';
+  if (weapon && source.startsWith('义军武器')) return 'resistanceWeapon';
+  if (weapon && source.startsWith('曼德维尔武器')) return 'mandervilleWeapon';
+  if (weapon && source.startsWith('幻境武器')) return 'phantomWeapon';
+  if (!weapon && source.startsWith('优雷卡')) return 'eurekaGear';
+  if (source.startsWith('天佑女王/')) return 'bozjaGear';
+  if (source.startsWith('新月岛/')) return 'crescentIsleGear';
+  if (source.startsWith('职业校服')) return 'artifactGear';
+  if (source.startsWith('狼印战绩')) return 'wolfMarkGear';
+  if (source.startsWith('深层迷宫/')) return 'deepDungeonGear';
+  if (source.startsWith('天书奇谈')) return 'wondrousTailsGear';
+  if (source.startsWith('零式/')) return 'savage';
+  if (source.startsWith('迷宫挑战/')) return 'dungeon';
+  if (source.startsWith('大型任务/')) return 'normalRaid';
+  if (source.startsWith('团队任务/')) return 'allianceRaid';
+  if (source.startsWith('歼灭战/') || source.startsWith('歼殛战/') ||
+      source.startsWith('诛灭战/')) return 'trial';
+  if (source.startsWith('绝境战/')) return 'ultimate';
+  if (source.startsWith('生产制作') || source.startsWith('制作装强化')) return 'craftedGear';
+  return undefined;
+}
+
 export function maximumMateriaGradeForSlot(gearLevel: number, materiaIndex: number,
   materiaSlotCount: number): G.MateriaGrade | undefined {
   const canUseRestrictedMateria = materiaIndex <= materiaSlotCount;
@@ -178,7 +239,8 @@ function optimizerFoods(store: IStore, locked: boolean): OptimizerFood[] {
 
 export function createGearOptimizationInput(store: IStore,
   lockedSlots: number[], targetGcd: number, excludedGearIds: number[] = [],
-  lockedMateriaSlots: number[] = []): GearOptimizationInput {
+  lockedMateriaSlots: number[] = [],
+  excludedGearCategories: OptimizerGearCategory[] = []): GearOptimizationInput {
   if (store.job === undefined || store.schema.mainStat === undefined ||
       store.schema.statModifiers === undefined || store.schema.traitDamageMultiplier === undefined) {
     throw new Error('仅支持具有每威力伤害期望的战斗职业。');
@@ -222,6 +284,7 @@ export function createGearOptimizationInput(store: IStore,
     throw new Error('唯一品戒指不能同时装备两枚。');
   }
   const lockedIdSet = new Set(lockedGearIds);
+  const excludedCategorySet = new Set(excludedGearCategories);
   const configuredById = new Map<number, IGear>();
   for (const gear of store.gears.values()) {
     if (gear !== undefined && !gear.isFood) {
@@ -235,6 +298,10 @@ export function createGearOptimizationInput(store: IStore,
     const gear = item as G.Gear;
     if (gear.equipLevel > store.schema.jobLevel) continue;
     if (excludedIdSet.has(gear.id)) continue;
+    if (excludedCategorySet.size > 0 && !lockedIdSet.has(gear.id)) {
+      const category = optimizerGearCategoryOf(gear);
+      if (category !== undefined && excludedCategorySet.has(category)) continue;
+    }
     const configured = configuredById.get(gear.id);
     if (gear.customizable && (configured?.customStats?.size ?? 0) === 0) continue;
     const prepared = prepareGear(store, gear, configured);

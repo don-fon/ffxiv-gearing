@@ -3,7 +3,12 @@ import * as mobxReact from 'mobx-react-lite';
 import { Button } from './@rmwc/button';
 import * as G from '../game';
 import { gearData, gearDataOrdered, loadGearDataOfLevelRange, resolveGearColor } from '../stores';
-import { createGearOptimizationInput } from '../optimizerInput';
+import {
+  createGearOptimizationInput,
+  optimizerGearCategoryOf,
+  optimizerGearCategoryOptions,
+} from '../optimizerInput';
+import type { OptimizerGearCategory } from '../optimizerInput';
 import type {
   GearOptimizationInput,
   GearOptimizationResult,
@@ -22,7 +27,18 @@ type WorkerResponse =
   { type: 'result', result: GearOptimizationResult } |
   { type: 'error', message: string };
 
-const gearIdSetKey = (ids: number[]) => ids.slice().sort((left, right) => left - right).join(',');
+const exclusionKey = (ids: number[], categories: OptimizerGearCategory[]) => [
+  ids.slice().sort((left, right) => left - right).join(','),
+  categories.slice().sort().join(','),
+].join('|');
+const specialWeaponCategories = new Set<OptimizerGearCategory>([
+  'zodiacWeapon', 'animaWeapon', 'eurekaWeapon', 'resistanceWeapon',
+  'mandervilleWeapon', 'phantomWeapon',
+]);
+const specialGearCategories = new Set<OptimizerGearCategory>([
+  'eurekaGear', 'bozjaGear', 'crescentIsleGear', 'artifactGear', 'wolfMarkGear',
+  'deepDungeonGear', 'wondrousTailsGear',
+]);
 
 export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ toggle }) => {
   const store = useStore();
@@ -33,6 +49,11 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const [ lockedSlots, setLockedSlots ] = React.useState<number[]>([]);
   const [ lockedMateriaSlots, setLockedMateriaSlots ] = React.useState<number[]>([]);
   const [ excludedGearIds, setExcludedGearIds ] = React.useState<number[]>([]);
+  const [ excludedGearCategories, setExcludedGearCategories ] =
+    React.useState<OptimizerGearCategory[]>([]);
+  const [ previewedGearCategory, setPreviewedGearCategory ] =
+    React.useState<OptimizerGearCategory>();
+  const [ exclusionsExpanded, setExclusionsExpanded ] = React.useState(false);
   const [ targetGcd, setTargetGcd ] = React.useState(initialGcd.toFixed(2));
   const [ status, setStatus ] = React.useState<Status>('idle');
   const [ progress, setProgress ] = React.useState<OptimizerProgress>();
@@ -76,6 +97,44 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   });
   const lockedGearIds = new Set<number>(lockable.flatMap(({ slot, gear }) =>
     lockedSlots.includes(slot) && !gear.isFood ? [Math.abs(gear.id)] : []));
+  const orderedGearData = gearDataOrdered.get();
+  const categorySlotKey = store.schema.slots
+    .filter(slot => slot.slot > 0 && slot.levelWeight !== 0)
+    .map(slot => Math.abs(slot.slot))
+    .join(',');
+  const availableGearCategories = React.useMemo(() => {
+    const slots = new Set(categorySlotKey.split(',').filter(Boolean).map(Number));
+    const gearsByCategory = new Map<OptimizerGearCategory, G.Gear[]>();
+    for (const item of orderedGearData) {
+      if (item.slot <= 0 || !slots.has(item.slot) ||
+          item.level < store.minLevel || item.level > store.maxLevel ||
+          !G.jobCategories[item.jobCategory][store.job!]) continue;
+      const gear = item as G.Gear;
+      if (gear.equipLevel > store.schema.jobLevel ||
+          (gear.obsolete && store.setting.hideObsoleteGears)) continue;
+      const category = optimizerGearCategoryOf(gear);
+      if (category !== undefined) {
+        const gears = gearsByCategory.get(category) ?? [];
+        gears.push(gear);
+        gearsByCategory.set(category, gears);
+      }
+    }
+    return optimizerGearCategoryOptions.flatMap(option => {
+      const gears = gearsByCategory.get(option.id) ?? [];
+      return gears.length === 0 ? [] : [{ ...option, count: gears.length, gears }];
+    });
+  }, [
+    categorySlotKey,
+    orderedGearData,
+    store.job,
+    store.maxLevel,
+    store.minLevel,
+    store.schema.jobLevel,
+    store.setting.hideObsoleteGears,
+  ]);
+  const availableGearCategoryIds = new Set(availableGearCategories.map(category => category.id));
+  const activeExcludedGearCategories = excludedGearCategories.filter(category =>
+    availableGearCategoryIds.has(category));
 
   const toggleLock = (slot: number) => {
     if (!lockedSlots.includes(slot)) {
@@ -110,9 +169,21 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     setError('');
   };
 
+  const toggleExcludedGearCategory = (category: OptimizerGearCategory) => {
+    setExcludedGearCategories(categories => categories.includes(category)
+      ? categories.filter(value => value !== category)
+      : categories.concat(category));
+    setStatus('idle');
+    setError('');
+  };
+
   const start = async () => {
     const calculationExcludedGearIds = excludedGearIds.slice();
-    const calculationExcludedGearKey = gearIdSetKey(calculationExcludedGearIds);
+    const calculationExcludedGearCategories = activeExcludedGearCategories.slice();
+    const calculationExcludedGearKey = exclusionKey(
+      calculationExcludedGearIds,
+      calculationExcludedGearCategories,
+    );
     const parsedTargetGcd = targetGcd.trim() === '' ? NaN : Number(targetGcd);
     const parsedMinimumTenacityMitigation = minimumTenacityMitigation.trim() === ''
       ? NaN
@@ -164,6 +235,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         parsedTargetGcd,
         calculationExcludedGearIds,
         lockedMateriaSlots,
+        calculationExcludedGearCategories,
       );
       input = isTank
         ? {
@@ -285,9 +357,18 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const minimumTenacityMitigationValid = Number.isFinite(parsedMinimumTenacityMitigation) &&
     parsedMinimumTenacityMitigation >= 0 && parsedMinimumTenacityMitigation < 100;
   const tankObjectiveValid = !isTank || minimumTenacityMitigationValid;
-  const excludedGearKey = gearIdSetKey(excludedGearIds);
+  const excludedGearKey = exclusionKey(excludedGearIds, activeExcludedGearCategories);
   const excludedGearIdSet = new Set(excludedGearIds);
   const resultIsStale = result !== undefined && resultExcludedGearKey !== excludedGearKey;
+  const specialWeaponCategoryOptions = availableGearCategories.filter(category =>
+    specialWeaponCategories.has(category.id));
+  const specialGearCategoryOptions = availableGearCategories.filter(category =>
+    specialGearCategories.has(category.id));
+  const regularGearCategoryOptions = availableGearCategories.filter(category =>
+    !specialWeaponCategories.has(category.id) && !specialGearCategories.has(category.id));
+  const previewedGearCategoryOption = availableGearCategories.find(category =>
+    category.id === previewedGearCategory);
+  const exclusionConditionCount = excludedGearIds.length + activeExcludedGearCategories.length;
   const slotOrder = new Map<number, number>();
   for (const [ index, slot ] of store.schema.slots.entries()) {
     if (slot.slot === -1) continue;
@@ -296,6 +377,41 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   }
   const orderedResultGears = result?.gears.slice().sort((left, right) =>
     (slotOrder.get(left.slot) ?? Infinity) - (slotOrder.get(right.slot) ?? Infinity));
+  const previewedCategoryGears = previewedGearCategoryOption?.gears.slice().sort((left, right) => {
+    const slotDifference = (slotOrder.get(left.slot) ?? Infinity) -
+      (slotOrder.get(right.slot) ?? Infinity);
+    return slotDifference !== 0 ? slotDifference : right.level - left.level || left.id - right.id;
+  });
+  const categoryButton = (category: typeof availableGearCategories[number]) => {
+    const selected = activeExcludedGearCategories.includes(category.id);
+    const previewed = previewedGearCategory === category.id;
+    return (
+      <div
+        key={category.id}
+        className={`gear-optimization_category-option${selected ? ' -selected' : ''}`}
+      >
+        <button
+          type="button"
+          className="gear-optimization_category-toggle"
+          aria-pressed={selected}
+          disabled={busy}
+          onClick={() => toggleExcludedGearCategory(category.id)}
+        >
+          <span>{category.label}</span>
+          <span>{category.count}</span>
+        </button>
+        <button
+          type="button"
+          className="gear-optimization_category-preview"
+          aria-label={`查看${category.label}包含的装备`}
+          aria-expanded={previewed}
+          aria-controls="gear-optimization_category-preview"
+          title={`查看${category.label}包含的装备`}
+          onClick={() => setPreviewedGearCategory(previewed ? undefined : category.id)}
+        >?</button>
+      </div>
+    );
+  };
   return (
     <div className="gear-optimization card">
       <div className="gear-optimization_intro">
@@ -409,10 +525,83 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         默认只锁定装备或食物 ID；锁定已镶嵌魔晶石的装备后，点亮右侧图标可同时保留当前魔晶石。
       </div>
 
-      <div className="gear-optimization_section-title">排除装备（可多选）</div>
-      {excludedGearIds.length === 0 ? (
-        <div className="gear-optimization_empty">计算后可在结果中勾选要排除的装备。</div>
-      ) : (
+      <label className="gear-optimization_section-title gear-optimization_exclusion-toggle">
+        <input
+          type="checkbox"
+          checked={exclusionsExpanded}
+          aria-controls="gear-optimization_exclusion-content"
+          aria-expanded={exclusionsExpanded}
+          onChange={event => {
+            setExclusionsExpanded(event.target.checked);
+            if (!event.target.checked) setPreviewedGearCategory(undefined);
+          }}
+        />
+        <span>排除装备</span>
+        {exclusionConditionCount > 0 && (
+          <span className="gear-optimization_exclusion-count">已选 {exclusionConditionCount}</span>
+        )}
+      </label>
+      {exclusionsExpanded && (
+        <div id="gear-optimization_exclusion-content">
+      {specialWeaponCategoryOptions.length > 0 && (
+        <div className="gear-optimization_category-group">
+          <div className="gear-optimization_category-label">特殊武器</div>
+          <div className="gear-optimization_category-list">
+            {specialWeaponCategoryOptions.map(categoryButton)}
+          </div>
+        </div>
+      )}
+      {specialGearCategoryOptions.length > 0 && (
+        <div className="gear-optimization_category-group">
+          <div className="gear-optimization_category-label">特殊获取</div>
+          <div className="gear-optimization_category-list">
+            {specialGearCategoryOptions.map(categoryButton)}
+          </div>
+        </div>
+      )}
+      {regularGearCategoryOptions.length > 0 && (
+        <div className="gear-optimization_category-group">
+          <div className="gear-optimization_category-label">装备来源</div>
+          <div className="gear-optimization_category-list">
+            {regularGearCategoryOptions.map(categoryButton)}
+          </div>
+        </div>
+      )}
+      {previewedGearCategoryOption !== undefined && previewedCategoryGears !== undefined && (
+        <div
+          id="gear-optimization_category-preview"
+          className="gear-optimization_category-preview-panel"
+          role="region"
+          aria-label={`${previewedGearCategoryOption.label}包含的装备`}
+        >
+          <div className="gear-optimization_category-preview-heading">
+            <strong>{previewedGearCategoryOption.label}（{previewedCategoryGears.length}）</strong>
+            <button
+              type="button"
+              aria-label="关闭装备清单"
+              title="关闭装备清单"
+              onClick={() => setPreviewedGearCategory(undefined)}
+            >×</button>
+          </div>
+          <div className="gear-optimization_category-preview-items">
+            {previewedCategoryGears.map(gear => {
+              const slot = store.schema.slots.find(candidate =>
+                Math.abs(candidate.slot) === gear.slot && candidate.slot !== -12);
+              const color = resolveGearColor(gear, store.setting.gearColorScheme);
+              return (
+                <div key={gear.id} className={`gears_color-${color}`}>
+                  <span className="gear-optimization_category-preview-slot">
+                    {slot?.shortName ?? slot?.name ?? `部位 ${gear.slot}`}
+                  </span>
+                  <span className="gears_name">{gear.name}</span>
+                  <span>il{gear.level}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {excludedGearIds.length > 0 && (
         <div className="gear-optimization_exclusions">
           <div className="gear-optimization_exclusion-list">
             {excludedGearIds.map(id => (
@@ -428,19 +617,28 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
               </button>
             ))}
           </div>
+        </div>
+      )}
+      {exclusionConditionCount > 0 && (
+        <div className="gear-optimization_clear-exclusions-row">
           <button
             className="gear-optimization_clear-exclusions"
             type="button"
             disabled={busy}
             onClick={() => {
               setExcludedGearIds([]);
+              setExcludedGearCategories([]);
               setStatus('idle');
               setError('');
             }}
           >清空排除</button>
         </div>
       )}
-      <div className="gear-optimization_lock-tip">按装备 ID 排除；相同 ID 的两枚戒指会同时排除。</div>
+      <div className="gear-optimization_lock-tip">
+        可在计算前按来源排除，计算后仍可继续排除单件装备；锁定装备不受来源排除影响。
+      </div>
+        </div>
+      )}
 
       {status === 'loading' && <div className="gear-optimization_status">正在加载候选装备数据…</div>}
       {status === 'running' && (
@@ -529,7 +727,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           onClick={start}
         >
           {result === undefined
-            ? excludedGearIds.length > 0 ? `计算排除方案（${excludedGearIds.length}）` : '开始计算'
+            ? exclusionConditionCount > 0 ? `计算排除方案（${exclusionConditionCount}）` : '开始计算'
             : resultIsStale ? '按排除条件重新计算' : '重新计算'}
         </Button>
         {result !== undefined && (
