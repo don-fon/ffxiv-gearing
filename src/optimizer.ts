@@ -64,6 +64,7 @@ export interface OptimizerLockedGear {
 }
 
 export interface GearOptimizationInput {
+  candidateShard?: { index: number; count: number };
   syncLevel?: number;
   fixedStats: OptimizerStats;
   gears: OptimizerGear[];
@@ -87,6 +88,7 @@ export type GearOptimizationObjective =
   { type: 'minimumTenacity', minimumTenacityMitigation: number };
 
 export interface OptimizerSpeedPartition {
+  candidateShard?: { index: number; count: number };
   foodId?: number;
   contribution: number;
   heuristicDamage: number;
@@ -117,6 +119,7 @@ export interface OptimizerGearChoice {
 }
 
 export interface GearOptimizationResult {
+  empty?: boolean;
   damage: number;
   tenacityMitigation: number;
   stats: OptimizerStats;
@@ -194,6 +197,7 @@ export type OptimizerSearchBackend = ((task: OptimizerSearchTask,
   report: (progress: OptimizerSearchUpdate) => void) => OptimizerSearchResult | undefined) & {
     pareto?: <T extends GearOption>(options: T[]) => T[] | undefined;
     warmStartMinimumWork?: number;
+    candidateShardCount?: number;
   };
 
 interface SpeedSearchPlan {
@@ -1152,7 +1156,12 @@ function improveGreedySolution(input: GearOptimizationInput, plan: SpeedSearchPl
 }
 
 function validateOptimizationInput(input: GearOptimizationInput): void {
-
+  if (input.candidateShard !== undefined && (!Number.isInteger(input.candidateShard.count) ||
+      !Number.isInteger(input.candidateShard.index) || input.candidateShard.count < 1 ||
+      input.candidateShard.count > 64 || input.candidateShard.index < 0 ||
+      input.candidateShard.index >= input.candidateShard.count)) {
+    throw new Error('Invalid optimizer candidate shard.');
+  }
   if (!Number.isFinite(input.targetGcd) || input.targetGcd <= 0 ||
       Math.abs(input.targetGcd * 100 - Math.round(input.targetGcd * 100)) > 1e-7) {
     throw new Error('目标 GCD 必须是大于 0 且最多包含两位小数的秒数。');
@@ -1338,7 +1347,22 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   searchBackend?: OptimizerSearchBackend): GearOptimizationResult {
   validateOptimizationInput(input);
   const groups = prepareSearchGroups(input, searchBackend);
-
+  if (input.candidateShard !== undefined) {
+    // Split a fixed candidate group BEFORE incumbent-dependent state pruning.
+    // Hashing later prefix states would be unsafe if different workers have
+    // different incumbent bounds or switch to tree search at different stages.
+    const { index, count } = input.candidateShard;
+    const last = groups.length - 1;
+    groups[last] = groups[last].filter(option => {
+      let hash = 2166136261;
+      const signature = statSignature(option.stats);
+      for (let position = 0; position < signature.length; position++) {
+        hash = Math.imul(hash ^ signature.charCodeAt(position), 16777619) >>> 0;
+      }
+      return hash % count === index;
+    });
+    if (groups[last].length === 0) throw new NoFeasibleOptimizationSolution();
+  }
   const speedPlan = buildSpeedSearchPlan(groups, input);
   const combinedDamage = createCombinedDamageCalculator(input);
   let bestState: SearchState | undefined = improveGreedySolution(input, speedPlan,
@@ -1655,7 +1679,12 @@ export function planGearOptimization(input: GearOptimizationInput,
       right.estimatedWork - left.estimatedWork);
   const heuristicResult = plans.map(plan => plan.heuristicResult)
     .reduce((best, candidate) => candidate.damage > best.damage ? candidate : best);
-  return { partitions, heuristicResult };
+  const shardCount = Math.max(1, Math.min(64, Math.trunc(backend?.candidateShardCount ?? 1)));
+  const tasks = partitions.flatMap(partition => shardCount === 1 || partition.estimatedWork < 10_000_000_000
+    ? [partition]
+    : Array.from({ length: shardCount }, (_, index) => ({ ...partition,
+      candidateShard: { index, count: shardCount }, estimatedWork: partition.estimatedWork / shardCount })));
+  return { partitions: tasks, heuristicResult };
 }
 
 export function optimizeGearset(input: GearOptimizationInput,
@@ -1677,6 +1706,10 @@ export function optimizeGearset(input: GearOptimizationInput,
       if (!(error instanceof NoFeasibleOptimizationSolution)) throw error;
     }
   }
-  if (best === undefined) throw noFeasibleOptimizationError(input);
+  if (best === undefined) {
+    if (input.candidateShard !== undefined) return { empty: true, damage: -Infinity,
+      tenacityMitigation: 0, stats: {}, gears: [], exploredStates };
+    throw noFeasibleOptimizationError(input);
+  }
   return { ...best, exploredStates };
 }

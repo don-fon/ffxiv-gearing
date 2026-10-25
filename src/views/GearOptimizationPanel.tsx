@@ -322,6 +322,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           type: 'optimize',
           input: {
             ...input,
+            candidateShard: partition.candidateShard,
             food,
             foods: undefined,
             targetSpeedContribution,
@@ -364,7 +365,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         assign(worker);
       }
     };
-    planner.postMessage({ type: 'plan', input });
+    planner.postMessage({ type: 'plan', input, workers: selectedWorkerCount });
   };
 
   const busy = status === 'loading' || status === 'running';

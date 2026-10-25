@@ -163,6 +163,23 @@ test('WASM dominance frontier matches JavaScript with duplicates and signed coor
   }
 });
 
+test('candidate shards cover the exact optimum across objectives, locks and food inputs', async () => {
+  const backend = await adapter.createWasmSearchBackend(bytes);
+  for (let seed = 0; seed < 32; seed++) {
+    const input = fixture(seed);
+    let expected;
+    try { expected = solver.optimizeGearset(input); } catch { continue; }
+    const seedDamage = solver.planGearOptimization(input).heuristicResult.damage;
+    const results = Array.from({ length: 4 }, (_, index) => solver.optimizeGearset({
+      ...input, candidateShard: { index, count: 4 }, globalMinimumDamage: index % 2 ? seedDamage : 0,
+    }, undefined, index % 2 ? backend : undefined));
+    const best = Math.max(seedDamage, ...results.map(result => result.damage));
+    assert.ok(Math.abs(best - expected.damage) <= 1e-11);
+    assert.ok(results.every(result => !result.empty || result.gears.length === 0 && result.damage === -Infinity));
+  }
+  assert.throws(() => solver.optimizeGearset({ ...fixture(1), candidateShard: { index: 4, count: 4 } }), /shard/);
+});
+
 test('bounded pair warm starts preserve the exact optimum', async () => {
   const backend = await adapter.createWasmSearchBackend(bytes);
   backend.warmStartMinimumWork = 0;

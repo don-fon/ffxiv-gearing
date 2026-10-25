@@ -28,6 +28,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       backend.warmStartMinimumWork = event.data.engine === 'wasm-warm' ? 10_000_000_000 : undefined;
     }
     if (event.data.type === 'plan') {
+      if (backend !== undefined) backend.candidateShardCount = event.data.shards ?? event.data.workers ?? 1;
       const plan = planGearOptimization(event.data.input, backend);
       self.postMessage({ type: 'plan', plan });
       return;
