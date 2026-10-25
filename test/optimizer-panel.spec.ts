@@ -39,6 +39,11 @@ test('running workers survive hiding, and results received while hidden remain a
             },
           } }));
         } else {
+          window.addEventListener('optimizer-test-progress', () => {
+            if (!this.terminated) this.onmessage?.({ data: { type: 'progress', progress: {
+              completedGroups: 2, totalGroups: 4, states: 42, visitedBranches: 100_000,
+            } } });
+          });
           window.addEventListener('optimizer-test-finish', () => {
             if (!this.terminated) this.onmessage?.({ data: { type: 'result', result: this.result } });
           }, { once: true });
@@ -52,6 +57,8 @@ test('running workers survive hiding, and results received while hidden remain a
   await expect(page.getByRole('spinbutton', { name: '目标 GCD' })).toBeDisabled();
   // Wait until the planner created the optimize worker.
   await expect(page.locator('.gear-optimization_status')).toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event('optimizer-test-progress')));
+  await expect(page.locator('.gear-optimization_status')).toContainText('100000 个属性分支、42 个完整组合');
   await page.locator('body').click({ position: { x: 1400, y: 1100 } });
   await expect(page.locator('.gear-optimization')).toBeHidden();
   await page.getByRole('button', { name: '自动配装', exact: true }).click();

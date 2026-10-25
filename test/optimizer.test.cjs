@@ -810,3 +810,75 @@ test('same-speed candidates dominated in every damage stat are removed', () => {
   assert.equal(result.gears[0].id, 2);
   assert.ok(result.exploredStates <= 1);
 });
+
+test('bounded multi-tree search matches exhaustive results across speed, food and mitigation constraints', () => {
+  // Force the bounded path on small fixtures so an independent exhaustive check is practical.
+  const boundedSource = source
+    .replace('const maximumStateExpansion = 1_000_000;', 'const maximumStateExpansion = 4;')
+    .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;');
+  assert.notEqual(boundedSource, source);
+  const bounded = {};
+  vm.runInNewContext(ts.transpileModule(boundedSource, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, {
+    exports: bounded, module: { exports: bounded },
+    require: request => request === './statFormulas' ? statFormulas : require(request),
+  });
+  const slots = [3, 4, 5, 7];
+  for (let seed = 0; seed < 100; seed++) {
+    const context = seed % 4 < 2 ? tankDamage : { ...tankDamage,
+      level: { ...tankDamage.level, main: 292, sub: 364, div: 900, det: 900 } };
+    const fixedStats = {
+      STR: 2000, VIT: 2000, CRT: context.level.sub, DET: context.level.main,
+      DHT: context.level.sub, TEN: context.level.sub, SKS: context.level.sub, PDMG: 100,
+    };
+    const gears = slots.flatMap((slot, index) => Array.from({ length: 3 }, (_, option) =>
+      gear(index * 3 + option + 1, `${index}-${option}`, 1, slot, {
+        STR: 10 + (index * 7 + option * 3 + seed) % 9,
+        CRT: (index * 11 + option * 17 + seed * 5) % 91,
+        DET: (index * 19 + option * 7 + seed * 3) % 89,
+        DHT: (index * 13 + option * 23 + seed * 7) % 97,
+        TEN: option * 80,
+        SKS: option * 25,
+      }, 1000, 0)));
+    const foods = [
+      { id: 1, name: 'crit', stats: { CRT: 20, SKS: 20 }, statRates: { CRT: 10, SKS: 10 } },
+      { id: 2, name: 'det', stats: { DET: 20, TEN: 20 }, statRates: { DET: 10, TEN: 10 } },
+    ];
+    const targetGcd = seed % 2 ? 2.49 : 2.50;
+    const minimum = seed % 3 ? 0 : 0.02;
+    const input = {
+      fixedStats, gears, slots, foods, lockedGearIds: [],
+      materiaStats: ['CRT', 'DET', 'DHT', 'TEN', 'SKS'], speedStat: 'SKS',
+      targetGcd, damage: context,
+      objective: { type: 'minimumTenacity', minimumTenacityMitigation: minimum },
+    };
+    let combinations = [{ ...fixedStats }];
+    for (const slot of slots) {
+      combinations = combinations.flatMap(stats => gears.filter(item => item.slot === slot).map(item => {
+        const combined = { ...stats };
+        for (const [stat, value] of Object.entries(item.stats)) combined[stat] = (combined[stat] ?? 0) + value;
+        return combined;
+      }));
+    }
+    const valid = combinations.flatMap(rawStats => foods.map(food => {
+      const stats = { ...rawStats };
+      for (const [stat, cap] of Object.entries(food.stats)) {
+        stats[stat] += Math.min(cap, Math.trunc(stats[stat] * food.statRates[stat] / 100));
+      }
+      return stats;
+    })).filter(stats => {
+      const reduction = Math.trunc(130 * (stats.SKS - context.level.sub) / context.level.div);
+      const gcd = Math.trunc(Math.trunc((1000 - reduction) * 2500 / 1000) / 10) / 100;
+      return gcd === targetGcd && calculateTenacityMitigation(stats.TEN, context.level) >= minimum;
+    });
+    if (valid.length === 0) {
+      assert.throws(() => bounded.optimizeGearset(input), /没有找到/);
+    } else {
+      const result = bounded.optimizeGearset(input);
+      assert.equal(result.damage, Math.max(...valid.map(stats => calculateExpectedDamage(stats, context))));
+      assert.equal(result.gears.length, slots.length);
+      for (const slot of slots) assert.equal(result.gears.filter(item => item.slot === slot).length, 1);
+    }
+  }
+});

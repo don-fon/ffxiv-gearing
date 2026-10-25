@@ -286,11 +286,19 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       let completed = 0;
       let exploredStates = 0;
       let bestResult: GearOptimizationResult = heuristicResult;
-      const updateProgress = () => setProgress({
-        completedGroups: completed,
-        totalGroups: partitions.length,
-        states: Array.from(activeProgress.values()).reduce((total, value) => total + value.states, 0),
-      });
+      const updateProgress = () => {
+        const values = Array.from(activeProgress.values());
+        const searching = values.some(value => value.visitedBranches !== undefined);
+        setProgress({
+          completedGroups: completed,
+          totalGroups: partitions.length,
+          states: values.filter(value => !searching || value.visitedBranches !== undefined)
+            .reduce((total, value) => total + value.states, 0),
+          visitedBranches: searching
+            ? values.reduce((total, value) => total + (value.visitedBranches ?? 0), 0)
+            : undefined,
+        });
+      };
       const assign = (worker: Worker) => {
         if (nextIndex >= partitions.length) {
           worker.terminate();
@@ -645,6 +653,8 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         <div className="gear-optimization_status">
           {progress === undefined
             ? '正在分析候选食物和可达速度值…'
+            : progress.visitedBranches !== undefined
+              ? `正在精确搜索：已检查 ${progress.visitedBranches} 个属性分支、${progress.states} 个完整组合…`
             : `已完成 ${progress.completedGroups}/${progress.totalGroups} 个食物/速度分片，当前保留 ${progress.states} 个属性状态…`}
         </div>
       )}

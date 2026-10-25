@@ -129,6 +129,7 @@ export interface OptimizerProgress {
   completedGroups: number;
   totalGroups: number;
   states: number;
+  visitedBranches?: number;
 }
 
 interface GearOption {
@@ -178,6 +179,7 @@ const damageStats: OptimizerStat[] = [
 const scoredStats = damageStats.filter(stat => stat !== 'SKS' && stat !== 'SPS');
 const maximumContractionProduct = 250_000;
 const maximumContractedOptions = 100_000;
+const maximumStateExpansion = 1_000_000;
 const maximumGroupContractions = 7;
 const dominanceLeafSize = 32;
 const finalOptionLeafSize = 1;
@@ -1175,6 +1177,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
 
   // Keep the largest group for the final tree search. GCD tiers with several
   // reachable exact speeds are split into independent worker tasks by the UI.
+  let finalGroupIndex = groups.length - 1;
   for (let groupIndex = 0; groupIndex < groups.length - 1; groupIndex++) {
     const statesByPrefix = new Map<number, SearchState[]>();
     for (const state of states) {
@@ -1198,6 +1201,14 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
         });
         routesByNextPrefix.set(nextPrefix, routes);
       }
+    }
+    const expansionSize = Array.from(routesByNextPrefix.values()).reduce((total, routes) =>
+      total + routes.reduce((count, route) => count + route.states.length * route.options.length, 0), 0);
+    if (expansionSize > maximumStateExpansion) {
+      // Search the remaining groups through their trees instead of materializing
+      // a Cartesian product that can exceed JavaScript Map's capacity.
+      finalGroupIndex = groupIndex;
+      break;
     }
     const frontier: SearchState[] = [];
     // Dominance is only comparable at identical speed. Finish one cumulative
@@ -1244,79 +1255,109 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     tree: buildAttributeTree(sameSpeed, finalStateLeafSize),
   }));
 
-  const upperDamage = (stateNode: AttributeTreeNode<SearchState>,
-    optionNode: AttributeTreeNode<GearOption>): number =>
-    feasibleDamageBound(stateNode.maxima, optionNode.maxima, input, combinedDamage);
+  const sumMaxima = (nodes: AttributeTreeNode<GearOption>[]): OptimizerStats =>
+    nodes.reduce((stats, node) => addStats(stats, node.maxima), {});
+  const upperDamage = (stateNode: AttributeTreeNode<SearchState>, maxima: OptimizerStats): number =>
+    feasibleDamageBound(stateNode.maxima, maxima, input, combinedDamage);
+  const replaceMaxima = (maxima: OptimizerStats, previous: OptimizerStats,
+    next: OptimizerStats): OptimizerStats => {
+    const result: OptimizerStats = {};
+    for (const stat of scoredStats) {
+      if (maxima[stat] !== undefined || next[stat] !== undefined) {
+        result[stat] = (maxima[stat] ?? 0) - (previous[stat] ?? 0) + (next[stat] ?? 0);
+      }
+    }
+    return result;
+  };
+  let visitedBranches = 0;
+  let lastProgressTime = Date.now();
   const searchFinalOptions = (stateNode: AttributeTreeNode<SearchState>,
-    optionNode: AttributeTreeNode<GearOption>,
-    bound = upperDamage(stateNode, optionNode)): void => {
+    optionNodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats,
+    bound = upperDamage(stateNode, maxima)): void => {
     if (bound <= pruningDamage) return;
-    if (stateNode.items !== undefined && optionNode.items !== undefined) {
+    visitedBranches++;
+    if (visitedBranches % 10_000 === 0 && Date.now() - lastProgressTime >= 1000) {
+      lastProgressTime = Date.now();
+      onProgress?.({ completedGroups: finalGroupIndex, totalGroups: groups.length,
+        states: finalCandidates, visitedBranches });
+    }
+    if (stateNode.items !== undefined && optionNodes.every(node => node.items !== undefined)) {
+      // Option trees have one item per leaf; prefix-state leaves can have several.
+      const optionStats = sumMaxima(optionNodes);
       for (const state of stateNode.items) {
-        for (const option of optionNode.items) {
-          exploredStates++;
-          const evaluation = evaluateCombinedStats(state.stats, option.stats, input, combinedDamage);
-          if (meetsObjective(evaluation, input) && evaluation.damage > bestEvaluation.damage) {
-            const combinedStats = addStats(state.stats, option.stats);
-            const stats = applyFood(combinedStats, input.food);
-            bestEvaluation = evaluation;
-            pruningDamage = Math.max(pruningDamage, evaluation.damage);
-            bestStats = stats;
-            bestState = {
-              stats: combinedStats,
-              choices: [],
-              previous: state,
-              selected: option.choices,
-            };
-          }
-          finalCandidates++;
+        exploredStates++;
+        const evaluation = evaluateCombinedStats(state.stats, optionStats, input, combinedDamage);
+        if (meetsObjective(evaluation, input) && evaluation.damage > bestEvaluation.damage) {
+          const combinedStats = addStats(state.stats, optionStats);
+          bestEvaluation = evaluation;
+          pruningDamage = Math.max(pruningDamage, evaluation.damage);
+          bestStats = applyFood(combinedStats, input.food);
+          bestState = {
+            stats: combinedStats,
+            choices: [],
+            previous: state,
+            selected: optionNodes.flatMap(node => node.items![0].choices),
+          };
         }
+        finalCandidates++;
       }
       return;
     }
-    const splitStates = stateNode.items === undefined &&
-      (optionNode.items !== undefined || stateNode.count >= optionNode.count);
-    const leftState = splitStates ? stateNode.left! : stateNode;
-    const rightState = splitStates ? stateNode.right! : stateNode;
-    const leftOption = splitStates ? optionNode : optionNode.left!;
-    const rightOption = splitStates ? optionNode : optionNode.right!;
-    const leftBound = upperDamage(leftState, leftOption);
-    const rightBound = upperDamage(rightState, rightOption);
+    let splitIndex = -1;
+    let splitCount = stateNode.items === undefined ? stateNode.count : 0;
+    for (const [ index, node ] of optionNodes.entries()) {
+      if (node.items === undefined && node.count > splitCount) {
+        splitIndex = index;
+        splitCount = node.count;
+      }
+    }
+    const splitNode = splitIndex === -1 ? stateNode : optionNodes[splitIndex];
+    const leftState = splitIndex === -1 ? stateNode.left! : stateNode;
+    const rightState = splitIndex === -1 ? stateNode.right! : stateNode;
+    const leftOptions = optionNodes.slice();
+    const rightOptions = optionNodes.slice();
+    if (splitIndex !== -1) {
+      leftOptions[splitIndex] = splitNode.left!;
+      rightOptions[splitIndex] = splitNode.right!;
+    }
+    const leftMaxima = splitIndex === -1 ? maxima :
+      replaceMaxima(maxima, splitNode.maxima, splitNode.left!.maxima);
+    const rightMaxima = splitIndex === -1 ? maxima :
+      replaceMaxima(maxima, splitNode.maxima, splitNode.right!.maxima);
+    const leftBound = upperDamage(leftState, leftMaxima);
+    const rightBound = upperDamage(rightState, rightMaxima);
     if (leftBound >= rightBound) {
-      searchFinalOptions(leftState, leftOption, leftBound);
-      searchFinalOptions(rightState, rightOption, rightBound);
+      searchFinalOptions(leftState, leftOptions, leftMaxima, leftBound);
+      searchFinalOptions(rightState, rightOptions, rightMaxima, rightBound);
     } else {
-      searchFinalOptions(rightState, rightOption, rightBound);
-      searchFinalOptions(leftState, leftOption, leftBound);
+      searchFinalOptions(rightState, rightOptions, rightMaxima, rightBound);
+      searchFinalOptions(leftState, leftOptions, leftMaxima, leftBound);
     }
   };
 
-  {
-    const finalGroupIndex = groups.length - 1;
-    const finalTrees = new Map(Array.from(
-      speedPlan.optionsBySpeed[finalGroupIndex], ([ speed, options ]) =>
-        [speed, buildAttributeTree(options)] as const));
-    const finalSearches: Array<{
-      stateTree: AttributeTreeNode<SearchState>,
-      optionTree: AttributeTreeNode<GearOption>,
-      bound: number,
-    }> = [];
-    for (const { speed: stateSpeed, tree: stateTree } of stateTrees) {
-      const prefixSpeed = stateSpeed - speedPlan.fixedSpeed;
-      const allowedSpeeds = speedPlan.allowedOptionSpeeds[finalGroupIndex].get(prefixSpeed) ?? [];
-      for (const optionSpeed of allowedSpeeds) {
-        const optionTree = finalTrees.get(optionSpeed)!;
-        finalSearches.push({
-          stateTree,
-          optionTree,
-          bound: upperDamage(stateTree, optionTree),
-        });
+  const finalTrees = groups.map(() => new Map<number, AttributeTreeNode<GearOption>>());
+  const visitFinalSpeeds = (stateTree: AttributeTreeNode<SearchState>, groupIndex: number,
+    prefixSpeed: number, nodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats): void => {
+    if (groupIndex === groups.length) {
+      searchFinalOptions(stateTree, nodes, maxima);
+      return;
+    }
+    const remaining = speedPlan.completionMaxima[groupIndex].get(prefixSpeed);
+    if (remaining === undefined || feasibleDamageBound(stateTree.maxima,
+      addStats(maxima, remaining), input, combinedDamage) <= pruningDamage) return;
+    const allowedSpeeds = speedPlan.allowedOptionSpeeds[groupIndex].get(prefixSpeed) ?? [];
+    for (const speed of allowedSpeeds) {
+      let tree = finalTrees[groupIndex].get(speed);
+      if (tree === undefined) {
+        tree = buildAttributeTree(speedPlan.optionsBySpeed[groupIndex].get(speed)!);
+        finalTrees[groupIndex].set(speed, tree);
       }
+      visitFinalSpeeds(stateTree, groupIndex + 1, prefixSpeed + speed,
+        nodes.concat(tree), addStats(maxima, tree.maxima));
     }
-    finalSearches.sort((left, right) => right.bound - left.bound);
-    for (const { stateTree, optionTree, bound } of finalSearches) {
-      searchFinalOptions(stateTree, optionTree, bound);
-    }
+  };
+  for (const { speed, tree } of stateTrees) {
+    visitFinalSpeeds(tree, finalGroupIndex, speed - speedPlan.fixedSpeed, [], {});
   }
   onProgress?.({ completedGroups: groups.length, totalGroups: groups.length, states: finalCandidates });
   if (bestState === undefined || bestStats === undefined) {
