@@ -290,8 +290,9 @@ test('swapped slot attributes contract before the main search', () => {
     damage: simpleDamage,
   }, value => progress.push(value));
 
-  assert.equal(progress.length, 1);
-  assert.equal(progress[0].totalGroups, 1);
+  assert.ok(progress.every(update => update.totalGroups === 1));
+  assert.equal(progress[0].searchProgress, 0);
+  assert.equal(progress.at(-1).searchProgress, 1);
 });
 
 test('locking a gear ID restricts that slot without preserving old melds', () => {
@@ -815,13 +816,17 @@ test('bounded multi-tree search matches exhaustive results across speed, food an
   // Force the bounded path on small fixtures so an independent exhaustive check is practical.
   const boundedSource = source
     .replace('const maximumStateExpansion = 1_000_000;', 'const maximumStateExpansion = 4;')
-    .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;');
+    .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;')
+    .replace('visitedBranches % 10_000', 'visitedBranches % 1');
   assert.notEqual(boundedSource, source);
   const bounded = {};
+  let clock = 0;
+  let sawIntermediateProgress = false;
   vm.runInNewContext(ts.transpileModule(boundedSource, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText, {
     exports: bounded, module: { exports: bounded },
+    Date: { now: () => { clock += 1001; return clock; } },
     require: request => request === './statFormulas' ? statFormulas : require(request),
   });
   const slots = [3, 4, 5, 7];
@@ -875,12 +880,25 @@ test('bounded multi-tree search matches exhaustive results across speed, food an
     if (valid.length === 0) {
       assert.throws(() => bounded.optimizeGearset(input), /没有找到/);
     } else {
-      const result = bounded.optimizeGearset(input);
+      const updates = [];
+      const result = bounded.optimizeGearset(input, progress => {
+        if (progress.searchProgress !== undefined) updates.push(progress.searchProgress);
+      });
+      assert.equal(updates[0], 0);
+      assert.equal(updates.at(-1), 1);
+      for (let index = 0; index < updates.length; index++) {
+        assert.ok(updates[index] >= 0 && updates[index] <= 1);
+        if (index > 0 && !(updates[index - 1] === 1 && updates[index] === 0)) {
+          assert.ok(updates[index] + 1e-12 >= updates[index - 1]);
+        }
+        if (updates[index] > 0 && updates[index] < 1) sawIntermediateProgress = true;
+      }
       assert.equal(result.damage, Math.max(...valid.map(stats => calculateExpectedDamage(stats, context))));
       assert.equal(result.gears.length, slots.length);
       for (const slot of slots) assert.equal(result.gears.filter(item => item.slot === slot).length, 1);
     }
   }
+  assert.ok(sawIntermediateProgress, 'must exercise partial coverage, including skipped branches');
 });
 
 test('secondary-budget bound stays above feasible damage across food-cap boundaries', () => {

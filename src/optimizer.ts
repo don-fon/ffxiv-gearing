@@ -130,6 +130,7 @@ export interface OptimizerProgress {
   totalGroups: number;
   states: number;
   visitedBranches?: number;
+  searchProgress?: number;
 }
 
 interface GearOption {
@@ -1350,17 +1351,45 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     }
     return result;
   };
+  // Count feasible suffix combinations by speed without enumerating them. This
+  // weights coverage of the final search space, not its unpredictable wall time.
+  const suffixWork = groups.map(() => new Map<number, number>());
+  const completionWork = (groupIndex: number, prefixSpeed: number): number => {
+    if (groupIndex === groups.length) return 1;
+    const cached = suffixWork[groupIndex].get(prefixSpeed);
+    if (cached !== undefined) return cached;
+    let work = 0;
+    for (const speed of speedPlan.allowedOptionSpeeds[groupIndex].get(prefixSpeed) ?? []) {
+      work += speedPlan.optionsBySpeed[groupIndex].get(speed)!.length *
+        completionWork(groupIndex + 1, prefixSpeed + speed);
+    }
+    suffixWork[groupIndex].set(prefixSpeed, work);
+    return work;
+  };
+  const totalWork = stateTrees.reduce((total, { speed, tree }) => total + tree.count *
+    completionWork(finalGroupIndex, speed - speedPlan.fixedSpeed), 0);
+  let completedWork = 0;
   let visitedBranches = 0;
   let lastProgressTime = Date.now();
+  const reportSearchProgress = (finished = false) => onProgress?.({
+    completedGroups: finished ? groups.length : finalGroupIndex,
+    totalGroups: groups.length,
+    states: finalCandidates,
+    visitedBranches,
+    searchProgress: finished ? 1 : Math.min(0.999999, totalWork > 0 ? completedWork / totalWork : 0),
+  });
+  reportSearchProgress();
   const searchFinalOptions = (stateNode: AttributeTreeNode<SearchState>,
-    optionNodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats,
+    optionNodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats, work: number,
     bound = upperDamage(stateNode, maxima, optionNodes)): void => {
-    if (bound <= pruningDamage) return;
+    if (bound <= pruningDamage) {
+      completedWork += work;
+      return;
+    }
     visitedBranches++;
     if (visitedBranches % 10_000 === 0 && Date.now() - lastProgressTime >= 1000) {
       lastProgressTime = Date.now();
-      onProgress?.({ completedGroups: finalGroupIndex, totalGroups: groups.length,
-        states: finalCandidates, visitedBranches });
+      reportSearchProgress();
     }
     if (stateNode.items !== undefined && optionNodes.every(node => node.items !== undefined)) {
       // Option trees have one item per leaf; prefix-state leaves can have several.
@@ -1382,6 +1411,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
         }
         finalCandidates++;
       }
+      completedWork += work;
       return;
     }
     let splitIndex = -1;
@@ -1405,27 +1435,34 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
       replaceMaxima(maxima, splitNode.maxima, splitNode.left!.maxima);
     const rightMaxima = splitIndex === -1 ? maxima :
       replaceMaxima(maxima, splitNode.maxima, splitNode.right!.maxima);
+    const leftWork = work * splitNode.left!.count /
+      (splitNode.left!.count + splitNode.right!.count);
+    const rightWork = work - leftWork;
     const leftBound = upperDamage(leftState, leftMaxima, leftOptions);
     const rightBound = upperDamage(rightState, rightMaxima, rightOptions);
     if (leftBound >= rightBound) {
-      searchFinalOptions(leftState, leftOptions, leftMaxima, leftBound);
-      searchFinalOptions(rightState, rightOptions, rightMaxima, rightBound);
+      searchFinalOptions(leftState, leftOptions, leftMaxima, leftWork, leftBound);
+      searchFinalOptions(rightState, rightOptions, rightMaxima, rightWork, rightBound);
     } else {
-      searchFinalOptions(rightState, rightOptions, rightMaxima, rightBound);
-      searchFinalOptions(leftState, leftOptions, leftMaxima, leftBound);
+      searchFinalOptions(rightState, rightOptions, rightMaxima, rightWork, rightBound);
+      searchFinalOptions(leftState, leftOptions, leftMaxima, leftWork, leftBound);
     }
   };
 
   const finalTrees = groups.map(() => new Map<number, AttributeTreeNode<GearOption>>());
   const visitFinalSpeeds = (stateTree: AttributeTreeNode<SearchState>, groupIndex: number,
-    prefixSpeed: number, nodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats): void => {
+    prefixSpeed: number, nodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats,
+    work: number): void => {
     if (groupIndex === groups.length) {
-      searchFinalOptions(stateTree, nodes, maxima);
+      searchFinalOptions(stateTree, nodes, maxima, work);
       return;
     }
     const remaining = speedPlan.completionMaxima[groupIndex].get(prefixSpeed);
     if (remaining === undefined || feasibleDamageBound(stateTree.maxima,
-      addStats(maxima, remaining), input, combinedDamage) <= pruningDamage) return;
+      addStats(maxima, remaining), input, combinedDamage) <= pruningDamage) {
+      completedWork += work;
+      return;
+    }
     const allowedSpeeds = speedPlan.allowedOptionSpeeds[groupIndex].get(prefixSpeed) ?? [];
     for (const speed of allowedSpeeds) {
       let tree = finalTrees[groupIndex].get(speed);
@@ -1434,13 +1471,17 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
         finalTrees[groupIndex].set(speed, tree);
       }
       visitFinalSpeeds(stateTree, groupIndex + 1, prefixSpeed + speed,
-        nodes.concat(tree), addStats(maxima, tree.maxima));
+        nodes.concat(tree), addStats(maxima, tree.maxima), work *
+          speedPlan.optionsBySpeed[groupIndex].get(speed)!.length *
+          completionWork(groupIndex + 1, prefixSpeed + speed) / completionWork(groupIndex, prefixSpeed));
     }
   };
   for (const { speed, tree } of stateTrees) {
-    visitFinalSpeeds(tree, finalGroupIndex, speed - speedPlan.fixedSpeed, [], {});
+    const prefixSpeed = speed - speedPlan.fixedSpeed;
+    visitFinalSpeeds(tree, finalGroupIndex, prefixSpeed, [], {}, tree.count *
+      completionWork(finalGroupIndex, prefixSpeed));
   }
-  onProgress?.({ completedGroups: groups.length, totalGroups: groups.length, states: finalCandidates });
+  reportSearchProgress(true);
   if (bestState === undefined || bestStats === undefined) {
     throw new NoFeasibleOptimizationSolution();
   }

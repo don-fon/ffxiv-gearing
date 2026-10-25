@@ -282,6 +282,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         new Worker(new URL('../optimizer.worker.ts', import.meta.url)));
       workersRef.current = workers;
       const activeProgress = new Map<Worker, OptimizerProgress>();
+      const activePartitionIndexes = new Map<Worker, number>();
+      const partitionProgress = partitions.map(() => 0);
+      const partitionWeights = partitions.map(partition => Math.max(1, partition.estimatedWork || 1));
+      const totalWeight = partitionWeights.reduce((total, weight) => total + weight, 0);
       let nextIndex = 0;
       let completed = 0;
       let exploredStates = 0;
@@ -292,6 +296,8 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         setProgress({
           completedGroups: completed,
           totalGroups: partitions.length,
+          searchProgress: partitionProgress.reduce((total, fraction, index) =>
+            total + fraction * partitionWeights[index], 0) / totalWeight,
           states: values.filter(value => !searching || value.visitedBranches !== undefined)
             .reduce((total, value) => total + value.states, 0),
           visitedBranches: searching
@@ -304,7 +310,9 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           worker.terminate();
           return;
         }
-        const partition = partitions[nextIndex++];
+        const partitionIndex = nextIndex++;
+        const partition = partitions[partitionIndex];
+        activePartitionIndexes.set(worker, partitionIndex);
         const targetSpeedContribution = partition.contribution;
         const food = partition.foodId === undefined
           ? input.food
@@ -329,8 +337,12 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             fail(workerEvent.data.message);
           } else if (workerEvent.data.type === 'progress') {
             activeProgress.set(worker, workerEvent.data.progress);
+            const index = activePartitionIndexes.get(worker)!;
+            partitionProgress[index] = Math.max(partitionProgress[index],
+              Math.min(0.999999, workerEvent.data.progress.searchProgress ?? 0));
             updateProgress();
           } else if (workerEvent.data.type === 'result') {
+            partitionProgress[activePartitionIndexes.get(worker)!] = 1;
             completed++;
             exploredStates += workerEvent.data.result.exploredStates;
             if (workerEvent.data.result.damage > bestResult.damage) {
@@ -651,6 +663,18 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       {status === 'loading' && <div className="gear-optimization_status">正在加载候选装备数据…</div>}
       {status === 'running' && (
         <div className="gear-optimization_status">
+          {progress?.searchProgress !== undefined && (
+            <div title="按已评估或已通过剪枝排除的搜索空间估算，包含全部食物/速度分片；不代表耗时比例，可能跳跃或长时间停留。">
+              <div>{`整体进度约 ${(Math.min(0.999, progress.searchProgress) * 100).toFixed(1)}%（已完成 ${progress.completedGroups}/${progress.totalGroups} 个分片）`}</div>
+              <progress
+                className="gear-optimization_progress"
+                aria-label="自动配装估算进度"
+                max={1}
+                value={progress.searchProgress}
+              />
+              <div className="gear-optimization_progress-tip">按搜索空间估算，不代表耗时比例。</div>
+            </div>
+          )}
           {progress === undefined
             ? '正在分析候选食物和可达速度值…'
             : progress.visitedBranches !== undefined
