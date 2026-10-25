@@ -162,3 +162,9 @@ test('WASM dominance frontier matches JavaScript with duplicates and signed coor
     assert.deepEqual(actual, expected);
   }
 });
+
+test('bounded pair warm starts preserve the exact optimum', async () => {
+  const backend = await adapter.createWasmSearchBackend(bytes);
+  backend.warmStartMinimumWork = 0;
+  for (let seed = 0; seed < 40; seed++) compare(fixture(seed), backend);
+});

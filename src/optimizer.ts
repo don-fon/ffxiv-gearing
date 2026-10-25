@@ -193,6 +193,7 @@ export interface OptimizerSearchResult {
 export type OptimizerSearchBackend = ((task: OptimizerSearchTask,
   report: (progress: OptimizerSearchUpdate) => void) => OptimizerSearchResult | undefined) & {
     pareto?: <T extends GearOption>(options: T[]) => T[] | undefined;
+    warmStartMinimumWork?: number;
   };
 
 interface SpeedSearchPlan {
@@ -1092,6 +1093,64 @@ function findGreedySolution(input: GearOptimizationInput,
   return state;
 }
 
+/** Improve a legal lower bound with bounded two-group searches. The final
+ * exhaustive search still proves optimality; incomplete warm-up tasks never do.
+ * Restrict this heuristic to partitions with a single valid speed in each group.
+ */
+function improveGreedySolution(input: GearOptimizationInput, plan: SpeedSearchPlan,
+  initial: SearchState, backend?: OptimizerSearchBackend): SearchState {
+  if (backend?.warmStartMinimumWork === undefined ||
+      estimatePartitionWork(plan) < backend.warmStartMinimumWork) return initial;
+  const groups: GearOption[][] = [];
+  for (const [index, routes] of plan.allowedOptionSpeeds.entries()) {
+    const speeds = new Set(Array.from(routes.values()).flat());
+    if (speeds.size !== 1) return initial;
+    groups.push(plan.optionsBySpeed[index].get(speeds.values().next().value!)!);
+  }
+  const selected: GearOption[] = Array.from({ length: groups.length });
+  let cursor = initial;
+  for (let index = groups.length - 1; index >= 0; index--) {
+    const option = groups[index].find(candidate => candidate.choices === cursor.selected);
+    if (option === undefined) return initial;
+    selected[index] = option;
+    cursor = cursor.previous!;
+  }
+  const trees = groups.map(options => buildAttributeTree(options.slice()));
+  const calculator = createCombinedDamageCalculator(input);
+  let evaluation = evaluateStats(applyFood(initial.stats, input.food), input);
+  for (let pass = 0; pass < 2; pass++) {
+    let changed = false;
+    for (let left = 0; left < groups.length; left++) {
+      for (let right = left + 1; right < groups.length; right++) {
+        let others = input.fixedStats;
+        for (let index = 0; index < groups.length; index++) {
+          if (index !== left && index !== right) others = addStats(others, selected[index].stats);
+        }
+        const prefix = buildAttributeTree<SearchState>([{ stats: others, choices: [] }], finalStateLeafSize);
+        const candidate = backend({ input, prefix, options: [trees[left], trees[right]],
+          reference: initial.stats, minimumDamage: evaluation.damage, branchLimit: 500_000 }, () => {});
+        if (candidate?.prefix === undefined) continue;
+        const options = candidate.options!;
+        const optionStats = addStats(options[0].stats, options[1].stats);
+        const next = evaluateCombinedStats(others, optionStats, input, calculator);
+        if (meetsObjective(next, input) && next.damage > evaluation.damage) {
+          evaluation = next;
+          selected[left] = options[0];
+          selected[right] = options[1];
+          changed = true;
+        }
+      }
+    }
+    if (!changed) break;
+  }
+  let state: SearchState = { stats: input.fixedStats, choices: [] };
+  for (const option of selected) {
+    state = { stats: addStats(state.stats, option.stats), choices: [],
+      previous: state, selected: option.choices };
+  }
+  return state;
+}
+
 function validateOptimizationInput(input: GearOptimizationInput): void {
 
   if (!Number.isFinite(input.targetGcd) || input.targetGcd <= 0 ||
@@ -1163,7 +1222,8 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput,
     try {
       const partitionGroups = filterRemovableSpeedMeldOptions(groups, partitionInput);
       speedPlan = buildSpeedSearchPlan(partitionGroups, partitionInput);
-      state = findGreedySolution(partitionInput, speedPlan);
+      state = improveGreedySolution(partitionInput, speedPlan,
+        findGreedySolution(partitionInput, speedPlan), backend);
     } catch (error) {
       if (error instanceof NoFeasibleOptimizationSolution) continue;
       throw error;
@@ -1281,7 +1341,8 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
 
   const speedPlan = buildSpeedSearchPlan(groups, input);
   const combinedDamage = createCombinedDamageCalculator(input);
-  let bestState: SearchState | undefined = findGreedySolution(input, speedPlan);
+  let bestState: SearchState | undefined = improveGreedySolution(input, speedPlan,
+    findGreedySolution(input, speedPlan), searchBackend);
   let bestStats: OptimizerStats | undefined = applyFood(bestState.stats, input.food);
   let bestEvaluation = evaluateStats(bestStats, input);
   let pruningDamage = Math.max(bestEvaluation.damage, input.globalMinimumDamage ?? -Infinity);

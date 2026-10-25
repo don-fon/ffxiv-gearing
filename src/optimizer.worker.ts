@@ -24,6 +24,9 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   try {
     const backend = event.data.engine === 'wasm' || event.data.engine === 'wasm-warm'
       ? await loadWasmBackend() : undefined;
+    if (backend !== undefined) {
+      backend.warmStartMinimumWork = event.data.engine === 'wasm-warm' ? 10_000_000_000 : undefined;
+    }
     if (event.data.type === 'plan') {
       const plan = planGearOptimization(event.data.input, backend);
       self.postMessage({ type: 'plan', plan });
