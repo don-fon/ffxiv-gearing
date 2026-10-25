@@ -70,3 +70,50 @@ test('fallback selection continues to the next lower tier when necessary', () =>
   const lower = [gear(1, 780, 12, true), gear(2, 770, 12, true)];
   assert.equal(selectPieFreeFallbacks([], lower, [12]).map(item => item.id).join(','), '1,2');
 });
+
+const { maximumSecondaryStatTotal, selectSecondaryStatFallbacks } = candidates;
+const secondaryStats = ['CRT', 'DET', 'DHT', 'TEN', 'SKS'];
+function meldableGear(id, level, stats, caps, values, slot = 4) {
+  return { ...gear(id, level, slot, true), stats, caps, synced: false,
+    materiaSlots: values.map(value => ({ grade: 6, value })) };
+}
+
+test('350 Anemos armor can enter the 375-sync pool despite a populated 370 slot', async () => {
+  const { default: data } = await import('../data/out/gears-340.js');
+  const prepare = id => {
+    const item = data.find(entry => entry.id === id);
+    return meldableGear(id, item.level, item.stats,
+      { CRT: 124, DET: 124, DHT: 124, TEN: 124, SKS: 124 },
+      Array.from({ length: item.materiaSlot }, () => 16), item.slot);
+  };
+  const anemos = prepare(22232);
+  const regular = prepare(21416);
+  regular.caps = { CRT: 129, DET: 129, DHT: 129, TEN: 129, SKS: 129 };
+  assert.equal(maximumSecondaryStatTotal(anemos, secondaryStats), 291);
+  assert.equal(maximumSecondaryStatTotal(regular, secondaryStats), 251);
+  assert.equal(selectSecondaryStatFallbacks([regular], [anemos], secondaryStats)[0].id, 22232);
+});
+
+test('meld totals account for individual slot overflow, not just total headroom', () => {
+  const item = meldableGear(1, 350, { CRT: 9, DET: 9 },
+    { CRT: 10, DET: 10 }, [16]);
+  assert.equal(maximumSecondaryStatTotal(item, ['CRT', 'DET']), 19);
+  item.synced = true;
+  assert.equal(maximumSecondaryStatTotal(item, ['CRT', 'DET']), 18);
+});
+
+test('compare against the strongest original candidate per slot with strict inequality', () => {
+  const item = (id, total, slot = 4) => meldableGear(id, 350, { CRT: total }, {}, [], slot);
+  const preferred = [item(1, 200), item(2, 250), item(3, 100, 5)];
+  const lower = [item(4, 240), item(5, 250), item(6, 260), item(7, 255), item(8, 101, 5), item(9, 999, 7)];
+  assert.equal(selectSecondaryStatFallbacks(preferred, lower, secondaryStats)
+    .map(entry => entry.id).join(','), '6,7,8');
+  assert.equal(selectSecondaryStatFallbacks(preferred, lower.slice().reverse(), secondaryStats)
+    .map(entry => entry.id).sort().join(','), '6,7,8');
+});
+
+test('ignore main stats and piety, and do not duplicate existing candidates', () => {
+  const preferred = meldableGear(1, 370, { CRT: 100 }, {}, []);
+  const lower = meldableGear(2, 350, { CRT: 99, STR: 999, PIE: 999 }, {}, []);
+  assert.equal(selectSecondaryStatFallbacks([preferred], [preferred, lower], secondaryStats).length, 0);
+});

@@ -12,7 +12,7 @@ import type {
   OptimizerStat,
   OptimizerStats,
 } from './optimizer';
-import { selectPieFreeFallbacks, selectRequiredSlotFallbacks } from './optimizerCandidateFallbacks';
+import { selectPieFreeFallbacks, selectRequiredSlotFallbacks, selectSecondaryStatFallbacks } from './optimizerCandidateFallbacks';
 
 const damageSecondaryStats: OptimizerMateriaStat[] = ['CRT', 'DET', 'DHT', 'TEN'];
 
@@ -320,7 +320,10 @@ export function createGearOptimizationInput(store: IStore,
       data.level >= store.minLevel && data.level <= store.maxLevel &&
       !(data.obsolete && store.setting.hideObsoleteGears))
       .map(candidate => candidate.optimizer);
+  const secondaryStatCandidates = selectSecondaryStatFallbacks(gears, lowerLevelCandidates, secondaryStats);
   gears.push(...selectRequiredSlotFallbacks(gears, lowerLevelCandidates, slots));
+  const selectedIds = new Set(gears.map(candidate => candidate.id));
+  gears.push(...secondaryStatCandidates.filter(candidate => !selectedIds.has(candidate.id)));
   if (isBaselineGcd(store, speedStat, targetGcd)) {
     const selectedCandidateIds = new Set(gears.map(candidate => candidate.id));
     const lowerLevelSpeedFreeCandidates = lowerLevelCandidates.filter(candidate =>
