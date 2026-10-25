@@ -944,3 +944,37 @@ test('secondary-budget bound stays above feasible damage across food-cap boundar
     assert.ok(upper + 1e-10 >= actual, `underestimated case ${iteration}: ${upper} < ${actual}`);
   }
 });
+
+test('exact tree improvements preserve non-scoring gear and food stats', () => {
+  const slots = [3, 4, 5, 7, 8];
+  for (let seed = 0; seed < 30; seed++) {
+    const gears = slots.flatMap((slot, index) => Array.from({ length: 3 }, (_, option) =>
+      gear(index * 3 + option + 1, `${index}-${option}`, 1, slot, {
+        STR: 10 + (index * 7 + option * 3 + seed) % 9,
+        CRT: (index * 11 + option * 17 + seed * 5) % 91,
+        DET: (index * 19 + option * 7 + seed * 3) % 89,
+        DHT: (index * 13 + option * 23 + seed * 7) % 97,
+        VIT: 7, PIE: 5,
+      }, 1000, 0)));
+    const result = optimizeGearset({
+      fixedStats: { STR: 2000, CRT: 420, DET: 440, DHT: 420, SKS: 420, PDMG: 100, VIT: 100, PIE: 200 },
+      gears, slots, lockedGearIds: [], materiaStats: ['CRT', 'DET', 'DHT', 'SKS'],
+      speedStat: 'SKS', targetGcd: 2.50, damage,
+      food: { id: 1, name: 'non-scoring food', stats: { VIT: 20, PIE: 30 }, statRates: { VIT: 10, PIE: 10 } },
+    });
+    assert.equal(result.stats.VIT, 148);
+    assert.equal(result.stats.PIE, 247);
+  }
+});
+
+test('fixed secondary food bonuses use the general conservative bound', () => {
+  const helpers = {};
+  vm.runInNewContext(compiled + '\nexports.budgetBound = createSecondaryBudgetBound;', {
+    exports: helpers, module: { exports: helpers },
+    require: request => request === './statFormulas' ? statFormulas : require(request),
+  });
+  const fixedStats = { STR: 2000, PDMG: 100, CRT: 420, DET: 440, DHT: 420, TEN: 420 };
+  const input = { damage: tankDamage, fixedStats, gears: [],
+    food: { id: 1, name: 'fixed bonus', stats: { CRT: 100 }, statRates: {} } };
+  assert.equal(helpers.budgetBound(input, fixedStats), undefined);
+});

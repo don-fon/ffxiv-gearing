@@ -1181,7 +1181,9 @@ function createSecondaryBudgetBound(input: GearOptimizationInput, reference: Opt
   // Other contexts retain the component-wise bound, including BLU's special CRT formula.
   if (input.damage.mainStat !== 'VIT' || lower[0] < sub || lower[1] < main ||
       lower[2] < sub || lower[3] < sub ||
-      input.gears.some(gear => stats.some(stat => (gear.stats[stat] ?? 0) < 0))) return undefined;
+      input.gears.some(gear => stats.some(stat => (gear.stats[stat] ?? 0) < 0)) ||
+      stats.some(stat => input.food?.stats[stat] !== undefined &&
+        input.food.statRates[stat] === undefined)) return undefined;
   const foodCaps = stats.map(stat => input.food?.stats[stat] ?? 0);
   const foodRates = stats.map(stat => (input.food?.statRates[stat] ?? 0) / 100);
   const refs = stats.map(stat => reference[stat] ?? 0);
@@ -1393,7 +1395,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     }
     if (stateNode.items !== undefined && optionNodes.every(node => node.items !== undefined)) {
       // Option trees have one item per leaf; prefix-state leaves can have several.
-      const optionStats = sumMaxima(optionNodes);
+      const optionStats = optionNodes.reduce((stats, node) => addStats(stats, node.items![0].stats), {});
       for (const state of stateNode.items) {
         exploredStates++;
         const evaluation = evaluateCombinedStats(state.stats, optionStats, input, combinedDamage);
