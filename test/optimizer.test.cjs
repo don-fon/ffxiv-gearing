@@ -882,3 +882,47 @@ test('bounded multi-tree search matches exhaustive results across speed, food an
     }
   }
 });
+
+test('secondary-budget bound stays above feasible damage across food-cap boundaries', () => {
+  const helpers = {};
+  vm.runInNewContext(compiled + '\nexports.budgetBound = createSecondaryBudgetBound;', {
+    exports: helpers, module: { exports: helpers },
+    require: request => request === './statFormulas' ? statFormulas : require(request),
+  });
+  let randomState = 137;
+  const random = maximum => {
+    randomState = (Math.imul(randomState, 1664525) + 1013904223) >>> 0;
+    return randomState % maximum;
+  };
+  const stats = ['CRT', 'DET', 'DHT', 'TEN'];
+  for (let iteration = 0; iteration < 2000; iteration++) {
+    const context = iteration % 2 ? tankDamage : { ...tankDamage,
+      level: { ...tankDamage.level, main: 292, sub: 364, div: 900, det: 900 } };
+    const fixedStats = { STR: 2000, PDMG: 100, CRT: context.level.sub,
+      DET: context.level.main, DHT: context.level.sub, TEN: context.level.sub };
+    const food = { stats: {}, statRates: {} };
+    for (const stat of stats) {
+      food.stats[stat] = random(600);
+      food.statRates[stat] = random(31);
+    }
+    const points = Array.from({ length: 6 }, () => {
+      const point = { ...fixedStats };
+      for (const stat of stats) point[stat] += random(3000);
+      return point;
+    });
+    const maxima = { ...fixedStats };
+    for (const stat of stats) maxima[stat] = Math.max(...points.map(point => point[stat]));
+    const applyFood = raw => {
+      const result = { ...raw };
+      for (const stat of stats) result[stat] += Math.min(food.stats[stat],
+        Math.trunc(result[stat] * food.statRates[stat] / 100 + 1e-7));
+      return result;
+    };
+    const bound = helpers.budgetBound({ damage: context, fixedStats, gears: [], food }, points[0]);
+    const actual = Math.max(...points.map(point => calculateExpectedDamage(applyFood(point), context)));
+    const upper = bound(maxima, Math.min(...points.map(point => point.CRT)),
+      Math.max(...points.map(point => stats.reduce((total, stat) => total + point[stat], 0))),
+      calculateExpectedDamage(applyFood(maxima), context));
+    assert.ok(upper + 1e-10 >= actual, `underestimated case ${iteration}: ${upper} < ${actual}`);
+  }
+});

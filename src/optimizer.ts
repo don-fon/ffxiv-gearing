@@ -158,6 +158,8 @@ interface DominanceTreeNode {
 interface AttributeTreeNode<T extends GearOption> {
   maxima: OptimizerStats;
   count: number;
+  minimumCritical: number;
+  maximumSecondaryTotal: number;
   items?: T[];
   left?: AttributeTreeNode<T>;
   right?: AttributeTreeNode<T>;
@@ -645,6 +647,10 @@ function buildAttributeTree<T extends GearOption>(options: T[],
   const node: AttributeTreeNode<T> = {
     maxima: maximumOptionStats(options),
     count: options.length,
+    minimumCritical: options.reduce((minimum, option) => Math.min(minimum, option.stats.CRT ?? 0), Infinity),
+    maximumSecondaryTotal: options.reduce((maximum, option) => Math.max(maximum,
+      (option.stats.CRT ?? 0) + (option.stats.DET ?? 0) + (option.stats.DHT ?? 0) +
+      (option.stats.TEN ?? 0)), 0),
   };
   if (options.length <= leafSize) {
     node.items = options;
@@ -1162,6 +1168,73 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput): GearOptimi
   return { partitions, heuristicResult };
 }
 
+/** A conservative log-tangent bound also respects the shared secondary-stat budget.
+ * CRT's convex multiplier is first bounded by its secant over the node's interval.
+ * The remaining factors (including capped food) have concave logarithms. Their
+ * tangents reduce the bound to a four-variable fractional knapsack problem.
+ */
+function createSecondaryBudgetBound(input: GearOptimizationInput, reference: OptimizerStats) {
+  const { sub, main, div, det, detTrunc } = input.damage.level;
+  const stats = ['CRT', 'DET', 'DHT', 'TEN'] as const;
+  const lower = stats.map(stat => input.fixedStats[stat] ?? 0);
+  // Other contexts retain the component-wise bound, including BLU's special CRT formula.
+  if (input.damage.mainStat !== 'VIT' || lower[0] < sub || lower[1] < main ||
+      lower[2] < sub || lower[3] < sub ||
+      input.gears.some(gear => stats.some(stat => (gear.stats[stat] ?? 0) < 0))) return undefined;
+  const foodCaps = stats.map(stat => input.food?.stats[stat] ?? 0);
+  const foodRates = stats.map(stat => (input.food?.statRates[stat] ?? 0) / 100);
+  const refs = stats.map(stat => reference[stat] ?? 0);
+  const foodUpper = (value: number, index: number) =>
+    value + Math.min(foodCaps[index], value * foodRates[index]);
+  const slopes = [0, 0.14 / det, 0.1375 / div, 0.112 / div];
+  const bases = [sub, main, sub, sub];
+  const weights = stats.map((stat, index) => index === 0 ? 0 :
+    slopes[index] * (refs[index] * foodRates[index] < foodCaps[index] ? 1 + foodRates[index] : 1) /
+    (1 + slopes[index] * (foodUpper(refs[index], index) - bases[index])));
+  const constant = stats.reduce((sum, stat, index) => index === 0 ? sum : sum +
+    Math.log(1 + slopes[index] * (foodUpper(refs[index], index) - bases[index])) -
+    weights[index] * refs[index], 0);
+  const criticalFactor = (value: number) => {
+    const scaled = 0.2 * (value - sub) / div;
+    return 1 + (scaled + 0.4) * (scaled + 0.05);
+  };
+  return (maxima: OptimizerStats, minimumCritical: number, budget: number,
+    independentBound: number): number => {
+    const upper = stats.map(stat => maxima[stat] ?? 0);
+    let deficit = upper.reduce((sum, value) => sum + value, 0) - budget;
+    if (deficit <= 0 || !Number.isFinite(independentBound)) return independentBound;
+    const criticalLower = minimumCritical + Math.min(foodCaps[0], floor(minimumCritical * foodRates[0]));
+    const criticalUpper = foodUpper(upper[0], 0);
+    // The secant slope of this quadratic is exact even for a zero-width interval.
+    const criticalSlope = 0.2 / div * (0.2 * (criticalLower + criticalUpper - 2 * sub) / div + 0.45);
+    const criticalIntercept = criticalFactor(criticalLower) - criticalSlope * criticalLower;
+    const criticalRef = criticalIntercept + criticalSlope * foodUpper(refs[0], 0);
+    if (criticalRef <= 0 || !Number.isFinite(criticalRef)) return independentBound;
+    const currentWeights = weights.slice();
+    currentWeights[0] = criticalSlope *
+      (refs[0] * foodRates[0] < foodCaps[0] ? 1 + foodRates[0] : 1) / criticalRef;
+    let logBound = constant + Math.log(criticalRef) - currentWeights[0] * refs[0];
+    for (let index = 0; index < stats.length; index++) logBound += currentWeights[index] * upper[index];
+    const order = [0, 1, 2, 3].sort((left, right) => currentWeights[left] - currentWeights[right]);
+    for (const index of order) {
+      const reduction = Math.min(deficit, Math.max(0, upper[index] - lower[index]));
+      logBound -= reduction * currentWeights[index];
+      deficit -= reduction;
+      if (deficit <= 0) break;
+    }
+    const effective = upper.map((value, index) => value + Math.min(foodCaps[index],
+      floor(value * foodRates[index])));
+    const criticalChance = floor(200 * (effective[0] - sub) / div + 50) / 1000;
+    const criticalDamage = floor(200 * (effective[0] - sub) / div + 1400) / 1000;
+    const independentFactors = (1 + criticalChance * (criticalDamage - 1)) *
+      (floor((140 * (effective[1] - main) / det + 1000) / detTrunc) * detTrunc / 1000) *
+      (1 + 0.25 * floor(550 * (effective[2] - sub) / div) / 1000) *
+      (floor(112 * (effective[3] - sub) / div + 1000) / 1000);
+    // Leave room for floating-point rounding in the relaxation.
+    return Math.min(independentBound, independentBound / independentFactors * Math.exp(logBound) * (1 + 1e-12));
+  };
+}
+
 function optimizeFixedFoodGearset(input: GearOptimizationInput,
   onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
   validateOptimizationInput(input);
@@ -1257,8 +1330,16 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
 
   const sumMaxima = (nodes: AttributeTreeNode<GearOption>[]): OptimizerStats =>
     nodes.reduce((stats, node) => addStats(stats, node.maxima), {});
-  const upperDamage = (stateNode: AttributeTreeNode<SearchState>, maxima: OptimizerStats): number =>
-    feasibleDamageBound(stateNode.maxima, maxima, input, combinedDamage);
+  const secondaryBudgetBound = createSecondaryBudgetBound(input, bestState.stats);
+  const upperDamage = (stateNode: AttributeTreeNode<SearchState>, maxima: OptimizerStats,
+    optionNodes: AttributeTreeNode<GearOption>[]): number => {
+    const independent = feasibleDamageBound(stateNode.maxima, maxima, input, combinedDamage);
+    if (secondaryBudgetBound === undefined || independent <= pruningDamage) return independent;
+    return secondaryBudgetBound(addStats(stateNode.maxima, maxima),
+      stateNode.minimumCritical + optionNodes.reduce((sum, node) => sum + node.minimumCritical, 0),
+      stateNode.maximumSecondaryTotal + optionNodes.reduce((sum, node) => sum + node.maximumSecondaryTotal, 0),
+      independent);
+  };
   const replaceMaxima = (maxima: OptimizerStats, previous: OptimizerStats,
     next: OptimizerStats): OptimizerStats => {
     const result: OptimizerStats = {};
@@ -1273,7 +1354,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   let lastProgressTime = Date.now();
   const searchFinalOptions = (stateNode: AttributeTreeNode<SearchState>,
     optionNodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats,
-    bound = upperDamage(stateNode, maxima)): void => {
+    bound = upperDamage(stateNode, maxima, optionNodes)): void => {
     if (bound <= pruningDamage) return;
     visitedBranches++;
     if (visitedBranches % 10_000 === 0 && Date.now() - lastProgressTime >= 1000) {
@@ -1324,8 +1405,8 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
       replaceMaxima(maxima, splitNode.maxima, splitNode.left!.maxima);
     const rightMaxima = splitIndex === -1 ? maxima :
       replaceMaxima(maxima, splitNode.maxima, splitNode.right!.maxima);
-    const leftBound = upperDamage(leftState, leftMaxima);
-    const rightBound = upperDamage(rightState, rightMaxima);
+    const leftBound = upperDamage(leftState, leftMaxima, leftOptions);
+    const rightBound = upperDamage(rightState, rightMaxima, rightOptions);
     if (leftBound >= rightBound) {
       searchFinalOptions(leftState, leftOptions, leftMaxima, leftBound);
       searchFinalOptions(rightState, rightOptions, rightMaxima, rightBound);
