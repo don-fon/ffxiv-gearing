@@ -20,7 +20,9 @@
     "lint": "eslint --ext .js,.cjs,.ts,.tsx .",
     "test:optimizer": "node --test test/optimizer.test.cjs test/optimizerInput.test.cjs test/optimizerCandidateFallbacks.test.cjs test/optimizerWasm.test.cjs test/optimizerWorker.test.cjs",
     "test": "playwright test -c test/",
-    "build:optimizer-wasm": "node scripts/build-optimizer-wasm.mjs"
+    "build:optimizer-wasm": "node scripts/build-optimizer-wasm.mjs",
+    "benchmark:optimizer": "node scripts/benchmark-optimizer.mjs",
+    "benchmark:optimizer-components": "node scripts/benchmark-optimizer-components.mjs"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",

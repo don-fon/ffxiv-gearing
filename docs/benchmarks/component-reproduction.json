@@ -1,0 +1,40 @@
+[
+  {
+    "engine": "javascript",
+    "baseline": "a83d506",
+    "milliseconds": 18678.235417,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1002
+    },
+    "exploredStates": 959432
+  },
+  {
+    "engine": "wasm",
+    "baseline": "current",
+    "milliseconds": 5777.996085,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    },
+    "exploredStates": 959614
+  }
+]

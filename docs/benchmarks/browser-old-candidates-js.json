@@ -1,0 +1,181 @@
+[
+  {
+    "status": "completed",
+    "result": {
+      "damage": 8.042594689196102,
+      "tenacityMitigation": 0,
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1296,
+        "CRT": 1424,
+        "DET": 1367,
+        "DHT": 396,
+        "SKS": 364,
+        "TEN": 364,
+        "VIT": 1479
+      },
+      "gears": [
+        {
+          "id": 22870,
+          "name": "勇悍斧·究极",
+          "level": 375,
+          "slot": 13,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DET",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "DET",
+              "grade": 6,
+              "value": 16,
+              "slot": 2
+            }
+          ]
+        },
+        {
+          "id": 34475,
+          "name": "波洛伽御敌头盔",
+          "level": 536,
+          "slot": 3,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29334,
+          "name": "改良型水晶都御敌指环",
+          "level": 500,
+          "slot": 12,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29334,
+          "name": "改良型水晶都御敌指环",
+          "level": 500,
+          "slot": 12,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29278,
+          "name": "改良型水晶都御敌罩衣",
+          "level": 500,
+          "slot": 4,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 21511,
+          "name": "钻石御敌手铠",
+          "level": 370,
+          "slot": 5,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DET",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 29102,
+          "name": "伊甸之律御敌项环",
+          "level": 500,
+          "slot": 10,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29319,
+          "name": "改良型水晶都御敌耳坠",
+          "level": 500,
+          "slot": 9,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29329,
+          "name": "改良型水晶都御敌手环",
+          "level": 500,
+          "slot": 11,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 32359,
+          "name": "伊甸之赦御敌骑兵裤",
+          "level": 510,
+          "slot": 7,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 33504,
+          "name": "帕戈尔赞御敌长靴",
+          "level": 505,
+          "slot": 8,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        }
+      ],
+      "food": {
+        "id": 49240,
+        "name": "焦糖爆米花",
+        "stats": {
+          "DET": 151,
+          "VIT": 297,
+          "CRT": 91
+        },
+        "statRates": {
+          "DET": 10,
+          "VIT": 10,
+          "CRT": 10
+        }
+      },
+      "exploredStates": 74934
+    },
+    "milliseconds": 996.7999999988824,
+    "completed": 4,
+    "partitions": 4,
+    "exploredStates": 282294,
+    "run": 0,
+    "engine": "javascript",
+    "workers": 4,
+    "shards": "auto",
+    "lockedSlots": [],
+    "food": "auto",
+    "browser": "154.0.8037.57",
+    "source": "production worker pipeline"
+  }
+]

@@ -1,0 +1,19 @@
+[
+  {
+    "preserve": false,
+    "remaining": [
+      ".git",
+      "ew",
+      "shb"
+    ]
+  },
+  {
+    "preserve": true,
+    "remaining": [
+      ".git",
+      "ew",
+      "preview",
+      "shb"
+    ]
+  }
+]

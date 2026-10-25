@@ -1,0 +1,18 @@
+[
+  {
+    "status": "timeout",
+    "bestDamage": 8.068407103464912,
+    "milliseconds": 400000.5,
+    "completed": 1,
+    "partitions": 4,
+    "exploredStates": 865294,
+    "run": 0,
+    "engine": "javascript",
+    "workers": 4,
+    "shards": "auto",
+    "lockedSlots": [],
+    "food": "auto",
+    "browser": "154.0.8037.57",
+    "source": "production worker pipeline"
+  }
+]

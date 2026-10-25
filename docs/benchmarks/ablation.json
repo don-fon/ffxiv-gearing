@@ -1,0 +1,310 @@
+[
+  {
+    "engine": "js",
+    "lock": 3,
+    "milliseconds": 19250.286193,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1002
+    },
+    "exploredStates": 959432,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91584,
+      "visitedBranches": 1004051,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "wasm",
+    "lock": 3,
+    "milliseconds": 5851.747310000001,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    },
+    "exploredStates": 959614,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91766,
+      "visitedBranches": 1007840,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "wasm-final",
+    "lock": 3,
+    "milliseconds": 15818.643554,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    },
+    "exploredStates": 959432,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91584,
+      "visitedBranches": 1004051,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "wasm-pareto",
+    "lock": 3,
+    "milliseconds": 8173.6106070000005,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    },
+    "exploredStates": 959614,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91766,
+      "visitedBranches": 1007840,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "capacity",
+    "lock": 3,
+    "milliseconds": 18588.242361,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1002
+    },
+    "exploredStates": 996228,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 128380
+    }
+  },
+  {
+    "engine": "budget",
+    "lock": 3,
+    "milliseconds": 17983.606557,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1002
+    },
+    "exploredStates": 959432,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91584
+    }
+  },
+  {
+    "engine": "wasm",
+    "lock": 3,
+    "milliseconds": 5908.238981,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    },
+    "exploredStates": 959614,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91766,
+      "visitedBranches": 1007840,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "js",
+    "lock": 3,
+    "milliseconds": 18469.563948,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1002
+    },
+    "exploredStates": 959432,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91584,
+      "visitedBranches": 1004051,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "wasm-final",
+    "lock": 3,
+    "milliseconds": 15111.770860999999,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    },
+    "exploredStates": 959432,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91584,
+      "visitedBranches": 1004051,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "wasm-pareto",
+    "lock": 3,
+    "milliseconds": 8006.096155,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    },
+    "exploredStates": 959614,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91766,
+      "visitedBranches": 1007840,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "wasm",
+    "lock": 3,
+    "milliseconds": 5646.249921,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    },
+    "exploredStates": 959614,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91766,
+      "visitedBranches": 1007840,
+      "searchProgress": 1
+    }
+  },
+  {
+    "engine": "js",
+    "lock": 3,
+    "milliseconds": 18136.312996999997,
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1002
+    },
+    "exploredStates": 959432,
+    "progress": {
+      "completedGroups": 6,
+      "totalGroups": 6,
+      "states": 91584,
+      "visitedBranches": 1004051,
+      "searchProgress": 1
+    }
+  }
+]

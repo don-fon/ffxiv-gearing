@@ -1,0 +1,261 @@
+[
+  {
+    "status": "completed",
+    "result": {
+      "damage": 8.080836870815013,
+      "tenacityMitigation": 0.02,
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1282,
+        "CRT": 1382,
+        "DET": 1270,
+        "DHT": 556,
+        "SKS": 364,
+        "TEN": 454,
+        "VIT": 1457
+      },
+      "gears": [
+        {
+          "id": 29334,
+          "name": "改良型水晶都御敌指环",
+          "level": 500,
+          "slot": 12,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29334,
+          "name": "改良型水晶都御敌指环",
+          "level": 500,
+          "slot": 12,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 32359,
+          "name": "伊甸之赦御敌骑兵裤",
+          "level": 510,
+          "slot": 7,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 22245,
+          "name": "残暴锁甲靴·常风",
+          "level": 350,
+          "slot": 8,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "CRT",
+              "grade": 6,
+              "value": 16,
+              "slot": 2
+            },
+            {
+              "stat": "CRT",
+              "grade": 6,
+              "value": 16,
+              "slot": 3
+            },
+            {
+              "stat": "CRT",
+              "grade": 6,
+              "value": 16,
+              "slot": 4
+            }
+          ]
+        },
+        {
+          "id": 21711,
+          "name": "夜钢御敌头盔",
+          "level": 350,
+          "slot": 3,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 2
+            },
+            {
+              "stat": "TEN",
+              "grade": 5,
+              "value": 6,
+              "slot": 3
+            },
+            {
+              "stat": "TEN",
+              "grade": 5,
+              "value": 6,
+              "slot": 4
+            }
+          ]
+        },
+        {
+          "id": 29329,
+          "name": "改良型水晶都御敌手环",
+          "level": 500,
+          "slot": 11,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 22870,
+          "name": "勇悍斧·究极",
+          "level": 375,
+          "slot": 13,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 2
+            }
+          ]
+        },
+        {
+          "id": 22243,
+          "name": "残暴手铠·常风",
+          "level": 350,
+          "slot": 5,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 2
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 3
+            },
+            {
+              "stat": "DET",
+              "grade": 6,
+              "value": 16,
+              "slot": 4
+            }
+          ]
+        },
+        {
+          "id": 29319,
+          "name": "改良型水晶都御敌耳坠",
+          "level": 500,
+          "slot": 9,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29278,
+          "name": "改良型水晶都御敌罩衣",
+          "level": 500,
+          "slot": 4,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29102,
+          "name": "伊甸之律御敌项环",
+          "level": 500,
+          "slot": 10,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        }
+      ],
+      "food": {
+        "id": 49240,
+        "name": "焦糖爆米花",
+        "stats": {
+          "DET": 151,
+          "VIT": 297,
+          "CRT": 91
+        },
+        "statRates": {
+          "DET": 10,
+          "VIT": 10,
+          "CRT": 10
+        }
+      },
+      "exploredStates": 10134770
+    },
+    "milliseconds": 174390.09999999963,
+    "completed": 16,
+    "partitions": 16,
+    "exploredStates": 56250260,
+    "run": 0,
+    "engine": "auto",
+    "workers": 4,
+    "shards": "auto",
+    "lockedSlots": [],
+    "food": "auto",
+    "browser": "154.0.8037.57",
+    "source": "production worker pipeline"
+  }
+]

@@ -81,3 +81,9 @@ Source code of this project is licensed under the [MIT license](LICENSE.txt).
 FINAL FANTASY is a registered trademark of Square Enix Holdings Co., Ltd.
 
 All FINAL FANTASY XIV contents and materials are copyrights of SQUARE ENIX, FINAL FANTASY XIV © 2010 - 2022 SQUARE ENIX CO., LTD. All Rights Reserved.
+
+### 自动配装计算加速
+
+自动配装在 Worker 内使用 WASM 加速候选属性去重和精确搜索；浏览器不能加载 WASM 时自动回退 JavaScript。普通开发和构建无需安装 C 编译器。
+
+性能实测、逐项消融、已有提交复核及复现命令见 [自动配装性能与验证](docs/optimizer-performance.md)。

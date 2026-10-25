@@ -1,0 +1,32 @@
+[
+  {
+    "path": "index.html",
+    "status": 200,
+    "sha256": "209379c2246989a5b1e2854249a8382eb61358157235bd77f5fd6be09c95f106"
+  },
+  {
+    "path": "preview/index.html",
+    "status": 200,
+    "sha256": "10e12b3891dcb0812da0608bbcbbf7f79ff0ebf5258e254571e316ba5bf12db4"
+  },
+  {
+    "path": "preview/6184137646.wasm",
+    "status": 200,
+    "sha256": "8598d085cdee8a38570ecfb172fcdec5e77eeefd64b9bb87ea5a4d77437db2f2"
+  },
+  {
+    "path": "preview/695.8b655c2e69.js",
+    "status": 200,
+    "sha256": "cff19ed164926933f81f382e4fdb4d53d1fbe3ac154cc9110bff37e054cecf39"
+  },
+  {
+    "path": "preview/76.8b655c2e69.js",
+    "status": 200,
+    "sha256": "cff19ed164926933f81f382e4fdb4d53d1fbe3ac154cc9110bff37e054cecf39"
+  },
+  {
+    "path": "preview/main.e6ba06fa79.js",
+    "status": 200,
+    "sha256": "611cf7db850551dc116857be2b0691a17c38d1029dc23d9e66ab9767342f3c51"
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "before": true,
+    "title": "exact tree improvements preserve non-scoring gear and food stats",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n\n117 !== 148\n"
+  },
+  {
+    "before": true,
+    "title": "fixed secondary food bonuses use the general conservative bound",
+    "pass": false,
+    "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ [Function (anonymous)]\n- undefined\n"
+  },
+  {
+    "before": false,
+    "title": "exact tree improvements preserve non-scoring gear and food stats",
+    "pass": true
+  },
+  {
+    "before": false,
+    "title": "fixed secondary food bonuses use the general conservative bound",
+    "pass": true
+  }
+]
