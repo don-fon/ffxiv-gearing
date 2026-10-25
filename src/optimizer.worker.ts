@@ -22,10 +22,16 @@ function loadWasmBackend(): Promise<OptimizerSearchBackend> {
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   try {
-    const backend = event.data.engine === 'wasm' || event.data.engine === 'wasm-warm'
-      ? await loadWasmBackend() : undefined;
+    let backend: OptimizerSearchBackend | undefined;
+    if (event.data.engine !== 'javascript') {
+      try { backend = await loadWasmBackend(); } catch (error) {
+        // Explicit benchmark modes must fail visibly. Normal use can fall back
+        // when WASM is unavailable, unsupported, or blocked by the network.
+        if (event.data.engine !== undefined) throw error;
+      }
+    }
     if (backend !== undefined) {
-      backend.warmStartMinimumWork = event.data.engine === 'wasm-warm' ? 10_000_000_000 : undefined;
+      backend.warmStartMinimumWork = event.data.engine !== 'wasm' ? 10_000_000_000 : undefined;
     }
     if (event.data.type === 'plan') {
       if (backend !== undefined) backend.candidateShardCount = event.data.shards ?? event.data.workers ?? 1;
@@ -36,7 +42,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     const result = optimizeGearset(event.data.input, progress => {
       self.postMessage({ type: 'progress', progress });
     }, backend);
-    self.postMessage({ type: 'result', result, engine: event.data.engine ?? 'javascript' });
+    self.postMessage({ type: 'result', result, engine: backend === undefined ? 'javascript' : event.data.engine ?? 'wasm-warm' });
   } catch (error) {
     self.postMessage({
       type: 'error',
