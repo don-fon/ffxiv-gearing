@@ -142,6 +142,8 @@ export const Condition = mobxReact.observer(() => {
           label={({ ref, toggle }) => (
             <Button ref={ref} className="condition_button" onClick={toggle}>自动配装</Button>
           )}
+          key={store.job}
+          keepMounted
           popper={GearOptimizationPanel}
           placement="bottom-start"
         />

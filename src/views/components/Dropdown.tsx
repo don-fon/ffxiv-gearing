@@ -20,12 +20,15 @@ export interface DropdownProps {
   placement: PopperJS.Placement;
   modifiers?: PopperJS.StrictModifiers[];
   strategy?: PopperJS.PositioningStrategy;
+  keepMounted?: boolean;
 }
 
 export const Dropdown = mobxReact.observer<DropdownProps>(props => {
+  const [ opened, setOpened ] = React.useState(false);
   const [ expanded, setExpanded ] = React.useState(false);
   const [ labelElement, setLabelElement ] = React.useState<HTMLElement | null>(null);
   const toggle = React.useCallback((e?: UIEvent) => {
+    setOpened(true);
     setExpanded(expanded => !expanded);
     if (e) {
       e.stopPropagation();
@@ -38,9 +41,10 @@ export const Dropdown = mobxReact.observer<DropdownProps>(props => {
         expanded,
         toggle,
       })}
-      {expanded && (
+      {(expanded || (props.keepMounted && opened)) && (
         <DropdownPopper
           {...props}
+          expanded={expanded}
           setExpanded={setExpanded}
           labelElement={labelElement}
           toggle={toggle}
@@ -51,27 +55,33 @@ export const Dropdown = mobxReact.observer<DropdownProps>(props => {
 });
 
 const DropdownPopper = mobxReact.observer<DropdownProps & {
+  expanded: boolean;
   setExpanded: (expanded: boolean) => void;
   labelElement: HTMLElement | null;
   toggle: () => void;
 }>(props => {
-  const { popper, placement, modifiers=[], strategy='absolute', setExpanded, labelElement, toggle } = props;
+  const { popper, placement, modifiers=[], strategy='absolute', expanded, setExpanded, labelElement, toggle } = props;
   const [ popperOptions ] = React.useState({ placement, modifiers, strategy });
   const [ popperElement, setPopperElement ] = React.useState<HTMLElement | null>(null);
   const popperContainer = document.getElementById('popper');
   React.useLayoutEffect(() => {
-    if (labelElement === null || popperElement === null) return;
-    if (popperOptions.strategy !== 'fixed') {
-      popperOptions.modifiers.push({ name: 'flip', options: { padding: { bottom: 50 } }});
-    }
-    const popperInstance = PopperJS.createPopper(labelElement, popperElement, popperOptions);
+    if (!expanded || labelElement === null || popperElement === null) return;
+    const options = {
+      ...popperOptions,
+      modifiers: popperOptions.strategy === 'fixed' ? popperOptions.modifiers : [
+        ...popperOptions.modifiers,
+        { name: 'flip', options: { padding: { bottom: 50 } }},
+      ],
+    };
+    const popperInstance = PopperJS.createPopper(labelElement, popperElement, options);
     if (popperOptions.strategy === 'fixed') {
       popperElement.style.zIndex = '7';  // for search: z-index: 7;
     }
     return () => popperInstance.destroy();
-  }, [labelElement, popperElement, popperOptions]);
+  }, [expanded, labelElement, popperElement, popperOptions]);
   React.useEffect(() => {
-    onGlobalClick = e => {
+    if (!expanded) return;
+    const handleClick = (e: MouseEvent) => {
       const target = e.target as Element;
       if (target && labelElement && popperElement) {
         if (!labelElement.contains(target) && !popperElement.contains(target)) {
@@ -81,7 +91,7 @@ const DropdownPopper = mobxReact.observer<DropdownProps & {
         }
       }
     };
-    onGlobalKeyup = e => {
+    const handleKeyup = (e: KeyboardEvent) => {
       const target = e.target as Element;
       // label (比如是一个 button) 有可能成为按键事件的 target
       if (target && (target.tagName === 'BODY' || target === labelElement) && e.key === 'Escape') {
@@ -89,14 +99,18 @@ const DropdownPopper = mobxReact.observer<DropdownProps & {
         onGlobalKeyup = undefined;
       }
     };
-  }, [labelElement, popperElement, setExpanded]);
-  React.useEffect(() => () => {
-    onGlobalClick = undefined;
-    onGlobalKeyup = undefined;
-  }, []);
+    onGlobalClick = handleClick;
+    onGlobalKeyup = handleKeyup;
+    return () => {
+      if (onGlobalClick === handleClick) onGlobalClick = undefined;
+      if (onGlobalKeyup === handleKeyup) onGlobalKeyup = undefined;
+    };
+  }, [expanded, labelElement, popperElement, setExpanded]);
   return popperContainer && ReactDOM.createPortal((
     <div
       ref={setPopperElement}
+      style={{ display: expanded ? undefined : 'none' }}
+      aria-hidden={!expanded}
       onClick={e => e.stopPropagation()}
       children={React.createElement(popper, { toggle, labelElement })}
     />
