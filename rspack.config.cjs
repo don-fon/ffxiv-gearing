@@ -35,6 +35,7 @@ module.exports = function (env, argv) {
     },
     module: {
       rules: [
+        { test: /\.wasm$/, type: 'asset/resource' },
         {
           test: /\.tsx?$/,
           exclude: /node_modules/,

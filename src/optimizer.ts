@@ -133,7 +133,7 @@ export interface OptimizerProgress {
   searchProgress?: number;
 }
 
-interface GearOption {
+export interface GearOption {
   stats: OptimizerStats;
   choices: OptimizerGearChoice[];
 }
@@ -143,7 +143,7 @@ interface OptimizationEvaluation {
   tenacityMitigation: number;
 }
 
-interface SearchState extends GearOption {
+export interface SearchState extends GearOption {
   previous?: SearchState;
   selected?: OptimizerGearChoice[];
 }
@@ -156,7 +156,7 @@ interface DominanceTreeNode {
   right?: DominanceTreeNode;
 }
 
-interface AttributeTreeNode<T extends GearOption> {
+export interface AttributeTreeNode<T extends GearOption> {
   maxima: OptimizerStats;
   count: number;
   minimumCritical: number;
@@ -165,6 +165,35 @@ interface AttributeTreeNode<T extends GearOption> {
   left?: AttributeTreeNode<T>;
   right?: AttributeTreeNode<T>;
 }
+
+export interface OptimizerSearchTask {
+  input: GearOptimizationInput;
+  prefix: AttributeTreeNode<SearchState>;
+  options: AttributeTreeNode<GearOption>[];
+  reference: OptimizerStats;
+  minimumDamage: number;
+  branchLimit?: number;
+}
+
+export interface OptimizerSearchUpdate {
+  fraction: number;
+  visitedBranches: number;
+  states: number;
+}
+
+export interface OptimizerSearchResult {
+  prefix?: SearchState;
+  options?: GearOption[];
+  damage: number;
+  visitedBranches: number;
+  states: number;
+  complete: boolean;
+}
+
+export type OptimizerSearchBackend = ((task: OptimizerSearchTask,
+  report: (progress: OptimizerSearchUpdate) => void) => OptimizerSearchResult | undefined) & {
+    pareto?: <T extends GearOption>(options: T[]) => T[] | undefined;
+  };
 
 interface SpeedSearchPlan {
   fixedSpeed: number;
@@ -354,7 +383,9 @@ function hasDominatingPoint(node: DominanceTreeNode, target: number[]): boolean 
   return hasDominatingPoint(first, target) || hasDominatingPoint(second, target);
 }
 
-function paretoFrontier<T extends GearOption>(options: T[]): T[] {
+function paretoFrontier<T extends GearOption>(options: T[], backend?: OptimizerSearchBackend): T[] {
+  const native = backend?.pareto?.(options);
+  if (native !== undefined) return native;
   if (options.length <= 1) return options;
   const dimensions = scoredStats.filter(stat => {
     const first = options[0].stats[stat] ?? 0;
@@ -385,7 +416,8 @@ function paretoFrontier<T extends GearOption>(options: T[]): T[] {
   return result;
 }
 
-function pruneDominatedOptions<T extends GearOption>(options: T[], speedStat: 'SKS' | 'SPS'): T[] {
+function pruneDominatedOptions<T extends GearOption>(options: T[], speedStat: 'SKS' | 'SPS',
+  backend?: OptimizerSearchBackend): T[] {
   const bySpeed = new Map<number, GearOption[]>();
   for (const option of options) {
     const speed = option.stats[speedStat] ?? 0;
@@ -396,7 +428,7 @@ function pruneDominatedOptions<T extends GearOption>(options: T[], speedStat: 'S
 
   const result: T[] = [];
   for (const sameSpeed of bySpeed.values()) {
-    for (const option of paretoFrontier(sameSpeed as T[])) result.push(option);
+    for (const option of paretoFrontier(sameSpeed as T[], backend)) result.push(option);
   }
   return result;
 }
@@ -451,7 +483,7 @@ function filterRemovableSpeedMeldOptions(groups: GearOption[][],
   return filtered;
 }
 
-function buildGroups(input: GearOptimizationInput): GearOption[][] {
+function buildGroups(input: GearOptimizationInput, backend?: OptimizerSearchBackend): GearOption[][] {
   const lockedGearIds = new Set(input.lockedGearIds);
   let legacyRingIndex = 0;
   const lockedGears: OptimizerLockedGear[] = input.lockedGears ?? input.lockedGearIds.map(id => {
@@ -501,15 +533,15 @@ function buildGroups(input: GearOptimizationInput): GearOption[][] {
         continue;
       }
       const options = gears.flatMap(gear =>
-        pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat));
-      groups.push(pruneDominatedOptions(deduplicateOptions(options), input.speedStat));
+        pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat, backend));
+      groups.push(pruneDominatedOptions(deduplicateOptions(options), input.speedStat, backend));
       continue;
     }
 
     // Rings form one group. A non-unique ring may pair with itself, including
     // with different melds on its two copies. Unique rings still require two IDs.
     const options = gears.flatMap(gear =>
-      pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat));
+      pruneDominatedOptions(gearOptions(gear, input.materiaStats), input.speedStat, backend));
     const ringLocks = lockedGears.filter(selection => Math.abs(selection.slot) === 12);
     const pairs: GearOption[] = [];
     const ringOptions = (lock: OptimizerLockedGear | undefined): GearOption[] => {
@@ -541,7 +573,7 @@ function buildGroups(input: GearOptimizationInput): GearOption[][] {
     if (pairs.length === 0) {
       throw new Error('没有两枚满足条件且不违反唯一品限制的戒指。');
     }
-    groups.push(pruneDominatedOptions(deduplicateOptions(pairs), input.speedStat));
+    groups.push(pruneDominatedOptions(deduplicateOptions(pairs), input.speedStat, backend));
   }
   return groups;
 }
@@ -563,7 +595,8 @@ function combineGroups(left: GearOption[], right: GearOption[]): GearOption[] {
   return Array.from(unique.values());
 }
 
-function contractEquivalentGroups(groups: GearOption[][], speedStat: 'SKS' | 'SPS'): GearOption[][] {
+function contractEquivalentGroups(groups: GearOption[][], speedStat: 'SKS' | 'SPS',
+  backend?: OptimizerSearchBackend): GearOption[][] {
   let nextId = 0;
   const contracted = groups.map(options => ({ id: nextId++, options }));
   const rejectedPairs = new Set<string>();
@@ -585,7 +618,7 @@ function contractEquivalentGroups(groups: GearOption[][], speedStat: 'SKS' | 'SP
       const leftGroup = contracted[pair.left];
       const rightGroup = contracted[pair.right];
       const options = pruneDominatedOptions(
-        combineGroups(leftGroup.options, rightGroup.options), speedStat);
+        combineGroups(leftGroup.options, rightGroup.options), speedStat, backend);
       if (options.length > maximumContractedOptions || options.length * 5 > pair.product * 4) {
         rejectedPairs.add(`${leftGroup.id}:${rightGroup.id}`);
         continue;
@@ -1060,6 +1093,7 @@ function findGreedySolution(input: GearOptimizationInput,
 }
 
 function validateOptimizationInput(input: GearOptimizationInput): void {
+
   if (!Number.isFinite(input.targetGcd) || input.targetGcd <= 0 ||
       Math.abs(input.targetGcd * 100 - Math.round(input.targetGcd * 100)) > 1e-7) {
     throw new Error('目标 GCD 必须是大于 0 且最多包含两位小数的秒数。');
@@ -1076,12 +1110,12 @@ function validateOptimizationInput(input: GearOptimizationInput): void {
   }
 }
 
-function prepareSearchGroups(input: GearOptimizationInput): GearOption[][] {
-  let groups = filterRemovableSpeedMeldOptions(buildGroups(input), input);
+function prepareSearchGroups(input: GearOptimizationInput, backend?: OptimizerSearchBackend): GearOption[][] {
+  let groups = filterRemovableSpeedMeldOptions(buildGroups(input, backend), input);
   groups = filterInfeasibleSpeedOptions(groups, input);
   groups = filterToViableSpeedOptions(groups, input);
   return filterInfeasibleSpeedOptions(
-    contractEquivalentGroups(groups, input.speedStat), input)
+    contractEquivalentGroups(groups, input.speedStat, backend), input)
     .sort((left, right) => left.length - right.length);
 }
 
@@ -1112,12 +1146,13 @@ function estimatePartitionWork(plan: SpeedSearchPlan): number {
     Math.min(Number.MAX_SAFE_INTEGER, total + count), 0);
 }
 
-function planFixedFoodGearOptimization(input: GearOptimizationInput): GearOptimizationPlan {
+function planFixedFoodGearOptimization(input: GearOptimizationInput,
+  backend?: OptimizerSearchBackend): GearOptimizationPlan {
   validateOptimizationInput(input);
   const planningInput = { ...input };
   delete planningInput.targetSpeedContribution;
   delete planningInput.globalMinimumDamage;
-  const groups = prepareSearchGroups(planningInput);
+  const groups = prepareSearchGroups(planningInput, backend);
   const contributions = buildSpeedSearchPlan(groups, planningInput).targetContributions;
   let heuristicResult: GearOptimizationResult | undefined;
   const partitions: OptimizerSpeedPartition[] = [];
@@ -1239,9 +1274,11 @@ function createSecondaryBudgetBound(input: GearOptimizationInput, reference: Opt
 }
 
 function optimizeFixedFoodGearset(input: GearOptimizationInput,
-  onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
+  onProgress?: (progress: OptimizerProgress) => void,
+  searchBackend?: OptimizerSearchBackend): GearOptimizationResult {
   validateOptimizationInput(input);
-  const groups = prepareSearchGroups(input);
+  const groups = prepareSearchGroups(input, searchBackend);
+
   const speedPlan = buildSpeedSearchPlan(groups, input);
   const combinedDamage = createCombinedDamageCalculator(input);
   let bestState: SearchState | undefined = findGreedySolution(input, speedPlan);
@@ -1311,7 +1348,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
           }
         }
       }
-      for (const state of paretoFrontier(Array.from(next.values()))) frontier.push(state);
+      for (const state of paretoFrontier(Array.from(next.values()), searchBackend)) frontier.push(state);
     }
     states = frontier;
     onProgress?.({ completedGroups: groupIndex + 1, totalGroups: groups.length, states: states.length });
@@ -1331,8 +1368,6 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     tree: buildAttributeTree(sameSpeed, finalStateLeafSize),
   }));
 
-  const sumMaxima = (nodes: AttributeTreeNode<GearOption>[]): OptimizerStats =>
-    nodes.reduce((stats, node) => addStats(stats, node.maxima), {});
   const secondaryBudgetBound = createSecondaryBudgetBound(input, bestState.stats);
   const upperDamage = (stateNode: AttributeTreeNode<SearchState>, maxima: OptimizerStats,
     optionNodes: AttributeTreeNode<GearOption>[]): number => {
@@ -1373,12 +1408,12 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   let completedWork = 0;
   let visitedBranches = 0;
   let lastProgressTime = Date.now();
-  const reportSearchProgress = (finished = false) => onProgress?.({
+  const reportSearchProgress = (finished = false, currentWork = completedWork) => onProgress?.({
     completedGroups: finished ? groups.length : finalGroupIndex,
     totalGroups: groups.length,
     states: finalCandidates,
     visitedBranches,
-    searchProgress: finished ? 1 : Math.min(0.999999, totalWork > 0 ? completedWork / totalWork : 0),
+    searchProgress: finished ? 1 : Math.min(0.999999, totalWork > 0 ? currentWork / totalWork : 0),
   });
   reportSearchProgress();
   const searchFinalOptions = (stateNode: AttributeTreeNode<SearchState>,
@@ -1456,7 +1491,38 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     prefixSpeed: number, nodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats,
     work: number): void => {
     if (groupIndex === groups.length) {
-      searchFinalOptions(stateTree, nodes, maxima, work);
+      const previousBranches = visitedBranches;
+      const previousCandidates = finalCandidates;
+      const nativeResult = searchBackend?.({ input, prefix: stateTree, options: nodes,
+        reference: bestState!.stats, minimumDamage: pruningDamage }, update => {
+        visitedBranches = previousBranches + update.visitedBranches;
+        finalCandidates = previousCandidates + update.states;
+        reportSearchProgress(false, completedWork + work * update.fraction);
+      });
+      if (nativeResult === undefined) {
+        searchFinalOptions(stateTree, nodes, maxima, work);
+      } else {
+        if (!nativeResult.complete) throw new Error('Incomplete WASM search cannot establish an exact result.');
+        visitedBranches = previousBranches + nativeResult.visitedBranches;
+        finalCandidates = previousCandidates + nativeResult.states;
+        exploredStates += nativeResult.states;
+        if (nativeResult.prefix !== undefined) {
+          const selected = nativeResult.options!;
+          const optionStats = selected.reduce((stats, option) => addStats(stats, option.stats), {});
+          const evaluation = evaluateCombinedStats(nativeResult.prefix.stats, optionStats, input, combinedDamage);
+          if (Math.abs(evaluation.damage - nativeResult.damage) > 1e-10 * Math.max(1, evaluation.damage) ||
+              !meetsObjective(evaluation, input)) throw new Error('WASM 求解结果未通过伤害或约束校验。');
+          if (evaluation.damage > bestEvaluation.damage) {
+            const combinedStats = addStats(nativeResult.prefix.stats, optionStats);
+            bestEvaluation = evaluation;
+            pruningDamage = Math.max(pruningDamage, evaluation.damage);
+            bestStats = applyFood(combinedStats, input.food);
+            bestState = { stats: combinedStats, choices: [], previous: nativeResult.prefix,
+              selected: selected.flatMap(option => option.choices) };
+          }
+        }
+        completedWork += work;
+      }
       return;
     }
     const remaining = speedPlan.completionMaxima[groupIndex].get(prefixSpeed);
@@ -1511,12 +1577,13 @@ function fixedFoodInputs(input: GearOptimizationInput): GearOptimizationInput[] 
   return input.foods.map(food => ({ ...input, food, foods: undefined }));
 }
 
-export function planGearOptimization(input: GearOptimizationInput): GearOptimizationPlan {
+export function planGearOptimization(input: GearOptimizationInput,
+  backend?: OptimizerSearchBackend): GearOptimizationPlan {
   validateOptimizationInput(input);
   const plans: GearOptimizationPlan[] = [];
   for (const fixedInput of fixedFoodInputs(input)) {
     try {
-      plans.push(planFixedFoodGearOptimization(fixedInput));
+      plans.push(planFixedFoodGearOptimization(fixedInput, backend));
     } catch (error) {
       if (!(error instanceof NoFeasibleOptimizationSolution)) throw error;
     }
@@ -1531,7 +1598,8 @@ export function planGearOptimization(input: GearOptimizationInput): GearOptimiza
 }
 
 export function optimizeGearset(input: GearOptimizationInput,
-  onProgress?: (progress: OptimizerProgress) => void): GearOptimizationResult {
+  onProgress?: (progress: OptimizerProgress) => void,
+  searchBackend?: OptimizerSearchBackend): GearOptimizationResult {
   validateOptimizationInput(input);
   let best: GearOptimizationResult | undefined;
   let exploredStates = 0;
@@ -1541,7 +1609,7 @@ export function optimizeGearset(input: GearOptimizationInput,
         ...fixedInput,
         globalMinimumDamage: Math.max(
           fixedInput.globalMinimumDamage ?? -Infinity, best?.damage ?? -Infinity),
-      }, onProgress);
+      }, onProgress, searchBackend);
       exploredStates += result.exploredStates;
       if (best === undefined || result.damage > best.damage) best = result;
     } catch (error) {
