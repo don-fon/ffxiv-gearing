@@ -1197,11 +1197,12 @@ function meetsCombinedObjective(evaluation: OptimizationEvaluation, left: Optimi
     input.criticalPreference !== 'low' || critical <= input.criticalRange.midpoint;
 }
 
-/** Damage dominance is safe only within identical CRT when either endpoint of
- * the CRT range matters. Reuse both native and JS skyline implementations. */
+/** Protect both endpoints while measuring the range. An upper CRT limit needs
+ * exact-CRT buckets; a resolved lower limit preserves ordinary dominance. */
 function criticalBackend(input: GearOptimizationInput,
   backend?: OptimizerSearchBackend): OptimizerSearchBackend | undefined {
-  if (!hasCriticalPreference(input)) return backend;
+  if (!hasCriticalPreference(input) ||
+      input.criticalPreference === 'high' && input.criticalRange !== undefined) return backend;
   const protectedBackend: OptimizerSearchBackend = (task, report) => backend?.(task, report);
   Object.assign(protectedBackend, backend);
   protectedBackend.pareto = options => {
