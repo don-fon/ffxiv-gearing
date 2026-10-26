@@ -1792,6 +1792,21 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   };
 
   const finalTrees = groups.map(() => new Map<number, AttributeTreeNode<GearOption>>());
+  // Depth-local buffers preserve addition order without retaining temporary
+  // objects for every reachable exact-speed route. Calls below are synchronous.
+  const routeMaxima = groups.map(() => ({} as OptimizerStats));
+  const routeBounds = groups.map(() => ({} as OptimizerStats));
+  const routeStats = scoredStats.filter(stat => input.fixedStats[stat] !== undefined ||
+    groups.some(group => group.some(option => option.stats[stat] !== undefined)));
+  const sumInto = (output: OptimizerStats, left: OptimizerStats, right: OptimizerStats) => {
+    for (const stat of routeStats) {
+      const a = left[stat];
+      const b = right[stat];
+      if (a === undefined && b === undefined) delete output[stat];
+      else output[stat] = (a ?? 0) + (b ?? 0);
+    }
+    return output;
+  };
   const visitFinalSpeeds = (stateTree: AttributeTreeNode<SearchState>, groupIndex: number,
     prefixSpeed: number, nodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats,
     work: number): void => {
@@ -1832,21 +1847,24 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     }
     const remaining = speedPlan.completionMaxima[groupIndex].get(prefixSpeed);
     if (remaining === undefined || feasibleDamageBound(stateTree.maxima,
-      addStats(maxima, remaining), input, combinedDamage) <= pruningDamage) {
+      sumInto(routeBounds[groupIndex], maxima, remaining), input, combinedDamage) <= pruningDamage) {
       completedWork += work;
       return;
     }
     const allowedSpeeds = speedPlan.allowedOptionSpeeds[groupIndex].get(prefixSpeed) ?? [];
+    const parentWork = completionWork(groupIndex, prefixSpeed);
     for (const speed of allowedSpeeds) {
       let tree = finalTrees[groupIndex].get(speed);
       if (tree === undefined) {
         tree = buildAttributeTree(speedPlan.optionsBySpeed[groupIndex].get(speed)!);
         finalTrees[groupIndex].set(speed, tree);
       }
+      nodes.push(tree);
       visitFinalSpeeds(stateTree, groupIndex + 1, prefixSpeed + speed,
-        nodes.concat(tree), addStats(maxima, tree.maxima), work *
+        nodes, sumInto(routeMaxima[groupIndex], maxima, tree.maxima), work *
           speedPlan.optionsBySpeed[groupIndex].get(speed)!.length *
-          completionWork(groupIndex + 1, prefixSpeed + speed) / completionWork(groupIndex, prefixSpeed));
+          completionWork(groupIndex + 1, prefixSpeed + speed) / parentWork);
+      nodes.pop();
     }
   };
   for (const { speed, tree } of stateTrees) {

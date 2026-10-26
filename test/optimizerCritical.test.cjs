@@ -214,3 +214,31 @@ test('CRT-half searches eliminate redundant speed tiers only when a non-CRT repl
   assert.ok(plan.partitions.some(task => task.contribution === 6));
   assert.equal(production.optimizeGearset(request).stats.CRT, input.fixedStats.CRT + 20);
 });
+
+test('speed-route buffers and prefix budgets preserve fractional-stat optima in every CRT mode', async () => {
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
+  for (let seed = 1; seed <= 12; seed++) {
+    const input = fixture(seed);
+    for (const [index, gear] of input.gears.entries()) {
+      gear.stats.STR += 0.125;
+      gear.stats.CRT += index % 2 ? 0.25 : 0.125;
+      gear.stats.DET += 0.125;
+      if (index % 3 === 0) delete gear.stats.DHT;
+    }
+    const valid = oracle(input);
+    if (!valid.length) continue;
+    const minimum = Math.min(...valid.map(stats => stats.CRT));
+    const maximum = Math.max(...valid.map(stats => stats.CRT));
+    const midpoint = (minimum + maximum) / 2;
+    for (const criticalPreference of ['none', 'high', 'low']) {
+      const eligible = valid.filter(stats => criticalPreference === 'none' ||
+        (criticalPreference === 'high' ? stats.CRT >= midpoint : stats.CRT <= midpoint));
+      const expected = Math.max(...eligible.map(stats => solver.calculateExpectedDamage(stats, input.damage)));
+      for (const native of [undefined, backend]) {
+        const result = solver.optimizeGearset({ ...input, criticalPreference }, undefined, native);
+        assert.ok(Math.abs(result.damage - expected) < 1e-12,
+          `fractional prefix seed ${seed}, ${criticalPreference}`);
+      }
+    }
+  }
+});
