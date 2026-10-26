@@ -1,0 +1,281 @@
+{
+  "partitions": [
+    {
+      "foodId": 49239,
+      "contribution": 307,
+      "candidateShard": {
+        "index": 0,
+        "count": 64
+      }
+    },
+    {
+      "foodId": 49239,
+      "contribution": 307,
+      "candidateShard": {
+        "index": 1,
+        "count": 64
+      }
+    },
+    {
+      "foodId": 49239,
+      "contribution": 307,
+      "candidateShard": {
+        "index": 2,
+        "count": 64
+      }
+    },
+    {
+      "foodId": 49239,
+      "contribution": 307,
+      "candidateShard": {
+        "index": 3,
+        "count": 64
+      }
+    }
+  ],
+  "heuristicResult": {
+    "damage": 27.280971280704218,
+    "tenacityMitigation": 0,
+    "stats": {
+      "PDMG": 120,
+      "MDMG": 0,
+      "DLY": 2560,
+      "STR": 2586,
+      "CRT": 2091,
+      "DET": 1697,
+      "DHT": 1447,
+      "SKS": 766,
+      "VIT": 2915
+    },
+    "gears": [
+      {
+        "id": 51001,
+        "name": "\u5e7b\u5883\u65cb\u68cd\u00b7\u79d8\u5f71",
+        "level": 795,
+        "slot": 13,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 38969,
+        "name": "\u51a5\u9b42\u5f3a\u88ad\u624b\u94e0",
+        "level": 605,
+        "slot": 5,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 38967,
+        "name": "\u51a5\u9b42\u5f3a\u88ad\u5934\u76d4",
+        "level": 605,
+        "slot": 3,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35306,
+        "name": "\u65e5\u5f71\u5170\u5f3a\u653b\u9879\u94fe",
+        "level": 600,
+        "slot": 10,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35301,
+        "name": "\u65e5\u5f71\u5170\u5f3a\u653b\u8033\u5760",
+        "level": 600,
+        "slot": 9,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35241,
+        "name": "\u6539\u826f\u578b\u661f\u6218\u58eb\u5f3a\u653b\u6212\u6307",
+        "level": 600,
+        "slot": 12,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35241,
+        "name": "\u6539\u826f\u578b\u661f\u6218\u58eb\u5f3a\u653b\u6212\u6307",
+        "level": 600,
+        "slot": 12,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 38971,
+        "name": "\u51a5\u9b42\u5f3a\u88ad\u94e0\u9774",
+        "level": 605,
+        "slot": 8,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35311,
+        "name": "\u65e5\u5f71\u5170\u5f3a\u653b\u624b\u956f",
+        "level": 600,
+        "slot": 11,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 44616,
+        "name": "\u9eef\u4e91\u5f3a\u88ad\u957f\u8863",
+        "level": 730,
+        "slot": 4,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 43136,
+        "name": "\u9ed1\u9a6c\u51a0\u519b\u5f3a\u88ad\u886c\u88e4",
+        "level": 730,
+        "slot": 7,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      }
+    ],
+    "food": {
+      "id": 49240,
+      "name": "\u7126\u7cd6\u7206\u7c73\u82b1",
+      "stats": {
+        "DET": 151,
+        "VIT": 297,
+        "CRT": 91
+      },
+      "statRates": {
+        "DET": 10,
+        "VIT": 10,
+        "CRT": 10
+      }
+    },
+    "exploredStates": 674057985,
+    "criticalRange": {
+      "minimum": 669,
+      "maximum": 2472,
+      "midpoint": 1570.5
+    }
+  },
+  "criticalRange": {
+    "minimum": 669,
+    "maximum": 2472,
+    "midpoint": 1570.5
+  }
+}

@@ -14,6 +14,7 @@ const { values } = parseArgs({ options: {
   timeout: { type: 'string', default: '300000' }, runs: { type: 'string', default: '1' },
   output: { type: 'string' }, input: { type: 'string' }, chromium: { type: 'string' },
   'skip-build': { type: 'boolean', default: false },
+  'fixed-plan': { type: 'string' },
 } });
 if (!['none', 'high', 'low'].includes(values.critical)) throw new Error('Unknown critical preference.');
 if (!['auto', 'javascript', 'wasm', 'wasm-warm'].includes(values.engine)) throw new Error('Unknown benchmark engine.');
@@ -29,6 +30,7 @@ if (!values['skip-build']) {
 }
 const input = JSON.parse(fs.readFileSync(values.input || path.join(root, 'test/fixtures/warrior-375-input.json'), 'utf8'));
 input.criticalPreference = values.critical;
+const fixedPlan = values['fixed-plan'] ? JSON.parse(fs.readFileSync(values['fixed-plan'], 'utf8')) : undefined;
 const expected = JSON.parse(fs.readFileSync(path.join(root, 'test/fixtures/warrior-375-result.json'), 'utf8'));
 const lockedSlots = [13, 5, 8, 3].slice(0, Number(values.locks));
 input.lockedGears = expected.gears.filter(gear => lockedSlots.includes(gear.slot))
@@ -88,7 +90,11 @@ try {
             completed, partitions: taskCount, exploredStates: explored, diagnostics });
         };
         const timer = setTimeout(() => finish({ status: 'timeout', bestDamage: best?.damage }), config.timeout);
-        const planner = new WorkerClass(window.benchmarkWorkerUrl);active.push(planner);
+        const planner = config.fixedPlan === undefined ? new WorkerClass(window.benchmarkWorkerUrl) : {
+          terminate() {},
+          postMessage() { queueMicrotask(() => planner.onmessage({ data: { type: 'plan', plan: config.fixedPlan } })); },
+        };
+        active.push(planner);
         planner.onerror = event => finish({ status: 'error', message: event.message });
         planner.onmessage = event => {
           if (event.data.type === 'diagnostics') {
@@ -106,7 +112,7 @@ try {
               : config.input.foods.find(candidate => candidate.id === task.foodId);
             worker.postMessage({ type: 'optimize', engine: config.engine,
               input: { ...config.input, food, foods: undefined, candidateShard: task.candidateShard, criticalRange,
-                targetSpeedContribution: task.contribution, globalMinimumDamage: best.damage } });
+                targetSpeedContribution: task.contribution, globalMinimumDamage: config.fixedPlan?.heuristicResult.damage ?? best.damage } });
           };
           for (let index = 0; index < Math.min(config.workers, partitions.length); index++) {
             const worker = new WorkerClass(window.benchmarkWorkerUrl);active.push(worker);
@@ -131,7 +137,7 @@ try {
         };
         planner.postMessage({ type: 'plan', input: config.input, engine: config.engine,
           workers: config.workers, shards: config.shards });
-      }), { input, engine: values.engine === 'auto' ? undefined : values.engine, workers: Number(values.workers),
+      }), { input, fixedPlan, engine: values.engine === 'auto' ? undefined : values.engine, workers: Number(values.workers),
         shards: values.shards ? Number(values.shards) : undefined, timeout: Number(values.timeout) });
       const record = { ...result, run, engine: values.engine, workers: Number(values.workers),
         shards: values.shards ? Number(values.shards) : 'auto', lockedSlots, food: values.food || 'auto', criticalPreference: values.critical,
