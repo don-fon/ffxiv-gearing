@@ -22,9 +22,10 @@ interface SearchExports extends WebAssembly.Exports {
     result: number, count: number, capacity: number) => number;
 }
 
-/** ABI 2: node = 16 f64, point = 9 f64, context = 48 f64. Addresses are wasm32 bytes.
+/** ABI 3: node = 16 f64, point = 9 f64, context = 48 f64. Addresses are wasm32 bytes.
  * Vectors: attack-main, INT, CRT, DET, DHT, TEN, PDMG, MDMG, TEN-present.
  * Node tail: secondary-total max, CRT min, left, right, points, length, count.
+ * Context tail (44–46): final CRT lower/upper limits and enabled flag.
  * Pointer caches are reset for each fixed-food input; linear memory is reused.
  */
 export async function createWasmSearchBackend(bytes: BufferSource,
@@ -34,7 +35,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     env: { memory, log: Math.log, exp: Math.exp },
   });
   const core = instance.exports as SearchExports;
-  if (core.search_abi() !== 2) throw new Error('Unsupported optimizer WASM ABI.');
+  if (core.search_abi() !== 3) throw new Error('Unsupported optimizer WASM ABI.');
   const heapBase = Number(core.__heap_base.value);
   let nextAddress = heapBase;
   let currentInput: GearOptimizationInput | undefined;
@@ -112,6 +113,9 @@ export async function createWasmSearchBackend(bytes: BufferSource,
       ...stats.map(stat => food?.statRates[stat] === undefined
         ? food?.stats[stat] === undefined ? 0 : -1 : food.statRates[stat]! / 100),
       ...lower, ...secondary.map(stat => task.reference[stat] ?? 0),
+      currentInput.criticalPreference === 'high' ? currentInput.criticalRange?.midpoint ?? -Infinity : -Infinity,
+      currentInput.criticalPreference === 'low' ? currentInput.criticalRange?.midpoint ?? Infinity : Infinity,
+      Number(currentInput.criticalRange !== undefined),
     ]);
     core.configure_search(pointer);
   };

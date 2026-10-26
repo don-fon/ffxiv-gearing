@@ -7,6 +7,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('outside clicks and other dropdowns preserve optimizer inputs', async ({ page }) => {
+  await page.getByLabel('暴击属性策略', { exact: true }).selectOption('high');
   await page.getByRole('spinbutton', { name: '目标 GCD' }).fill('2.42');
   await page.getByRole('spinbutton', { name: '最低坚韧减伤' }).fill('12.3');
   await page.locator('body').click({ position: { x: 1400, y: 1100 } });
@@ -16,11 +17,13 @@ test('outside clicks and other dropdowns preserve optimizer inputs', async ({ pa
   await page.locator('body').click({ position: { x: 1400, y: 1100 } });
   await expect(page.locator('.materia-overall')).toBeHidden();
   await page.getByRole('button', { name: '自动配装', exact: true }).click();
+  await expect(page.getByLabel('暴击属性策略', { exact: true })).toHaveValue('high');
   await expect(page.getByRole('spinbutton', { name: '目标 GCD' })).toHaveValue('2.42');
   await expect(page.getByRole('spinbutton', { name: '最低坚韧减伤' })).toHaveValue('12.3');
   await page.getByRole('button', { name: '自动配装', exact: true }).press('Escape');
   await expect(page.locator('.gear-optimization')).toBeHidden();
   await page.getByRole('button', { name: '自动配装', exact: true }).click();
+  await expect(page.getByLabel('暴击属性策略', { exact: true })).toHaveValue('high');
   await expect(page.getByRole('spinbutton', { name: '目标 GCD' })).toHaveValue('2.42');
 });
 
@@ -75,11 +78,13 @@ test('running workers survive hiding, and results received while hidden remain a
 });
 
 test('switching jobs starts a fresh optimizer panel', async ({ page }) => {
+  await page.getByLabel('暴击属性策略', { exact: true }).selectOption('low');
   await page.getByRole('spinbutton', { name: '目标 GCD' }).fill('2.42');
   await page.getByRole('spinbutton', { name: '最低坚韧减伤' }).fill('12.3');
   await page.locator('.condition_job').click();
   await page.getByRole('link', { name: '战士', exact: true }).click();
   await page.getByRole('button', { name: '自动配装', exact: true }).click();
+  await expect(page.getByLabel('暴击属性策略', { exact: true })).toHaveValue('none');
   await expect(page.getByRole('spinbutton', { name: '目标 GCD' })).toHaveValue('2.50');
   await expect(page.getByRole('spinbutton', { name: '最低坚韧减伤' })).toHaveValue('0.0');
 });
@@ -140,4 +145,34 @@ test('overall progress weights partitions and retains completed work', async ({ 
   await expect(progress).toHaveAttribute('value', '0.625');
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('weighted-finish', { detail: 1 })));
   await expect(page.locator('.gear-optimization_result')).toBeVisible();
+});
+
+test('critical preference and the shared range reach every search worker', async ({ page }) => {
+  await page.getByLabel('暴击属性策略', { exact: true }).selectOption('low');
+  await page.evaluate(() => {
+    class CriticalWorker {
+      onmessage?: (event: { data: unknown }) => void;
+      postMessage(message: { type: string, input: { criticalPreference?: string, criticalRange?: unknown } }) {
+        const range = { minimum: 1000, maximum: 2001, midpoint: 1500.5 };
+        const result = { damage: 1, stats: { CRT: 1400 }, gears: [], exploredStates: 1,
+          tenacityMitigation: 0, criticalRange: range };
+        if (message.input.criticalPreference !== 'low') throw new Error('Missing critical preference');
+        if (message.type === 'plan') queueMicrotask(() => this.onmessage?.({ data: {
+          type: 'plan', plan: { partitions: [{ contribution: 0 }], heuristicResult: result, criticalRange: range },
+        } }));
+        else {
+          if (JSON.stringify(message.input.criticalRange) !== JSON.stringify(range)) throw new Error('Missing shared critical range');
+          queueMicrotask(() => this.onmessage?.({ data: { type: 'result', result } }));
+        }
+      }
+      terminate() {}
+    }
+    window.Worker = CriticalWorker as unknown as typeof Worker;
+  });
+  await page.getByRole('button', { name: '开始计算', exact: true }).click();
+  await expect(page.locator('.gear-optimization_critical-range')).toContainText('1000–2001');
+  await expect(page.locator('.gear-optimization_critical-range')).toContainText('中点 1500.5');
+  await expect(page.locator('.gear-optimization_critical-range')).toContainText('≤ 1500');
+  await page.getByLabel('暴击属性策略', { exact: true }).selectOption('high');
+  await expect(page.locator('.gear-optimization_result')).toHaveCount(0);
 });

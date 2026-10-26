@@ -87,3 +87,7 @@ All FINAL FANTASY XIV contents and materials are copyrights of SQUARE ENIX, FINA
 自动配装在 Worker 内使用 WASM 加速候选属性去重和精确搜索；浏览器不能加载 WASM 时自动回退 JavaScript。普通开发和构建无需安装 C 编译器。
 
 性能实测、逐项消融、已有提交复核及复现命令见 [自动配装性能与验证](docs/optimizer-performance.md)。
+
+### 暴击偏好
+
+自动配装可选择“无所谓 / 高暴击 / 低暴击”。高、低模式先求满足 GCD、坚韧等条件的最终总暴击范围并取一次中点，分别在上半区、下半区内寻找伤害期望最优解；结果中会显示范围和实际门槛。详见 [暴击偏好规则与验证](docs/optimizer-critical-preference.md)。

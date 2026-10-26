@@ -10,6 +10,7 @@ import {
 } from '../optimizerInput';
 import type { OptimizerGearCategory } from '../optimizerInput';
 import type {
+  CriticalPreference,
   GearOptimizationInput,
   GearOptimizationResult,
   GearOptimizationPlan,
@@ -60,6 +61,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const [ result, setResult ] = React.useState<GearOptimizationResult>();
   const [ resultExcludedGearKey, setResultExcludedGearKey ] = React.useState<string>();
   const [ baselineDamage, setBaselineDamage ] = React.useState<number>();
+  const [ criticalPreference, setCriticalPreference ] = React.useState<CriticalPreference>('none');
   const [ minimumTenacityMitigation, setMinimumTenacityMitigation ] = React.useState('0.0');
   const [ selectedWorkerCount, setSelectedWorkerCount ] = React.useState(() => Math.min(
     Math.max(1, typeof navigator === 'undefined' ? 4 : navigator.hardwareConcurrency || 4), 4));
@@ -246,6 +248,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           },
         }
         : { ...input, objective: { type: 'damage' } };
+      input.criticalPreference = criticalPreference;
     } catch (inputError) {
       setError(inputError instanceof Error ? inputError.message : String(inputError));
       setStatus('error');
@@ -271,7 +274,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       }
       if (event.data.type !== 'plan') return;
       planner.terminate();
-      const { partitions, heuristicResult } = event.data.plan;
+      const { partitions, heuristicResult, criticalRange } = event.data.plan;
       if (partitions.length === 0) {
         fail(`没有找到最终 GCD 为 ${parsedTargetGcd.toFixed(2)} 秒的完整配装。`);
         return;
@@ -323,6 +326,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           input: {
             ...input,
             candidateShard: partition.candidateShard,
+            criticalRange,
             food,
             foods: undefined,
             targetSpeedContribution,
@@ -488,6 +492,30 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             }}
           />
           <span>%</span>
+        </div>
+      )}
+      <div className="gear-optimization_constraint-row">
+        <span>暴击属性策略</span>
+        <select
+          aria-label="暴击属性策略"
+          className="gear-optimization_critical-preference"
+          value={criticalPreference}
+          disabled={busy}
+          onChange={event => {
+            setCriticalPreference(event.target.value as CriticalPreference);
+            setStatus('idle');
+            setResult(undefined);
+            setResultExcludedGearKey(undefined);
+          }}
+        >
+          <option value="none">不限制</option>
+          <option value="high">高暴击</option>
+          <option value="low">低暴击</option>
+        </select>
+      </div>
+      {criticalPreference !== 'none' && (
+        <div className="gear-optimization_worker-tip">
+          在满足最终 GCD、最低坚韧等条件的可行总暴击范围内，以中点划分较高与较低区间；限定区间后，仍以伤害期望最高为优化目标。
         </div>
       )}
       <div className="gear-optimization_constraint-row">
@@ -702,6 +730,13 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
               <span>坚韧减伤 {(result.tenacityMitigation * 100).toFixed(1)}%</span>
             )}
           </div>
+          {result.criticalRange !== undefined && (
+            <div className="gear-optimization_critical-range">
+              总暴击范围 {result.criticalRange.minimum}–{result.criticalRange.maximum}，中点 {result.criticalRange.midpoint}；
+              {criticalPreference === 'high' ? `本次要求 ≥ ${Math.ceil(result.criticalRange.midpoint)}` :
+                `本次要求 ≤ ${Math.floor(result.criticalRange.midpoint)}`}
+            </div>
+          )}
           <div className="gear-optimization_stats">
             {store.schema.stats.filter(stat => stat !== 'VIT').map(stat => (
               <span key={stat}>{G.statNames[stat]} {result.stats[stat as OptimizerStat]}</span>

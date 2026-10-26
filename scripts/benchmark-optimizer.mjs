@@ -9,11 +9,13 @@ import { chromium } from '@playwright/test';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const { values } = parseArgs({ options: {
   engine: { type: 'string', default: 'wasm-warm' }, workers: { type: 'string', default: '4' },
+  critical: { type: 'string', default: 'none' },
   shards: { type: 'string' }, locks: { type: 'string', default: '0' }, food: { type: 'string' },
   timeout: { type: 'string', default: '300000' }, runs: { type: 'string', default: '1' },
   output: { type: 'string' }, input: { type: 'string' }, chromium: { type: 'string' },
   'skip-build': { type: 'boolean', default: false },
 } });
+if (!['none', 'high', 'low'].includes(values.critical)) throw new Error('Unknown critical preference.');
 if (!['auto', 'javascript', 'wasm', 'wasm-warm'].includes(values.engine)) throw new Error('Unknown benchmark engine.');
 for (const [name, minimum, maximum] of [['workers', 1, 4], ['locks', 0, 4], ['runs', 1, 10], ['timeout', 1000, 3600000]]) {
   const value = Number(values[name]);
@@ -26,6 +28,7 @@ if (!values['skip-build']) {
   if (build.status !== 0) throw new Error('Production build failed.');
 }
 const input = JSON.parse(fs.readFileSync(values.input || path.join(root, 'test/fixtures/warrior-375-input.json'), 'utf8'));
+input.criticalPreference = values.critical;
 const expected = JSON.parse(fs.readFileSync(path.join(root, 'test/fixtures/warrior-375-result.json'), 'utf8'));
 const lockedSlots = [13, 5, 8, 3].slice(0, Number(values.locks));
 input.lockedGears = expected.gears.filter(gear => lockedSlots.includes(gear.slot))
@@ -90,7 +93,7 @@ try {
           if (event.data.type === 'error') { finish({ status: 'error', message: event.data.message });return; }
           if (event.data.type !== 'plan') return;
           planner.terminate();
-          const { partitions, heuristicResult } = event.data.plan;
+          const { partitions, heuristicResult, criticalRange } = event.data.plan;
           best = heuristicResult;taskCount = partitions.length;
           const assign = worker => {
             if (next >= partitions.length) { worker.terminate();return; }
@@ -98,7 +101,7 @@ try {
             const food = task.foodId === undefined ? config.input.food
               : config.input.foods.find(candidate => candidate.id === task.foodId);
             worker.postMessage({ type: 'optimize', engine: config.engine,
-              input: { ...config.input, food, foods: undefined, candidateShard: task.candidateShard,
+              input: { ...config.input, food, foods: undefined, candidateShard: task.candidateShard, criticalRange,
                 targetSpeedContribution: task.contribution, globalMinimumDamage: best.damage } });
           };
           for (let index = 0; index < Math.min(config.workers, partitions.length); index++) {
@@ -124,9 +127,16 @@ try {
       }), { input, engine: values.engine === 'auto' ? undefined : values.engine, workers: Number(values.workers),
         shards: values.shards ? Number(values.shards) : undefined, timeout: Number(values.timeout) });
       const record = { ...result, run, engine: values.engine, workers: Number(values.workers),
-        shards: values.shards ? Number(values.shards) : 'auto', lockedSlots, food: values.food || 'auto',
+        shards: values.shards ? Number(values.shards) : 'auto', lockedSlots, food: values.food || 'auto', criticalPreference: values.critical,
         browser: browser.version(), source: 'production worker pipeline' };
-      if (result.status === 'completed' && !values.input &&
+      if (result.status === 'completed' && values.critical !== 'none') {
+        const range = result.result.criticalRange;
+        const critical = result.result.stats.CRT;
+        if (!range || (values.critical === 'high' ? critical < range.midpoint : critical > range.midpoint)) {
+          throw new Error('Result violates the shared critical half-range.');
+        }
+      }
+      if (result.status === 'completed' && values.critical === 'none' && !values.input &&
           (!values.food || Number(values.food) === expected.food.id) &&
           Math.abs(result.result.damage - expected.damage) > 1e-10) {
         throw new Error(`Unexpected damage: ${result.result.damage} != ${expected.damage}`);

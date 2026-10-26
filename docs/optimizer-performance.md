@@ -95,3 +95,5 @@ WASM_CC=clang-19 WASM_LD=/usr/bin/wasm-ld-19 npm run build:optimizer-wasm -- --c
 预览地址：<https://don-fon.github.io/ffxiv-gearing/preview/>。产物发布提交 `a09f7d5`，源码运行配置来自 `d97980b`。仅更新 `preview/`，发布页根目录逐文件与原发布版本 `8903328` 一致。
 
 线上 HTML、Worker、主脚本和 WASM 通过启用证书校验的 HTTPS 下载，SHA-256 与发布产物逐项一致：[资源校验记录](benchmarks/pages-assets.json)。云容器 Chromium 直连 GitHub Pages 时出现 `ERR_CERT_AUTHORITY_INVALID`，因此未声称线上浏览器测试通过，也未跳过证书检查。上述 6 项真实浏览器测试针对同一生产产物在本地 HTTP 服务运行，包含 WASM 成功加载及阻断下载后的 JS 回退。
+
+后续的暴击偏好功能已将内核更新至 ABI 3、19,778 字节；本文的性能数据与 19,445 字节产物校验属于原测试版本。新增规则与验证见 [暴击偏好](optimizer-critical-preference.md)。

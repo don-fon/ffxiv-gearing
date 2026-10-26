@@ -12,8 +12,9 @@ input.lockedGears = expected.gears.map((gear: { id: number, slot: number, melds:
 input.lockedGearIds = input.lockedGears.map((gear: { id: number }) => gear.id);
 input.foods = [expected.food];
 
+for (const preference of ['none', 'high', 'low']) {
 for (const blocked of [false, true]) {
-  test(`production worker ${blocked ? 'falls back when WASM download fails' : 'loads WASM and returns a legal result'}`, async ({ page, context }) => {
+  test(`production worker ${preference}: ${blocked ? 'falls back when WASM download fails' : 'loads WASM and returns a legal result'}`, async ({ page, context }) => {
     if (blocked) await context.route('**/*.wasm', route => route.abort());
     await page.addInitScript(() => {
       const scope = window as unknown as { RealOptimizerWorker: typeof Worker, optimizerWorkerUrl: string };
@@ -41,9 +42,10 @@ for (const blocked of [false, true]) {
           worker.postMessage({ type: 'optimize', input: lockedInput });
         });
       } finally { worker.terminate(); }
-    }, input);
+    }, { ...input, criticalPreference: preference });
     expect(response.engine).toBe(blocked ? 'javascript' : 'wasm-warm');
     expect(response.result.damage).toBeCloseTo(expected.damage, 10);
     expect(response.result.stats).toEqual(expected.stats);
   });
+}
 }

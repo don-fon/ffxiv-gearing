@@ -87,12 +87,13 @@ static double upper(const address *roots){
   double *n=node(roots[i]);for(int stat=0;stat<8;stat++)v[stat]+=n[stat];
   has_tenacity|=(int)n[8];budget+=n[9];critical_minimum+=n[10];
  }
+ if(context[46]&&(effective(v[2],2,1)<context[44]||effective(critical_minimum,2,1)>context[45]))return -__builtin_inf();
  double value=damage(v,has_tenacity);
  if(value<=best)return value;
  if(context[14]>0&&mitigation(v,has_tenacity)+1e-12<context[14])return -__builtin_inf();
  return budget_bound(v,critical_minimum,budget,value);
 }
-__attribute__((visibility("default"))) int search_abi(void){return 2;}
+__attribute__((visibility("default"))) int search_abi(void){return 3;}
 __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
 __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
 __attribute__((visibility("default"))) void configure_search(address pointer){
@@ -135,7 +136,7 @@ __attribute__((visibility("default"))) int step_search(int limit){
      double *p=(double*)ptr;for(int stat=0;stat<8;stat++)v[stat]+=p[stat];has_tenacity|=(int)p[8];
     }
     evaluated++;double value=damage(v,has_tenacity);
-    if(value>best&&mitigation(v,has_tenacity)+1e-12>=context[14]){
+    if(value>best&&(!context[46]||(effective(v[2],2,1)>=context[44]&&effective(v[2],2,1)<=context[45]))&&mitigation(v,has_tenacity)+1e-12>=context[14]){
      best=value;for(int i=0;i<root_count;i++)selected[i]=choices[i];
     }
    }

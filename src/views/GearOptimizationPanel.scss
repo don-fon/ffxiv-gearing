@@ -55,6 +55,9 @@
   select {
     width: 64px;
   }
+  select.gear-optimization_critical-preference {
+    width: 144px;
+  }
 }
 .gear-optimization_locks {
   display: grid;

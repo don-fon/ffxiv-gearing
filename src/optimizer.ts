@@ -63,7 +63,17 @@ export interface OptimizerLockedGear {
   melds?: OptimizerMeld[];
 }
 
+export type CriticalPreference = 'none' | 'high' | 'low';
+
+export interface OptimizerCriticalRange {
+  minimum: number;
+  maximum: number;
+  midpoint: number;
+}
+
 export interface GearOptimizationInput {
+  criticalPreference?: CriticalPreference;
+  criticalRange?: OptimizerCriticalRange;
   candidateShard?: { index: number; count: number };
   syncLevel?: number;
   fixedStats: OptimizerStats;
@@ -96,6 +106,7 @@ export interface OptimizerSpeedPartition {
 }
 
 export interface GearOptimizationPlan {
+  criticalRange?: OptimizerCriticalRange;
   partitions: OptimizerSpeedPartition[];
   heuristicResult: GearOptimizationResult;
 }
@@ -119,6 +130,7 @@ export interface OptimizerGearChoice {
 }
 
 export interface GearOptimizationResult {
+  criticalRange?: OptimizerCriticalRange;
   empty?: boolean;
   damage: number;
   tenacityMitigation: number;
@@ -482,7 +494,7 @@ function hasRemovableSpeedMeld(option: GearOption, input: GearOptimizationInput)
 
 function filterRemovableSpeedMeldOptions(groups: GearOption[][],
   input: GearOptimizationInput): GearOption[][] {
-  if (input.targetSpeedContribution === undefined) return groups;
+  if (input.targetSpeedContribution === undefined || hasCriticalPreference(input)) return groups;
   const filtered = groups.map(group => group.filter(option => !hasRemovableSpeedMeld(option, input)));
   if (filtered.some(group => group.length === 0)) throw new NoFeasibleOptimizationSolution();
   return filtered;
@@ -1034,6 +1046,8 @@ function combinedDamageValue(left: OptimizerStats, right: OptimizerStats,
 function feasibleDamageBound(left: OptimizerStats, right: OptimizerStats,
   input: GearOptimizationInput,
   calculateDamage?: (left: OptimizerStats, right: OptimizerStats) => number): number {
+  if (input.criticalRange !== undefined && input.criticalPreference === 'high' &&
+      (combinedStatValue(left, right, 'CRT', input.food) ?? 0) < input.criticalRange.midpoint) return -Infinity;
   const damage = combinedDamageValue(left, right, input, calculateDamage);
   const minimum = minimumTenacityMitigation(input);
   if (minimum === undefined || minimum <= 0) return damage;
@@ -1137,7 +1151,7 @@ function improveGreedySolution(input: GearOptimizationInput, plan: SpeedSearchPl
         const options = candidate.options!;
         const optionStats = addStats(options[0].stats, options[1].stats);
         const next = evaluateCombinedStats(others, optionStats, input, calculator);
-        if (meetsObjective(next, input) && next.damage > evaluation.damage) {
+        if (meetsCombinedObjective(next, others, optionStats, input) && next.damage > evaluation.damage) {
           evaluation = next;
           selected[left] = options[0];
           selected[right] = options[1];
@@ -1155,7 +1169,196 @@ function improveGreedySolution(input: GearOptimizationInput, plan: SpeedSearchPl
   return state;
 }
 
+function hasCriticalPreference(input: GearOptimizationInput): boolean {
+  return input.criticalPreference === 'high' || input.criticalPreference === 'low';
+}
+
+function criticalAfterFood(raw: number, input: GearOptimizationInput): number {
+  const maximum = input.food?.stats.CRT;
+  const rate = input.food?.statRates.CRT;
+  return raw + (maximum === undefined ? 0 : rate === undefined ? maximum : Math.min(maximum, floor(raw * rate / 100)));
+}
+
+function meetsCombinedObjective(evaluation: OptimizationEvaluation, left: OptimizerStats,
+  right: OptimizerStats, input: GearOptimizationInput): boolean {
+  if (!meetsObjective(evaluation, input)) return false;
+  if (input.criticalRange === undefined) return true;
+  const critical = combinedStatValue(left, right, 'CRT', input.food) ?? 0;
+  return input.criticalPreference === 'high' ? critical >= input.criticalRange.midpoint :
+    input.criticalPreference !== 'low' || critical <= input.criticalRange.midpoint;
+}
+
+/** Damage dominance is safe only within identical CRT when either endpoint of
+ * the CRT range matters. Reuse both native and JS skyline implementations. */
+function criticalBackend(input: GearOptimizationInput,
+  backend?: OptimizerSearchBackend): OptimizerSearchBackend | undefined {
+  if (!hasCriticalPreference(input)) return backend;
+  const protectedBackend: OptimizerSearchBackend = (task, report) => backend?.(task, report);
+  Object.assign(protectedBackend, backend);
+  protectedBackend.pareto = options => {
+    const buckets = new Map<number, typeof options>();
+    for (const option of options) {
+      const critical = option.stats.CRT ?? 0;
+      const bucket = buckets.get(critical) ?? [];
+      bucket.push(option);
+      buckets.set(critical, bucket);
+    }
+    return Array.from(buckets.values()).flatMap(bucket => paretoFrontier(bucket, backend));
+  };
+  return protectedBackend;
+}
+
+interface CriticalEndpoints {
+  minimum: SearchState;
+  maximum: SearchState;
+}
+
+/** Dynamic programming over speed and useful tenacity. Track CRT endpoints,
+ * not the Cartesian product of damage stats. Keep witnesses for legal seeds. */
+function criticalEndpoints(input: GearOptimizationInput,
+  groups: GearOption[][]): Map<number, CriticalEndpoints> {
+  const speedPlan = buildSpeedSearchPlan(groups, input);
+  const requiredMitigation = minimumTenacityMitigation(input);
+  let tenacityCap = requiredMitigation === undefined ? 0 : Infinity;
+  if (requiredMitigation !== undefined && !groups.some(group =>
+    group.some(option => (option.stats.TEN ?? 0) < 0))) {
+    let low = 0;
+    let high = (input.fixedStats.TEN ?? 0) + groups.reduce((sum, group) => sum +
+      group.reduce((maximum, option) => Math.max(maximum, option.stats.TEN ?? 0), 0), 0);
+    const mitigation = (raw: number) => calculateTenacityMitigation(
+      applyFood({ TEN: raw }, input.food).TEN, input.damage.level);
+    if (mitigation(high) + 1e-12 >= requiredMitigation) {
+      while (low < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (mitigation(middle) + 1e-12 >= requiredMitigation) high = middle;
+        else low = middle + 1;
+      }
+      tenacityCap = low;
+    }
+  }
+  const tenacityKey = (stats: OptimizerStats, cap = tenacityCap) => requiredMitigation === undefined
+    ? '0' : `${Number(stats.TEN !== undefined)}:${Math.min(stats.TEN ?? 0, cap)}`;
+  const insert = <T extends GearOption>(map: Map<string, { minimum: T; maximum: T }>, key: string, point: T) => {
+    const pair = map.get(key);
+    if (pair === undefined) map.set(key, { minimum: point, maximum: point });
+    else {
+      if ((point.stats.CRT ?? 0) < (pair.minimum.stats.CRT ?? 0)) pair.minimum = point;
+      if ((point.stats.CRT ?? 0) > (pair.maximum.stats.CRT ?? 0)) pair.maximum = point;
+    }
+  };
+  const initial: SearchState = { stats: input.fixedStats, choices: [] };
+  let states = new Map<number, Map<string, CriticalEndpoints>>([
+    [0, new Map([[tenacityKey(initial.stats), { minimum: initial, maximum: initial }]])],
+  ]);
+  for (let index = 0; index < groups.length; index++) {
+    const bySpeed = new Map<number, GearOption[]>();
+    const optionCap = Math.max(0, tenacityCap - (input.fixedStats.TEN ?? 0));
+    for (const [speed, options] of speedPlan.optionsBySpeed[index]) {
+      const projected = new Map<string, { minimum: GearOption; maximum: GearOption }>();
+      for (const option of options) insert(projected, tenacityKey(option.stats, optionCap), option);
+      bySpeed.set(speed, Array.from(new Set(Array.from(projected.values())
+        .flatMap(pair => [pair.minimum, pair.maximum]))));
+    }
+    const next = new Map<number, Map<string, CriticalEndpoints>>();
+    for (const [prefix, points] of states) {
+      for (const speed of speedPlan.allowedOptionSpeeds[index].get(prefix) ?? []) {
+        const cumulative = prefix + speed;
+        const bucket = next.get(cumulative) ?? new Map<string, CriticalEndpoints>();
+        next.set(cumulative, bucket);
+        for (const pair of points.values()) {
+          for (const state of pair.minimum === pair.maximum ? [pair.minimum] : [pair.minimum, pair.maximum]) {
+            for (const option of bySpeed.get(speed)!) {
+              const stats = addStats(state.stats, option.stats);
+              insert(bucket, tenacityKey(stats), { stats, choices: [], previous: state, selected: option.choices });
+            }
+          }
+        }
+      }
+    }
+    // More tenacity with no worse endpoint dominates for feasibility. Preserve
+    // the presence flag: absent TEN has different semantics from explicit zero.
+    if (requiredMitigation !== undefined) {
+      for (const bucket of next.values()) {
+        const best = new Map<string, { minimum: number; maximum: number }>();
+        const ordered = Array.from(bucket).sort(([left], [right]) =>
+          Number(right.split(':')[1]) - Number(left.split(':')[1]));
+        for (const [key, pair] of ordered) {
+          const presence = key.split(':')[0];
+          const previous = best.get(presence) ?? { minimum: Infinity, maximum: -Infinity };
+          const minimum = pair.minimum.stats.CRT ?? 0;
+          const maximum = pair.maximum.stats.CRT ?? 0;
+          if (minimum >= previous.minimum && maximum <= previous.maximum) bucket.delete(key);
+          else best.set(presence, { minimum: Math.min(previous.minimum, minimum),
+            maximum: Math.max(previous.maximum, maximum) });
+        }
+      }
+    }
+    states = next;
+  }
+  const result = new Map<number, CriticalEndpoints>();
+  for (const [contribution, bucket] of states) {
+    let pair: CriticalEndpoints | undefined;
+    for (const points of bucket.values()) {
+      for (const point of [points.minimum, points.maximum]) {
+        if (!meetsObjective(evaluateStats(applyFood(point.stats, input.food), input), input)) continue;
+        if (pair === undefined) pair = { minimum: point, maximum: point };
+        else {
+          if ((point.stats.CRT ?? 0) < (pair.minimum.stats.CRT ?? 0)) pair.minimum = point;
+          if ((point.stats.CRT ?? 0) > (pair.maximum.stats.CRT ?? 0)) pair.maximum = point;
+        }
+      }
+    }
+    if (pair !== undefined) result.set(contribution, pair);
+  }
+  return result;
+}
+
+function criticalSeed(endpoints: Map<number, CriticalEndpoints>, input: GearOptimizationInput): SearchState {
+  let best: SearchState | undefined;
+  let bestDamage = -Infinity;
+  for (const [contribution, pair] of endpoints) {
+    if (input.targetSpeedContribution !== undefined && contribution !== input.targetSpeedContribution) continue;
+    for (const state of [pair.minimum, pair.maximum]) {
+      const evaluation = evaluateCombinedStats(state.stats, {}, input);
+      if (meetsCombinedObjective(evaluation, state.stats, {}, input) && evaluation.damage > bestDamage) {
+        bestDamage = evaluation.damage;
+        best = state;
+      }
+    }
+  }
+  if (best === undefined) throw new NoFeasibleOptimizationSolution();
+  return best;
+}
+
+function resolveCriticalPreference(input: GearOptimizationInput,
+  backend?: OptimizerSearchBackend): GearOptimizationInput {
+  if (!hasCriticalPreference(input) || input.criticalRange !== undefined) return input;
+  let minimum = Infinity;
+  let maximum = -Infinity;
+  for (const fixedInput of fixedFoodInputs(input)) {
+    try {
+      const groups = buildGroups(fixedInput, criticalBackend(fixedInput, backend));
+      for (const pair of criticalEndpoints(fixedInput, groups).values()) {
+        minimum = Math.min(minimum, criticalAfterFood(pair.minimum.stats.CRT ?? 0, fixedInput));
+        maximum = Math.max(maximum, criticalAfterFood(pair.maximum.stats.CRT ?? 0, fixedInput));
+      }
+    } catch (error) {
+      if (!(error instanceof NoFeasibleOptimizationSolution)) throw error;
+    }
+  }
+  if (!Number.isFinite(minimum)) throw noFeasibleOptimizationError(input);
+  return { ...input, criticalRange: { minimum, maximum, midpoint: (minimum + maximum) / 2 } };
+}
+
 function validateOptimizationInput(input: GearOptimizationInput): void {
+  if (input.criticalPreference !== undefined && !['none', 'high', 'low'].includes(input.criticalPreference)) {
+    throw new Error('暴击偏好无效。');
+  }
+  if (input.criticalRange !== undefined) {
+    const { minimum, maximum, midpoint } = input.criticalRange;
+    if (![minimum, maximum, midpoint].every(Number.isFinite) || minimum > maximum ||
+        midpoint !== (minimum + maximum) / 2) throw new Error('暴击范围无效。');
+  }
   if (input.candidateShard !== undefined && (!Number.isInteger(input.candidateShard.count) ||
       !Number.isInteger(input.candidateShard.index) || input.candidateShard.count < 1 ||
       input.candidateShard.count > 64 || input.candidateShard.index < 0 ||
@@ -1222,6 +1425,7 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput,
   delete planningInput.globalMinimumDamage;
   const groups = prepareSearchGroups(planningInput, backend);
   const contributions = buildSpeedSearchPlan(groups, planningInput).targetContributions;
+  const criticalSeeds = hasCriticalPreference(input) ? criticalEndpoints(planningInput, groups) : undefined;
   let heuristicResult: GearOptimizationResult | undefined;
   const partitions: OptimizerSpeedPartition[] = [];
   for (const contribution of contributions) {
@@ -1232,7 +1436,8 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput,
       const partitionGroups = filterRemovableSpeedMeldOptions(groups, partitionInput);
       speedPlan = buildSpeedSearchPlan(partitionGroups, partitionInput);
       state = improveGreedySolution(partitionInput, speedPlan,
-        findGreedySolution(partitionInput, speedPlan), backend);
+        criticalSeeds === undefined ? findGreedySolution(partitionInput, speedPlan) :
+          criticalSeed(criticalSeeds, partitionInput), backend);
     } catch (error) {
       if (error instanceof NoFeasibleOptimizationSolution) continue;
       throw error;
@@ -1245,6 +1450,7 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput,
         stats,
         gears: reconstruct(state),
         food: input.food,
+        criticalRange: input.criticalRange,
         exploredStates: 0,
       };
     }
@@ -1366,7 +1572,8 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   const speedPlan = buildSpeedSearchPlan(groups, input);
   const combinedDamage = createCombinedDamageCalculator(input);
   let bestState: SearchState | undefined = improveGreedySolution(input, speedPlan,
-    findGreedySolution(input, speedPlan), searchBackend);
+    hasCriticalPreference(input) ? criticalSeed(criticalEndpoints(input, groups), input) :
+      findGreedySolution(input, speedPlan), searchBackend);
   let bestStats: OptimizerStats | undefined = applyFood(bestState.stats, input.food);
   let bestEvaluation = evaluateStats(bestStats, input);
   let pruningDamage = Math.max(bestEvaluation.damage, input.globalMinimumDamage ?? -Infinity);
@@ -1456,6 +1663,9 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   const secondaryBudgetBound = createSecondaryBudgetBound(input, bestState.stats);
   const upperDamage = (stateNode: AttributeTreeNode<SearchState>, maxima: OptimizerStats,
     optionNodes: AttributeTreeNode<GearOption>[]): number => {
+    if (input.criticalRange !== undefined && input.criticalPreference === 'low' &&
+        criticalAfterFood(stateNode.minimumCritical + optionNodes.reduce((sum, node) =>
+          sum + node.minimumCritical, 0), input) > input.criticalRange.midpoint) return -Infinity;
     const independent = feasibleDamageBound(stateNode.maxima, maxima, input, combinedDamage);
     if (secondaryBudgetBound === undefined || independent <= pruningDamage) return independent;
     return secondaryBudgetBound(addStats(stateNode.maxima, maxima),
@@ -1519,7 +1729,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
       for (const state of stateNode.items) {
         exploredStates++;
         const evaluation = evaluateCombinedStats(state.stats, optionStats, input, combinedDamage);
-        if (meetsObjective(evaluation, input) && evaluation.damage > bestEvaluation.damage) {
+        if (meetsCombinedObjective(evaluation, state.stats, optionStats, input) && evaluation.damage > bestEvaluation.damage) {
           const combinedStats = addStats(state.stats, optionStats);
           bestEvaluation = evaluation;
           pruningDamage = Math.max(pruningDamage, evaluation.damage);
@@ -1596,7 +1806,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
           const optionStats = selected.reduce((stats, option) => addStats(stats, option.stats), {});
           const evaluation = evaluateCombinedStats(nativeResult.prefix.stats, optionStats, input, combinedDamage);
           if (Math.abs(evaluation.damage - nativeResult.damage) > 1e-10 * Math.max(1, evaluation.damage) ||
-              !meetsObjective(evaluation, input)) throw new Error('WASM 求解结果未通过伤害或约束校验。');
+              !meetsCombinedObjective(evaluation, nativeResult.prefix.stats, optionStats, input)) throw new Error('WASM 求解结果未通过伤害或约束校验。');
           if (evaluation.damage > bestEvaluation.damage) {
             const combinedStats = addStats(nativeResult.prefix.stats, optionStats);
             bestEvaluation = evaluation;
@@ -1643,6 +1853,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     stats: bestStats,
     gears: reconstruct(bestState),
     food: input.food,
+    criticalRange: input.criticalRange,
     exploredStates,
   };
 }
@@ -1662,9 +1873,11 @@ function fixedFoodInputs(input: GearOptimizationInput): GearOptimizationInput[] 
   return input.foods.map(food => ({ ...input, food, foods: undefined }));
 }
 
-export function planGearOptimization(input: GearOptimizationInput,
-  backend?: OptimizerSearchBackend): GearOptimizationPlan {
-  validateOptimizationInput(input);
+export function planGearOptimization(request: GearOptimizationInput,
+  nativeBackend?: OptimizerSearchBackend): GearOptimizationPlan {
+  validateOptimizationInput(request);
+  const input = resolveCriticalPreference(request, nativeBackend);
+  const backend = criticalBackend(input, nativeBackend);
   const plans: GearOptimizationPlan[] = [];
   for (const fixedInput of fixedFoodInputs(input)) {
     try {
@@ -1684,13 +1897,15 @@ export function planGearOptimization(input: GearOptimizationInput,
     ? [partition]
     : Array.from({ length: shardCount }, (_, index) => ({ ...partition,
       candidateShard: { index, count: shardCount }, estimatedWork: partition.estimatedWork / shardCount })));
-  return { partitions: tasks, heuristicResult };
+  return { partitions: tasks, heuristicResult, criticalRange: input.criticalRange };
 }
 
-export function optimizeGearset(input: GearOptimizationInput,
+export function optimizeGearset(request: GearOptimizationInput,
   onProgress?: (progress: OptimizerProgress) => void,
-  searchBackend?: OptimizerSearchBackend): GearOptimizationResult {
-  validateOptimizationInput(input);
+  nativeBackend?: OptimizerSearchBackend): GearOptimizationResult {
+  validateOptimizationInput(request);
+  const input = resolveCriticalPreference(request, nativeBackend);
+  const searchBackend = criticalBackend(input, nativeBackend);
   let best: GearOptimizationResult | undefined;
   let exploredStates = 0;
   for (const fixedInput of fixedFoodInputs(input)) {

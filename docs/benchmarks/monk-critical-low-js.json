@@ -1,0 +1,185 @@
+[
+  {
+    "status": "completed",
+    "result": {
+      "damage": 9.55565175289795,
+      "tenacityMitigation": 0,
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 2560,
+        "STR": 1307,
+        "CRT": 419,
+        "DET": 1348,
+        "DHT": 1461,
+        "SKS": 364,
+        "VIT": 1441
+      },
+      "gears": [
+        {
+          "id": 32737,
+          "name": "裁决强袭铠靴",
+          "level": 510,
+          "slot": 8,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29291,
+          "name": "改良型水晶都强袭手套",
+          "level": 500,
+          "slot": 5,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29103,
+          "name": "伊甸之律强攻项环",
+          "level": 500,
+          "slot": 10,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29330,
+          "name": "改良型水晶都强攻手环",
+          "level": 500,
+          "slot": 11,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 33543,
+          "name": "帕戈尔赞强攻耳坠",
+          "level": 505,
+          "slot": 9,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 34601,
+          "name": "蓝锆石强攻指环",
+          "level": 539,
+          "slot": 12,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 34601,
+          "name": "蓝锆石强攻指环",
+          "level": 539,
+          "slot": 12,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 22236,
+          "name": "和平头冠·常风",
+          "level": 350,
+          "slot": 3,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 2
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 3
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 4
+            }
+          ]
+        },
+        {
+          "id": 32652,
+          "name": "裁决指虎",
+          "level": 510,
+          "slot": 13,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 33573,
+          "name": "人造人旧式强袭军装",
+          "level": 520,
+          "slot": 4,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 32309,
+          "name": "伊甸之晨强袭骑兵裤",
+          "level": 530,
+          "slot": 7,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        }
+      ],
+      "food": {
+        "id": 49245,
+        "name": "炖剑山芋",
+        "stats": {
+          "DHT": 151,
+          "VIT": 297,
+          "DET": 91
+        },
+        "statRates": {
+          "DHT": 10,
+          "VIT": 10,
+          "DET": 10
+        }
+      },
+      "criticalRange": {
+        "minimum": 364,
+        "maximum": 1424,
+        "midpoint": 894
+      },
+      "exploredStates": 202806
+    },
+    "milliseconds": 4627.5,
+    "completed": 4,
+    "partitions": 4,
+    "exploredStates": 974244,
+    "run": 0,
+    "engine": "javascript",
+    "workers": 4,
+    "shards": "auto",
+    "lockedSlots": [],
+    "food": "auto",
+    "criticalPreference": "low",
+    "browser": "154.0.8037.57",
+    "source": "production worker pipeline"
+  }
+]

@@ -1,0 +1,273 @@
+[
+  {
+    "status": "completed",
+    "result": {
+      "damage": 9.567970990788673,
+      "tenacityMitigation": 0,
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 2560,
+        "STR": 1298,
+        "CRT": 1390,
+        "DET": 1289,
+        "DHT": 600,
+        "SKS": 364,
+        "VIT": 1426
+      },
+      "gears": [
+        {
+          "id": 24384,
+          "name": "联盟强袭皮靴",
+          "level": 375,
+          "slot": 8,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 21523,
+          "name": "钻石强袭手铠",
+          "level": 370,
+          "slot": 5,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "CRT",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 29325,
+          "name": "改良型水晶都强攻项环",
+          "level": 500,
+          "slot": 10,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 33553,
+          "name": "帕戈尔赞强攻腕环",
+          "level": 505,
+          "slot": 11,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29098,
+          "name": "伊甸之律强攻耳坠",
+          "level": 500,
+          "slot": 9,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 21769,
+          "name": "清银强攻戒指",
+          "level": 350,
+          "slot": 12,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DET",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DET",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "CRT",
+              "grade": 5,
+              "value": 6,
+              "slot": 2
+            },
+            {
+              "stat": "CRT",
+              "grade": 5,
+              "value": 6,
+              "slot": 3
+            },
+            {
+              "stat": "CRT",
+              "grade": 5,
+              "value": 6,
+              "slot": 4
+            }
+          ]
+        },
+        {
+          "id": 21769,
+          "name": "清银强攻戒指",
+          "level": 350,
+          "slot": 12,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DET",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DET",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "DET",
+              "grade": 5,
+              "value": 6,
+              "slot": 2
+            },
+            {
+              "stat": "CRT",
+              "grade": 5,
+              "value": 6,
+              "slot": 3
+            },
+            {
+              "stat": "CRT",
+              "grade": 5,
+              "value": 6,
+              "slot": 4
+            }
+          ]
+        },
+        {
+          "id": 22236,
+          "name": "和平头冠·常风",
+          "level": 350,
+          "slot": 3,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 1
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 2
+            },
+            {
+              "stat": "DHT",
+              "grade": 6,
+              "value": 16,
+              "slot": 3
+            },
+            {
+              "stat": "CRT",
+              "grade": 6,
+              "value": 16,
+              "slot": 4
+            }
+          ]
+        },
+        {
+          "id": 29260,
+          "name": "改良型水晶都指虎",
+          "level": 500,
+          "slot": 13,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 33513,
+          "name": "帕戈尔赞强袭胸衣",
+          "level": 505,
+          "slot": 4,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 29292,
+          "name": "改良型水晶都强袭喇叭裤",
+          "level": 500,
+          "slot": 7,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        }
+      ],
+      "food": {
+        "id": 49240,
+        "name": "焦糖爆米花",
+        "stats": {
+          "DET": 151,
+          "VIT": 297,
+          "CRT": 91
+        },
+        "statRates": {
+          "DET": 10,
+          "VIT": 10,
+          "CRT": 10
+        }
+      },
+      "criticalRange": {
+        "minimum": 364,
+        "maximum": 1424,
+        "midpoint": 894
+      },
+      "exploredStates": 457717
+    },
+    "milliseconds": 4500.60000000149,
+    "completed": 4,
+    "partitions": 4,
+    "exploredStates": 3313824,
+    "run": 0,
+    "engine": "auto",
+    "workers": 4,
+    "shards": "auto",
+    "lockedSlots": [],
+    "food": "auto",
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "source": "production worker pipeline"
+  }
+]
