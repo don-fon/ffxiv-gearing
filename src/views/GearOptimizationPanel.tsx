@@ -469,7 +469,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         {store.syncLevel === undefined ? (
           <p>未选择装等同步时，将在当前品级筛选范围内搜索。</p>
         ) : (
-          <p>非同步装备优先使用同步品级及低5品级；治疗职业缺少足够无信仰装备时，会按筛选范围向下放宽品级。</p>
+          <p>非同步装备优先使用同步品级及低5品级，并在筛选范围内补充副属性更强或缺失部位的低品级装备。</p>
+        )}
+        {store.syncLevel !== undefined && (
+          <p>同步模式还会考虑筛选范围外、同步后至少两项副属性达到上限的高品级装备；显示原始品级，按同步后的属性计算，魔晶石不生效。</p>
         )}
         <p>{`魔晶石使用各孔最高值，并精确枚举暴击、信念、直击、坚韧和${speedName}。`}</p>
       </div>

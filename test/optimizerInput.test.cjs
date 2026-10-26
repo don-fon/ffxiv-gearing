@@ -130,3 +130,10 @@ test('raid source labels distinguish normal and 24-player raids', () => {
   assert.equal(labels.normalRaid, '大型');
   assert.equal(labels.allianceRaid, '团本');
 });
+
+test('375 sync can include item-level 500 outside a 350–375 filter only through the capped-stat rule', () => {
+  const selected = { ...store, minLevel: 350, maxLevel: 375 };
+  assert.equal(isOptimizerGearEligible(selected, gear(500), twoCappedStats, 375, secondaryStats), true);
+  assert.equal(isOptimizerGearEligible(selected, gear(500), oneCappedStat, 375, secondaryStats), false);
+  assert.equal(isOptimizerGearEligible(selected, gear(500), twoCappedStats, undefined, secondaryStats), false);
+});
