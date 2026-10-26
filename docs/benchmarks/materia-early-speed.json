@@ -1,0 +1,158 @@
+[
+  {
+    "mode": "baseline",
+    "unlocked": false,
+    "planning": false,
+    "milliseconds": 6186.666918,
+    "profile": {
+      "gearOptionsMs": 29.754043999999567,
+      "buildGroupsMs": 97.14406099999997,
+      "prepareGroupsMs": 308.019936,
+      "optionCount": 4163,
+      "calls": 96
+    },
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    }
+  },
+  {
+    "mode": "early-speed",
+    "unlocked": false,
+    "planning": false,
+    "milliseconds": 6492.708518,
+    "profile": {
+      "gearOptionsMs": 13.186464999999714,
+      "buildGroupsMs": 40.13036499999998,
+      "prepareGroupsMs": 270.421738,
+      "optionCount": 1532,
+      "calls": 96
+    },
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    }
+  },
+  {
+    "mode": "early-speed",
+    "unlocked": false,
+    "planning": false,
+    "milliseconds": 5675.166969,
+    "profile": {
+      "gearOptionsMs": 11.563959000000239,
+      "buildGroupsMs": 36.471475,
+      "prepareGroupsMs": 257.41112100000004,
+      "optionCount": 1532,
+      "calls": 96
+    },
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    }
+  },
+  {
+    "mode": "baseline",
+    "unlocked": false,
+    "planning": false,
+    "milliseconds": 5862.048831,
+    "profile": {
+      "gearOptionsMs": 29.322751999999696,
+      "buildGroupsMs": 95.07588399999997,
+      "prepareGroupsMs": 309.56026,
+      "optionCount": 4163,
+      "calls": 96
+    },
+    "damage": 8.080836870815013,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1282,
+      "CRT": 1382,
+      "DET": 1270,
+      "DHT": 556,
+      "SKS": 364,
+      "TEN": 454,
+      "VIT": 1457
+    }
+  },
+  {
+    "mode": "baseline",
+    "unlocked": true,
+    "planning": true,
+    "milliseconds": 619.750346,
+    "profile": {
+      "gearOptionsMs": 36.18326799999977,
+      "buildGroupsMs": 105.21441199999998,
+      "prepareGroupsMs": 503.01592199999993,
+      "optionCount": 5665,
+      "calls": 128
+    },
+    "damage": 8.068407103464912,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1291,
+      "CRT": 1395,
+      "DET": 1347,
+      "DHT": 492,
+      "SKS": 364,
+      "TEN": 364,
+      "VIT": 1471
+    }
+  },
+  {
+    "mode": "early-speed",
+    "unlocked": true,
+    "planning": true,
+    "milliseconds": 584.590764,
+    "profile": {
+      "gearOptionsMs": 9.838812999999732,
+      "buildGroupsMs": 31.817700000000002,
+      "prepareGroupsMs": 463.64636600000006,
+      "optionCount": 1931,
+      "calls": 128
+    },
+    "damage": 8.068407103464912,
+    "stats": {
+      "PDMG": 90,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1291,
+      "CRT": 1395,
+      "DET": 1347,
+      "DHT": 492,
+      "SKS": 364,
+      "TEN": 364,
+      "VIT": 1471
+    }
+  }
+]

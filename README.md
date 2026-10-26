@@ -91,3 +91,7 @@ All FINAL FANTASY XIV contents and materials are copyrights of SQUARE ENIX, FINA
 ### 暴击偏好
 
 自动配装可选择“无所谓 / 高暴击 / 低暴击”。高、低模式先求满足 GCD、坚韧等条件的最终总暴击范围并取一次中点，分别在上半区、下半区内寻找伤害期望最优解；结果中会显示范围和实际门槛。详见 [暴击偏好规则与验证](docs/optimizer-critical-preference.md)。
+
+### 计算诊断
+
+浏览器 Console 筛选 `[自动配装]` 可查看实际后端、WASM 调用次数、回退原因和分片耗时。同步模式会纳入筛选范围外、同步后副属性达到上限的高品级装备，按同步属性计算。详见 [诊断日志、候选规则与魔晶石算法分析](docs/optimizer-diagnostics-and-materia.md)。
