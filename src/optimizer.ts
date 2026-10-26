@@ -1498,15 +1498,20 @@ function createSecondaryBudgetBound(input: GearOptimizationInput, reference: Opt
   const { sub, main, div, det, detTrunc } = input.damage.level;
   const stats = ['CRT', 'DET', 'DHT', 'TEN'] as const;
   const lower = stats.map(stat => input.fixedStats[stat] ?? 0);
-  // Other contexts retain the component-wise bound, including BLU's special CRT formula.
-  if (input.damage.mainStat !== 'VIT' || lower[0] < sub || lower[1] < main ||
+  const neutralTenacity = input.damage.job !== 'BLU' && input.damage.mainStat !== 'VIT' &&
+    input.fixedStats.TEN === undefined && input.food?.stats.TEN === undefined &&
+    !input.materiaStats.includes('TEN') &&
+    !input.lockedGears?.some(gear => gear.melds?.some(meld => meld.stat === 'TEN')) &&
+    !input.gears.some(gear => gear.stats.TEN !== undefined);
+  if (neutralTenacity) lower[3] = sub;
+  if ((input.damage.mainStat !== 'VIT' && !neutralTenacity) || lower[0] < sub || lower[1] < main ||
       lower[2] < sub || lower[3] < sub ||
       input.gears.some(gear => stats.some(stat => (gear.stats[stat] ?? 0) < 0)) ||
       stats.some(stat => input.food?.stats[stat] !== undefined &&
         input.food.statRates[stat] === undefined)) return undefined;
   const foodCaps = stats.map(stat => input.food?.stats[stat] ?? 0);
   const foodRates = stats.map(stat => (input.food?.statRates[stat] ?? 0) / 100);
-  const refs = stats.map(stat => reference[stat] ?? 0);
+  const refs = stats.map(stat => stat === 'TEN' && neutralTenacity ? sub : reference[stat] ?? 0);
   const foodUpper = (value: number, index: number) =>
     value + Math.min(foodCaps[index], value * foodRates[index]);
   const slopes = [0, 0.14 / det, 0.1375 / div, 0.112 / div];
@@ -1523,8 +1528,8 @@ function createSecondaryBudgetBound(input: GearOptimizationInput, reference: Opt
   };
   return (maxima: OptimizerStats, minimumCritical: number, budget: number,
     independentBound: number): number => {
-    const upper = stats.map(stat => maxima[stat] ?? 0);
-    let deficit = upper.reduce((sum, value) => sum + value, 0) - budget;
+    const upper = stats.map(stat => stat === 'TEN' && neutralTenacity ? sub : maxima[stat] ?? 0);
+    let deficit = upper.reduce((sum, value) => sum + value, 0) - budget - (neutralTenacity ? sub : 0);
     if (deficit <= 0 || !Number.isFinite(independentBound)) return independentBound;
     const criticalLower = minimumCritical + Math.min(foodCaps[0], floor(minimumCritical * foodRates[0]));
     const criticalUpper = foodUpper(upper[0], 0);
@@ -1807,9 +1812,34 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     }
     return output;
   };
+  const suffixLimits = groups.map(() => new Map<number, { budget: number; critical: number }>());
+  const bucketLimits = secondaryBudgetBound === undefined ? [] : speedPlan.optionsBySpeed.map(buckets => new Map(Array.from(buckets,
+    ([speed, options]) => [speed, {
+      budget: options.reduce((maximum, option) => Math.max(maximum,
+        (option.stats.CRT ?? 0) + (option.stats.DET ?? 0) +
+        (option.stats.DHT ?? 0) + (option.stats.TEN ?? 0)), -Infinity),
+      critical: options.reduce((minimum, option) => Math.min(minimum, option.stats.CRT ?? 0), Infinity),
+    }])));
+  const remainingLimits = (index: number, prefix: number): { budget: number; critical: number } => {
+    if (index === groups.length) return { budget: 0, critical: 0 };
+    const cached = suffixLimits[index].get(prefix);
+    if (cached !== undefined) return cached;
+    let budget = -Infinity;
+    let critical = Infinity;
+    for (const speed of speedPlan.allowedOptionSpeeds[index].get(prefix) ?? []) {
+      const bucket = bucketLimits[index].get(speed)!;
+      const tail = remainingLimits(index + 1, prefix + speed);
+      budget = Math.max(budget, bucket.budget + tail.budget);
+      critical = Math.min(critical, bucket.critical + tail.critical);
+    }
+    const limits = { budget, critical };
+    suffixLimits[index].set(prefix, limits);
+    return limits;
+  };
+  const budgetMaxima = groups.map(() => ({} as OptimizerStats));
   const visitFinalSpeeds = (stateTree: AttributeTreeNode<SearchState>, groupIndex: number,
     prefixSpeed: number, nodes: AttributeTreeNode<GearOption>[], maxima: OptimizerStats,
-    work: number): void => {
+    work: number, prefixBudget = 0, prefixCritical = 0): void => {
     if (groupIndex === groups.length) {
       const previousBranches = visitedBranches;
       const previousCandidates = finalCandidates;
@@ -1846,11 +1876,17 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
       return;
     }
     const remaining = speedPlan.completionMaxima[groupIndex].get(prefixSpeed);
-    if (remaining === undefined || feasibleDamageBound(stateTree.maxima,
-      sumInto(routeBounds[groupIndex], maxima, remaining), input, combinedDamage) <= pruningDamage) {
-      completedWork += work;
-      return;
+    if (remaining === undefined) { completedWork += work; return; }
+    const upperStats = sumInto(routeBounds[groupIndex], maxima, remaining);
+    const independent = feasibleDamageBound(stateTree.maxima, upperStats, input, combinedDamage);
+    let bound = independent;
+    if (bound > pruningDamage && secondaryBudgetBound !== undefined) {
+      const limits = remainingLimits(groupIndex, prefixSpeed);
+      bound = secondaryBudgetBound(sumInto(budgetMaxima[groupIndex], stateTree.maxima, upperStats),
+        stateTree.minimumCritical + prefixCritical + limits.critical,
+        stateTree.maximumSecondaryTotal + prefixBudget + limits.budget, independent);
     }
+    if (bound <= pruningDamage) { completedWork += work; return; }
     const allowedSpeeds = speedPlan.allowedOptionSpeeds[groupIndex].get(prefixSpeed) ?? [];
     const parentWork = completionWork(groupIndex, prefixSpeed);
     for (const speed of allowedSpeeds) {
@@ -1863,7 +1899,8 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
       visitFinalSpeeds(stateTree, groupIndex + 1, prefixSpeed + speed,
         nodes, sumInto(routeMaxima[groupIndex], maxima, tree.maxima), work *
           speedPlan.optionsBySpeed[groupIndex].get(speed)!.length *
-          completionWork(groupIndex + 1, prefixSpeed + speed) / parentWork);
+          completionWork(groupIndex + 1, prefixSpeed + speed) / parentWork,
+        prefixBudget + tree.maximumSecondaryTotal, prefixCritical + tree.minimumCritical);
       nodes.pop();
     }
   };
