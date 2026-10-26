@@ -1430,6 +1430,71 @@ function estimatePartitionWork(plan: SpeedSearchPlan): number {
     Math.min(Number.MAX_SAFE_INTEGER, total + count), 0);
 }
 
+function betterSpeedIntervalSeed(input: GearOptimizationInput, plan: SpeedSearchPlan,
+  fallback: SearchState): SearchState {
+  if (!hasCriticalPreference(input)) return fallback;
+  try {
+    const greedy = findGreedySolution(input, plan);
+    const evaluation = evaluateCombinedStats(greedy.stats, {}, input);
+    if (meetsCombinedObjective(evaluation, greedy.stats, {}, input) &&
+        evaluation.damage > evaluateCombinedStats(fallback.stats, {}, input).damage) return greedy;
+  } catch (error) {
+    if (!(error instanceof NoFeasibleOptimizationSolution)) throw error;
+  }
+  return fallback;
+}
+
+function improveSpeedIntervalSeed(input: GearOptimizationInput, plan: SpeedSearchPlan,
+  groups: GearOption[][], initial: SearchState, backend: OptimizerSearchBackend): SearchState {
+  if (!hasCriticalPreference(input) || backend.warmStartMinimumWork === undefined ||
+      estimatePartitionWork(plan) < backend.warmStartMinimumWork) return initial;
+  const selected: GearOption[] = Array.from({ length: groups.length });
+  let cursor = initial;
+  for (let index = groups.length - 1; index >= 0; index--) {
+    const option = groups[index].find(candidate => candidate.choices === cursor.selected);
+    if (option === undefined) return initial;
+    selected[index] = option;
+    cursor = cursor.previous!;
+  }
+  const trees = groups.map(group => buildAttributeTree(group.slice(), 1, input.speedStat));
+  const minimum = plan.fixedSpeed + plan.targetContributions[0];
+  const maximum = plan.fixedSpeed + plan.targetContributions[plan.targetContributions.length - 1];
+  const margin = 1e-7 + Math.max(Math.abs(minimum), Math.abs(maximum)) * 1e-12;
+  const speedBounds = { minimum: minimum - margin, maximum: maximum + margin };
+  // A separate input identity isolates warm-up caches from the full proof.
+  const warmInput = { ...input };
+  let bestDamage = evaluateCombinedStats(initial.stats, {}, input).damage;
+  let changed = false;
+  for (let left = 0; left < groups.length; left++) {
+    for (let right = left + 1; right < groups.length; right++) {
+      let others = input.fixedStats;
+      for (let index = 0; index < groups.length; index++) {
+        if (index !== left && index !== right) others = addStats(others, selected[index].stats);
+      }
+      const prefix = buildAttributeTree<SearchState>([{ stats: others, choices: [] }], 1, input.speedStat);
+      const candidate = backend({ input: warmInput, prefix, options: [trees[left], trees[right]],
+        speedBounds, reference: initial.stats, minimumDamage: bestDamage, branchLimit: 50_000 }, () => {});
+      if (candidate?.prefix === undefined) continue;
+      const raw = addStats(others, addStats(candidate.options![0].stats, candidate.options![1].stats));
+      const evaluation = evaluateCombinedStats(raw, {}, input);
+      if (evaluation.damage > bestDamage && meetsCombinedObjective(evaluation, raw, {}, input) &&
+          gcdHundredths(speedAfterFood(raw[input.speedStat] ?? 0, input), input) === targetGcdHundredths(input)) {
+        bestDamage = evaluation.damage;
+        selected[left] = candidate.options![0];
+        selected[right] = candidate.options![1];
+        changed = true;
+      }
+    }
+  }
+  if (!changed) return initial;
+  let state: SearchState = { stats: input.fixedStats, choices: [] };
+  for (const option of selected) {
+    state = { stats: addStats(state.stats, option.stats), choices: [],
+      previous: state, selected: option.choices };
+  }
+  return state;
+}
+
 function canSearchSpeedInterval(input: GearOptimizationInput, plan: SpeedSearchPlan,
   backend?: OptimizerSearchBackend): boolean {
   return backend?.speedRangeMinimumWork !== undefined && input.damage.mainStat !== 'VIT' &&
@@ -1451,7 +1516,8 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput,
   if (canSearchSpeedInterval(planningInput, wholePlan, backend)) {
     const fallback = criticalSeeds === undefined ? findGreedySolution(planningInput, wholePlan) :
       criticalSeed(criticalSeeds, planningInput);
-    const state = fallback;
+    const state = improveSpeedIntervalSeed(planningInput, wholePlan, groups,
+      betterSpeedIntervalSeed(planningInput, wholePlan, fallback), backend!);
     const stats = applyFood(state.stats, input.food);
     const evaluation = evaluateStats(stats, input);
     return {
@@ -1618,6 +1684,8 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   let bestEvaluation = evaluateStats(bestStats, input);
   let pruningDamage = Math.max(bestEvaluation.damage, input.globalMinimumDamage ?? -Infinity);
   if (input.targetSpeedContribution === undefined && canSearchSpeedInterval(input, speedPlan, searchBackend)) {
+    bestState = improveSpeedIntervalSeed(input, speedPlan, groups,
+      betterSpeedIntervalSeed(input, speedPlan, bestState), searchBackend!);
     bestStats = applyFood(bestState.stats, input.food);
     bestEvaluation = evaluateStats(bestStats, input);
     pruningDamage = Math.max(bestEvaluation.damage, input.globalMinimumDamage ?? -Infinity);

@@ -368,13 +368,17 @@ test('speed-only tree differences survive and interval changes reconfigure cache
 test('whole-GCD worker partitions preserve JS optima and shared CRT ranges', async () => {
     const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
     let intervalCalls = 0;
+    let warmCalls = 0;
     const backend = (task, report) => {
         if (task.speedBounds !== undefined)
             intervalCalls++;
+        if (task.speedBounds !== undefined && task.branchLimit !== undefined)
+            warmCalls++;
         return native(task, report);
     };
     Object.assign(backend, native);
     backend.speedRangeMinimumWork = 0;
+    backend.warmStartMinimumWork = 0;
     for (const seed of [1, 2, 5, 6, 9, 10]) {
         for (const criticalPreference of ['none', 'high', 'low']) {
             const input = { ...fixture(seed), criticalPreference };
@@ -395,4 +399,5 @@ test('whole-GCD worker partitions preserve JS optima and shared CRT ranges', asy
         }
     }
     assert.ok(intervalCalls >= 10);
+    assert.ok(warmCalls > 0);
 });
