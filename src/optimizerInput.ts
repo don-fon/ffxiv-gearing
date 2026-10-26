@@ -12,7 +12,6 @@ import type {
   OptimizerStat,
   OptimizerStats,
 } from './optimizer';
-import { selectPieFreeFallbacks, selectRequiredSlotFallbacks, selectSecondaryStatFallbacks } from './optimizerCandidateFallbacks';
 
 const damageSecondaryStats: OptimizerMateriaStat[] = ['CRT', 'DET', 'DHT', 'TEN'];
 
@@ -83,16 +82,6 @@ export function maximumMateriaGradeForSlot(gearLevel: number, materiaIndex: numb
   return G.materiaGrades.find(candidate =>
     gearLevel >= G.materiaGradeRequiredLevels[candidate - 1] &&
     (canUseRestrictedMateria || !G.materiaGradeIsRestricted[candidate]));
-}
-
-function isBaselineGcd(store: IStore, speedStat: 'SKS' | 'SPS', targetGcd: number): boolean {
-  const { sub, div } = G.jobLevelModifiers[store.jobLevel];
-  const speed = store.baseStats[speedStat] ?? sub;
-  const gcdModifier = store.jobLevel >= 80 ? store.schema.statModifiers?.gcd ?? 100 : 100;
-  const floor = (value: number) => Math.trunc(value + 1e-7);
-  const gcdHundredths = floor(floor((1000 - floor(130 * (speed - sub) / div)) * 2500 / 1000) *
-    gcdModifier / 1000);
-  return Math.round(targetGcd * 100) === gcdHundredths;
 }
 
 function concretizeStat(store: IStore, stat: G.Stat): OptimizerStat {
@@ -167,21 +156,9 @@ function prepareGear(store: IStore, gear: G.Gear, current?: IGear): OptimizerGea
   };
 }
 
-export function isOptimizerGearEligible(store: IStore, gear: G.Gear, prepared: OptimizerGear,
-  syncLevel: number | undefined,
-  secondaryStats: OptimizerMateriaStat[]): boolean {
-  if (gear.equipLevel > store.schema.jobLevel) return false;
-  if (syncLevel === undefined) {
-    return gear.level >= store.minLevel && gear.level <= store.maxLevel &&
-      !(gear.obsolete && store.setting.hideObsoleteGears);
-  }
-  if (gear.level === syncLevel || gear.level === syncLevel - 5) return true;
-  if (gear.level <= syncLevel || !prepared.synced) return false;
-  const nearMaximumLevel = Math.max(store.minLevel, store.maxLevel - 15);
-  if (gear.level >= nearMaximumLevel && gear.level <= store.maxLevel) return true;
-  const syncCaps = G.getCaps(gear, syncLevel);
-  return secondaryStats.filter(stat =>
-    (prepared.stats[stat] ?? 0) >= (syncCaps[stat as G.Stat] ?? Infinity)).length >= 2;
+export function isOptimizerGearEligible(store: IStore, gear: G.Gear,
+  displayedIds: ReadonlySet<number> = new Set(store.filteredIds.map(id => Math.abs(id)))): boolean {
+  return displayedIds.has(gear.id);
 }
 
 function prepareFood(store: IStore, food: G.Food): OptimizerFood {
@@ -292,11 +269,13 @@ export function createGearOptimizationInput(store: IStore,
     }
   }
 
+  const displayedIds = new Set(store.filteredIds.map(id => Math.abs(id)));
   const preparedGears: Array<{ data: G.Gear, optimizer: OptimizerGear }> = [];
   for (const item of gearDataOrdered.get()) {
     if (item.slot <= 0 || !slots.includes(item.slot) || !G.jobCategories[item.jobCategory][store.job]) continue;
     const gear = item as G.Gear;
-    if (gear.equipLevel > store.schema.jobLevel) continue;
+    // Match the table's range and explicitly selected-item exceptions exactly.
+    if (!isOptimizerGearEligible(store, gear, displayedIds)) continue;
     if (excludedIdSet.has(gear.id)) continue;
     if (excludedCategorySet.size > 0 && !lockedIdSet.has(gear.id)) {
       const category = optimizerGearCategoryOf(gear);
@@ -308,35 +287,7 @@ export function createGearOptimizationInput(store: IStore,
     preparedGears.push({ data: gear, optimizer: prepared });
   }
 
-  const preferredCandidates = preparedGears.filter(({ data, optimizer }) =>
-    lockedIdSet.has(data.id) ||
-    isOptimizerGearEligible(store, data, optimizer, store.syncLevel, secondaryStats));
-  const gears = preferredCandidates.map(candidate => candidate.optimizer);
-  const preferredCandidateIds = new Set(preferredCandidates.map(candidate => candidate.data.id));
-  const lowerLevelCandidates = store.syncLevel === undefined
-    ? []
-    : preparedGears.filter(({ data, optimizer }) =>
-      !preferredCandidateIds.has(data.id) && !optimizer.synced && data.level < store.syncLevel! - 5 &&
-      data.level >= store.minLevel && data.level <= store.maxLevel &&
-      !(data.obsolete && store.setting.hideObsoleteGears))
-      .map(candidate => candidate.optimizer);
-  const secondaryStatCandidates = selectSecondaryStatFallbacks(gears, lowerLevelCandidates, secondaryStats);
-  gears.push(...selectRequiredSlotFallbacks(gears, lowerLevelCandidates, slots));
-  const selectedIds = new Set(gears.map(candidate => candidate.id));
-  gears.push(...secondaryStatCandidates.filter(candidate => !selectedIds.has(candidate.id)));
-  if (isBaselineGcd(store, speedStat, targetGcd)) {
-    const selectedCandidateIds = new Set(gears.map(candidate => candidate.id));
-    const lowerLevelSpeedFreeCandidates = lowerLevelCandidates.filter(candidate =>
-      !selectedCandidateIds.has(candidate.id) && (candidate.stats[speedStat] ?? 0) === 0);
-    gears.push(...selectRequiredSlotFallbacks(gears, lowerLevelSpeedFreeCandidates, slots,
-      candidate => (candidate.stats[speedStat] ?? 0) === 0));
-  }
-  if (store.schema.stats.includes('PIE') && store.minLevel <= store.maxLevel) {
-    const selectedCandidateIds = new Set(gears.map(candidate => candidate.id));
-    const lowerLevelPieFreeCandidates = lowerLevelCandidates.filter(candidate =>
-      !selectedCandidateIds.has(candidate.id) && (candidate.stats.PIE ?? 0) === 0);
-    gears.push(...selectPieFreeFallbacks(gears, lowerLevelPieFreeCandidates, slots));
-  }
+  const gears = preparedGears.map(candidate => candidate.optimizer);
 
   for (const gear of lockedModels) {
     if (!gears.some(candidate => candidate.id === Math.abs(gear.id))) {

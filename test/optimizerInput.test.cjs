@@ -33,68 +33,31 @@ const {
   optimizerGearCategoryOf,
   optimizerGearCategoryOptions,
 } = optimizerInput;
-const store = {
-  minLevel: 730,
-  maxLevel: 795,
-  schema: { jobLevel: 100 },
-  setting: { hideObsoleteGears: true },
-};
-const secondaryStats = ['CRT', 'DET', 'DHT', 'SPS'];
-const oneCappedStat = {
-  synced: true,
-  stats: { CRT: 379, DET: 299 },
-};
-const twoCappedStats = {
-  synced: true,
-  stats: { CRT: 379, DET: 379 },
-};
-const gear = level => ({
-  level,
-  equipLevel: 1,
-  syncCaps: { CRT: 379, DET: 379, DHT: 379, SPS: 379 },
+const store = { minLevel: 350, maxLevel: 375, filteredIds: [350, 370, 375] };
+const gear = level => ({ id: level, level, equipLevel: 1 });
+
+test('automatic candidates come from displayed IDs without sync exceptions', () => {
+  for (const level of [350, 370, 375]) assert.equal(isOptimizerGearEligible(store, gear(level)), true);
+  for (const level of [349, 376, 500]) assert.equal(isOptimizerGearEligible(store, gear(level)), false);
 });
 
-test('synced gear within 15 item levels of the filter maximum remains eligible with stat loss', () => {
-  assert.equal(isOptimizerGearEligible(store, gear(790), oneCappedStat, 735, secondaryStats), true);
-  assert.equal(isOptimizerGearEligible(store, gear(780), oneCappedStat, 735, secondaryStats), true);
+test('manually selected outside gear stays eligible when retained by the display', () => {
+  const selected = { ...store, filteredIds: [350, 370, 375, 500] };
+  assert.equal(isOptimizerGearEligible(selected, gear(500)), true);
+  assert.equal(isOptimizerGearEligible(selected, gear(510)), false);
+});
+
+test('right-ring display IDs refer to the same eligible equipment item', () => {
+  assert.equal(isOptimizerGearEligible({ ...store, filteredIds: [-500] }, gear(500)), true);
+});
+
+test('eligibility cannot introduce gear hidden by the display', () => {
+  assert.equal(isOptimizerGearEligible({ ...store, filteredIds: [] }, gear(370)), false);
 });
 
 test('the first advanced meld slot accepts grade 12 materia', () => {
   assert.deepEqual([0, 1, 2, 3, 4].map(index =>
     maximumMateriaGradeForSlot(690, index, 2)), [12, 12, 12, 11, 11]);
-});
-
-test('the near-maximum exception does not extend below its inclusive boundary', () => {
-  assert.equal(isOptimizerGearEligible(store, gear(779), oneCappedStat, 735, secondaryStats), false);
-  assert.equal(isOptimizerGearEligible(store, gear(779), twoCappedStats, 735, secondaryStats), true);
-});
-
-test('the near-maximum exception stays within the selected item-level range', () => {
-  const narrowStore = { ...store, minLevel: 790, maxLevel: 795 };
-  assert.equal(isOptimizerGearEligible(narrowStore, gear(780), oneCappedStat, 735, secondaryStats), false);
-});
-
-test('without item-level sync, gear is selected from the configured filter range', () => {
-  assert.equal(isOptimizerGearEligible(store, gear(730), oneCappedStat, undefined, secondaryStats), true);
-  assert.equal(isOptimizerGearEligible(store, gear(795), oneCappedStat, undefined, secondaryStats), true);
-  assert.equal(isOptimizerGearEligible(store, gear(725), oneCappedStat, undefined, secondaryStats), false);
-  assert.equal(isOptimizerGearEligible(store, gear(800), oneCappedStat, undefined, secondaryStats), false);
-});
-
-test('without item-level sync, obsolete gear follows the existing visibility setting', () => {
-  assert.equal(isOptimizerGearEligible(store, { ...gear(790), obsolete: true }, oneCappedStat,
-    undefined, secondaryStats), false);
-  assert.equal(isOptimizerGearEligible({ ...store, setting: { hideObsoleteGears: false } },
-    { ...gear(790), obsolete: true }, oneCappedStat, undefined, secondaryStats), true);
-});
-
-test('gear above the job level cap is never eligible for optimization', () => {
-  const beastmasterStore = { ...store, schema: { jobLevel: 50 } };
-  const level54Gear = { ...gear(133), equipLevel: 54 };
-  assert.equal(isOptimizerGearEligible(beastmasterStore, level54Gear, oneCappedStat,
-    undefined, secondaryStats), false);
-  assert.equal(isOptimizerGearEligible(beastmasterStore, level54Gear, oneCappedStat,
-    130, secondaryStats), false);
 });
 
 test('relic weapon series are classified separately from their armor', () => {
@@ -129,11 +92,4 @@ test('raid source labels distinguish normal and 24-player raids', () => {
   const labels = Object.fromEntries(optimizerGearCategoryOptions.map(option => [option.id, option.label]));
   assert.equal(labels.normalRaid, '大型');
   assert.equal(labels.allianceRaid, '团本');
-});
-
-test('375 sync can include item-level 500 outside a 350–375 filter only through the capped-stat rule', () => {
-  const selected = { ...store, minLevel: 350, maxLevel: 375 };
-  assert.equal(isOptimizerGearEligible(selected, gear(500), twoCappedStats, 375, secondaryStats), true);
-  assert.equal(isOptimizerGearEligible(selected, gear(500), oneCappedStat, 375, secondaryStats), false);
-  assert.equal(isOptimizerGearEligible(selected, gear(500), twoCappedStats, undefined, secondaryStats), false);
 });

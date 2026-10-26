@@ -182,3 +182,56 @@ test('critical preference and the shared range reach every search worker', async
   await page.getByLabel('暴击属性策略', { exact: true }).selectOption('high');
   await expect(page.locator('.gear-optimization_result')).toHaveCount(0);
 });
+
+for (const selected of [false, true]) {
+test(`350–375 candidates match the display ${selected ? 'with a manually selected 500 item' : 'without cached 500 gear'}`, async ({ page }) => {
+  await page.evaluate(() => {
+    window.Worker = class {
+      postMessage(message: { type: string, input: unknown }) {
+        if (message.type === 'plan') (window as unknown as { strictRangeInput: unknown }).strictRangeInput = message.input;
+      }
+      terminate() {}
+    } as unknown as typeof Worker;
+  });
+  await page.locator('.condition_job').click();
+  await page.getByRole('link', { name: '战士', exact: true }).click();
+  const levels = page.locator('.condition_level-input input');
+  // Load high gear before narrowing; cached data must never bypass the filter.
+  await levels.nth(0).fill('350');
+  await levels.nth(0).press('Enter');
+  await levels.nth(1).fill('795');
+  await levels.nth(1).press('Enter');
+  await expect(levels.nth(1)).toHaveValue('795');
+  const armor = page.locator('tr.gears_item[data-id="29278"]');
+  await expect(armor).toBeVisible();
+  if (selected) {
+    await expect(async () => {
+      if (!(await armor.getAttribute('class'))?.includes('-selected')) await armor.locator('.gears_name').click();
+      await expect(armor).toHaveClass(/-selected/, { timeout: 300 });
+    }).toPass({ timeout: 3000 });
+  }
+  await levels.nth(1).fill('375');
+  await levels.nth(1).press('Enter');
+  await page.getByRole('button', { name: '品级同步', exact: true }).click();
+  await page.getByText('70级', { exact: true }).click();
+  await page.locator('.level-sync_level').getByText('375', { exact: true }).click();
+  const visibleIds = await page.locator('tr.gears_item[data-id]').evaluateAll(rows =>
+    rows.map(row => Math.abs(Number(row.getAttribute('data-id')))));
+  await page.getByRole('button', { name: '自动配装', exact: true }).click();
+  await page.getByLabel('目标 GCD', { exact: true }).fill('2.50');
+  await expect(page.locator('.gear-optimization_intro')).toContainText('候选装备与当前列表显示范围一致');
+  await page.getByRole('button', { name: '开始计算', exact: true }).click();
+  await page.waitForFunction(() => Boolean((window as unknown as { strictRangeInput: unknown }).strictRangeInput));
+  const input = await page.evaluate(() => (window as unknown as {
+    strictRangeInput: { gears: Array<{ id: number, level: number, name: string }>, lockedGearIds: number[] };
+  }).strictRangeInput);
+  expect(input.gears.length).toBeGreaterThan(0);
+  expect(input.gears.every(gear => visibleIds.includes(gear.id))).toBe(true);
+  expect(input.gears.every(gear => gear.level >= 350 && gear.level <= 375 || selected && gear.id === 29278)).toBe(true);
+  expect(input.gears.some(gear => gear.id === 29278)).toBe(selected);
+  if (!selected) expect(input.gears.some(gear => gear.level === 500)).toBe(false);
+  expect(input.gears.some(gear => gear.level === 350 && gear.name.includes('常风'))).toBe(true);
+  expect(input.gears.some(gear => gear.name === '白虎大斧')).toBe(true);
+  expect(input.lockedGearIds).not.toContain(29278);
+});
+}
