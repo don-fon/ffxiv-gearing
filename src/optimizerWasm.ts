@@ -22,11 +22,12 @@ interface SearchExports extends WebAssembly.Exports {
     result: number, count: number, capacity: number) => number;
 }
 
-/** ABI 4: node = 22 f64, point = 9 f64, context = 64 f64. Addresses are wasm32 bytes.
+/** ABI 5: node = 22 f64, point = 9 f64, context = 64 f64. Addresses are wasm32 bytes.
  * Vectors: attack-main, INT, CRT, DET, DHT, TEN, PDMG, MDMG, TEN-present.
  * Node tail: secondary-total max, CRT min, left, right, points, length, count.
  * Node tail (16–21): two support caches/generations, minimum main/weapon stats.
- * Context (44–55): CRT limits/flag, plane threshold, raw reference vector.
+ * Context (44–56): CRT limits/flag, plane threshold, raw reference vector,
+ * neutral-tenacity flag for non-tank secondary budgets.
  * Pointer caches are reset for each fixed-food input; linear memory is reused.
  */
 export async function createWasmSearchBackend(bytes: BufferSource,
@@ -36,7 +37,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     env: { memory, log: Math.log, exp: Math.exp },
   });
   const core = instance.exports as SearchExports;
-  if (core.search_abi() !== 4) throw new Error('Unsupported optimizer WASM ABI.');
+  if (core.search_abi() !== 5) throw new Error('Unsupported optimizer WASM ABI.');
   const heapBase = Number(core.__heap_base.value);
   let nextAddress = heapBase;
   let currentInput: GearOptimizationInput | undefined;
@@ -100,7 +101,13 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     if (additions.length > 0) new Float64Array(memory.buffer, lookup, additions.length).set(additions);
     const secondary = ['CRT', 'DET', 'DHT', 'TEN'] as const;
     const lower = secondary.map(stat => fixedStats[stat] ?? 0);
-    const budgetEnabled = damage.mainStat === 'VIT' && lower[0] >= damage.level.sub &&
+    const neutralTenacity = damage.job !== 'BLU' && damage.mainStat !== 'VIT' &&
+      fixedStats.TEN === undefined && food?.stats.TEN === undefined &&
+      !currentInput.materiaStats.includes('TEN') &&
+      !currentInput.lockedGears?.some(gear => gear.melds?.some(meld => meld.stat === 'TEN')) &&
+      !currentInput.gears.some(gear => gear.stats.TEN !== undefined);
+    if (neutralTenacity) lower[3] = damage.level.sub;
+    const budgetEnabled = (damage.mainStat === 'VIT' || neutralTenacity) && lower[0] >= damage.level.sub &&
       lower[1] >= damage.level.main && lower[2] >= damage.level.sub && lower[3] >= damage.level.sub &&
       !currentInput.gears.some(gear => secondary.some(stat => (gear.stats[stat] ?? 0) < 0)) &&
       !secondary.some(stat => food?.stats[stat] !== undefined && food.statRates[stat] === undefined);
@@ -117,11 +124,12 @@ export async function createWasmSearchBackend(bytes: BufferSource,
       ...stats.map(stat => food?.stats[stat] ?? 0),
       ...stats.map(stat => food?.statRates[stat] === undefined
         ? food?.stats[stat] === undefined ? 0 : -1 : food.statRates[stat]! / 100),
-      ...lower, ...secondary.map(stat => task.reference[stat] ?? 0),
+      ...lower, ...secondary.map(stat => stat === 'TEN' && neutralTenacity ? damage.level.sub : task.reference[stat] ?? 0),
       currentInput.criticalPreference === 'high' ? currentInput.criticalRange?.midpoint ?? -Infinity : -Infinity,
       currentInput.criticalPreference === 'low' ? currentInput.criticalRange?.midpoint ?? Infinity : Infinity,
       Number(currentInput.criticalRange !== undefined), minimumPlaneCombinations,
       ...stats.map(stat => task.reference[stat] ?? 0),
+      Number(neutralTenacity),
     ]);
     core.configure_search(pointer);
   };

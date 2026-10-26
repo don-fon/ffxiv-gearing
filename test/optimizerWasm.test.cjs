@@ -204,7 +204,7 @@ test('large-search bounds preserve exhaustive optima across raw CRT bands, inclu
     }
     return stats;
   };
-  for (let seed = 0; seed < 180; seed++) {
+  for (let seed = 0; seed < 360; seed++) {
     const input = fixture(seed * 4);
     input.damage.partyBonus = seed % 2 ? 1.05 : 1;
     if (seed % 7) input.food = { id: 81, name: 'food-cap crossings',
@@ -220,10 +220,21 @@ test('large-search bounds preserve exhaustive optima across raw CRT bands, inclu
         DET: random(1400), DHT: random(1300), TEN: random(500), PDMG: random(4) },
       choices: [{ id: group * 4 + option }],
     })));
+    if (seed >= 180) {
+      input.damage.job = 'MNK';
+      input.damage.mainStat = 'STR';
+      delete input.fixedStats.TEN;
+      delete input.damage.baseStats.TEN;
+      for (const gear of input.gears) delete gear.stats.TEN;
+      input.materiaStats = input.materiaStats.filter(stat => stat !== 'TEN');
+      if (input.food) { delete input.food.stats.TEN; delete input.food.statRates.TEN; }
+      input.objective.minimumTenacityMitigation = 0;
+      for (const point of [...prefix, ...groups.flat()]) delete point.stats.TEN;
+    }
     let combinations = prefix.map(point => point.stats);
     for (const group of groups) combinations = combinations.flatMap(point => group.map(option => add(point, option.stats)));
     const valid = combinations.map(point => foodStats(point, input.food)).filter(point =>
-      solver.calculateTenacityMitigation(point.TEN, input.damage.level) + 1e-12 >= input.objective.minimumTenacityMitigation);
+      solver.calculateTenacityMitigation(point.TEN ?? input.damage.level.sub, input.damage.level) + 1e-12 >= input.objective.minimumTenacityMitigation);
     assert.ok(valid.length > 0);
     if (seed % 3) {
       const minimum = Math.min(...valid.map(point => point.CRT));

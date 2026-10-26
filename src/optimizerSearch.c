@@ -162,10 +162,11 @@ static double upper(const address *roots){
  double value=damage(v,has_tenacity);
  if(value<=best)return value;
  if(context[14]>0&&mitigation(v,has_tenacity)+1e-12<context[14])return -__builtin_inf();
+ if(context[56]){v[5]=context[1];budget+=context[1];}
  value=budget_bound(v,critical_minimum,budget,value);
  return plane_enabled&&value>best?minimum(value,wasm_exp(linear)):value;
 }
-__attribute__((visibility("default"))) int search_abi(void){return 4;}
+__attribute__((visibility("default"))) int search_abi(void){return 5;}
 __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
 __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
 __attribute__((visibility("default"))) void configure_search(address pointer){
@@ -205,7 +206,7 @@ __attribute__((visibility("default"))) void start_search(address pointers,int co
   original_roots[i]=((address*)pointers)[i];selected[i]=0;double *n=node(original_roots[i]);
   work*=n[NODE_COUNT];plane_first+=n[10];plane_last+=n[2];
  }
- plane_enabled=context[15]&&context[7]>0&&context[8]>0&&work>=context[47]&&count>1;
+ plane_enabled=context[15]&&!context[56]&&context[7]>0&&context[8]>0&&work>=context[47]&&count>1;
  // The relaxation needs nonnegative secondary food and a positive reference.
  if(plane_enabled){
   for(int stat=2;stat<=5;stat++)if(context[20+stat]<0||context[28+stat]<0)plane_enabled=0;
