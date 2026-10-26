@@ -1,0 +1,101 @@
+[
+  {
+    "trial": "mnk-605-high-result",
+    "status": "timeout",
+    "milliseconds": 180000.6000000015,
+    "completed": 0,
+    "partitions": 1344,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.08883707103459
+  },
+  {
+    "trial": "mnk605-plane-high",
+    "status": "timeout",
+    "milliseconds": 180000.79999999702,
+    "completed": 0,
+    "partitions": 1344,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.08883707103459
+  },
+  {
+    "trial": "mnk605-plane-direct-high",
+    "status": "timeout",
+    "milliseconds": 180000.69999999553,
+    "completed": 0,
+    "partitions": 1344,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.08883707103459
+  },
+  {
+    "trial": "mnk605-seed-high",
+    "status": "timeout",
+    "milliseconds": 180000.59999999404,
+    "completed": 0,
+    "partitions": 1344,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.18823694513696
+  },
+  {
+    "trial": "mnk605-budget-high",
+    "status": "timeout",
+    "milliseconds": 180000.5,
+    "completed": 4,
+    "partitions": 1344,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.219101866688117
+  },
+  {
+    "trial": "mnk605-budget-batched-high",
+    "status": "timeout",
+    "milliseconds": 180000.80000000447,
+    "completed": 0,
+    "partitions": 4,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.08883707103459
+  },
+  {
+    "trial": "mnk605-budget-prepass-high",
+    "status": "timeout",
+    "milliseconds": 180000.6000000015,
+    "completed": 4,
+    "partitions": 1344,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.219101866688117
+  },
+  {
+    "trial": "mnk605-budget-combined-high",
+    "status": "timeout",
+    "milliseconds": 180000.70000000298,
+    "completed": 0,
+    "partitions": 1344,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.08883707103459
+  },
+  {
+    "trial": "mnk605-all-direct-high",
+    "status": "timeout",
+    "milliseconds": 180000.59999999404,
+    "completed": 0,
+    "partitions": 1344,
+    "workers": 4,
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "bestDamage": 27.08883707103459
+  }
+]
