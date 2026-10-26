@@ -1,0 +1,21 @@
+{
+  "status": "stopped-at-observation-limit",
+  "solverCommit": "9d49a45",
+  "criticalPreference": "none",
+  "workers": 4,
+  "input": "test/fixtures/monk-605-phantom-input.json",
+  "observationLimitMs": 900000,
+  "lastProgress": {
+    "elapsed": 917169.799999997,
+    "completed": 2,
+    "partitions": 4,
+    "progress": {
+      "completedGroups": 0,
+      "totalGroups": 9,
+      "states": 0,
+      "visitedBranches": 2092150031,
+      "searchProgress": 0.3461538461538627
+    }
+  },
+  "note": "Manually stopped near 15 minutes; no complete optimum established. visitedBranches is one task report, not aggregate."
+}
