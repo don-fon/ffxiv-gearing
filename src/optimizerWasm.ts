@@ -22,20 +22,21 @@ interface SearchExports extends WebAssembly.Exports {
     result: number, count: number, capacity: number) => number;
 }
 
-/** ABI 3: node = 16 f64, point = 9 f64, context = 48 f64. Addresses are wasm32 bytes.
+/** ABI 4: node = 22 f64, point = 9 f64, context = 64 f64. Addresses are wasm32 bytes.
  * Vectors: attack-main, INT, CRT, DET, DHT, TEN, PDMG, MDMG, TEN-present.
  * Node tail: secondary-total max, CRT min, left, right, points, length, count.
- * Context tail (44–46): final CRT lower/upper limits and enabled flag.
+ * Node tail (16–21): two support caches/generations, minimum main/weapon stats.
+ * Context (44–55): CRT limits/flag, plane threshold, raw reference vector.
  * Pointer caches are reset for each fixed-food input; linear memory is reused.
  */
 export async function createWasmSearchBackend(bytes: BufferSource,
-  minimumCombinations = 0): Promise<OptimizerSearchBackend> {
+  minimumCombinations = 0, minimumPlaneCombinations = 1_000_000): Promise<OptimizerSearchBackend> {
   const memory = new WebAssembly.Memory({ initial: 128, maximum: 32768 });
   const { instance } = await WebAssembly.instantiate(bytes, {
     env: { memory, log: Math.log, exp: Math.exp },
   });
   const core = instance.exports as SearchExports;
-  if (core.search_abi() !== 3) throw new Error('Unsupported optimizer WASM ABI.');
+  if (core.search_abi() !== 4) throw new Error('Unsupported optimizer WASM ABI.');
   const heapBase = Number(core.__heap_base.value);
   let nextAddress = heapBase;
   let currentInput: GearOptimizationInput | undefined;
@@ -58,7 +59,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
   const packTree = (tree: AttributeTreeNode<GearOption>): number => {
     const cached = treePointers.get(tree);
     if (cached !== undefined) return cached;
-    const pointer = allocate(16 * 8);
+    const pointer = allocate(22 * 8);
     treePointers.set(tree, pointer);
     let left = 0;
     let right = 0;
@@ -74,9 +75,13 @@ export async function createWasmSearchBackend(bytes: BufferSource,
         points.set(address, item);
       }
     }
-    new Float64Array(memory.buffer, pointer, 16).set([
+    new Float64Array(memory.buffer, pointer, 22).set([
       ...vector(tree.maxima), tree.maximumSecondaryTotal, tree.minimumCritical,
-      left, right, pointAddress, tree.items?.length ?? 0, tree.count,
+      left, right, pointAddress, tree.items?.length ?? 0, tree.count, 0, 0,
+      tree.items === undefined ? Math.min(new Float64Array(memory.buffer, left, 22)[18], new Float64Array(memory.buffer, right, 22)[18]) :
+        tree.items.reduce((value, item) => Math.min(value, item.stats[attackStat] ?? 0), Infinity),
+      tree.items === undefined ? Math.min(new Float64Array(memory.buffer, left, 22)[19], new Float64Array(memory.buffer, right, 22)[19]) :
+        tree.items.reduce((value, item) => Math.min(value, item.stats.PDMG ?? 0), Infinity), 0, 0,
     ]);
     return pointer;
   };
@@ -87,7 +92,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     treePointers = new WeakMap();
     points.clear();
     const { damage, fixedStats, food } = currentInput;
-    const pointer = allocate(48 * 8);
+    const pointer = allocate(64 * 8);
     const cache = allocate(core.search_cache_bytes());
     const frames = allocate(core.search_frame_bytes());
     const additions = damage.job === 'BLU' ? damage.bluMdmgAdditions : [];
@@ -100,7 +105,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
       !currentInput.gears.some(gear => secondary.some(stat => (gear.stats[stat] ?? 0) < 0)) &&
       !secondary.some(stat => food?.stats[stat] !== undefined && food.statRates[stat] === undefined);
     const stats: OptimizerStat[] = [attackStat, 'INT', 'CRT', 'DET', 'DHT', 'TEN', 'PDMG', 'MDMG'];
-    const context = new Float64Array(memory.buffer, pointer, 48);
+    const context = new Float64Array(memory.buffer, pointer, 64);
     context.set([
       damage.level.main, damage.level.sub, damage.level.div, damage.level.det, damage.level.detTrunc,
       damage.statModifiers[attackStat]!, damage.mainStat === 'VIT' ? damage.level.apTank : damage.level.ap,
@@ -115,7 +120,8 @@ export async function createWasmSearchBackend(bytes: BufferSource,
       ...lower, ...secondary.map(stat => task.reference[stat] ?? 0),
       currentInput.criticalPreference === 'high' ? currentInput.criticalRange?.midpoint ?? -Infinity : -Infinity,
       currentInput.criticalPreference === 'low' ? currentInput.criticalRange?.midpoint ?? Infinity : Infinity,
-      Number(currentInput.criticalRange !== undefined),
+      Number(currentInput.criticalRange !== undefined), minimumPlaneCombinations,
+      ...stats.map(stat => task.reference[stat] ?? 0),
     ]);
     core.configure_search(pointer);
   };

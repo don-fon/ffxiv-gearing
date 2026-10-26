@@ -93,7 +93,7 @@ function fixture(seed) {
 }
 
 test('critical halves match exhaustive legal ranges and optimal damage in JS and WASM', async () => {
-  const native = await adapter.createWasmSearchBackend(bytes);
+  const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
   let checked = 0;
   for (let seed = 0; seed < 64; seed++) {
     const input = fixture(seed);
@@ -126,7 +126,7 @@ test('critical halves match exhaustive legal ranges and optimal damage in JS and
 });
 
 test('critical range is shared across worker food/speed/candidate shards', async () => {
-  const backend = await adapter.createWasmSearchBackend(bytes);
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
   for (const preference of ['high', 'low']) {
     const input = { ...fixture(9), criticalPreference: preference };
     const expected = solver.optimizeGearset(input, undefined, backend);
@@ -162,7 +162,7 @@ test('equal endpoints keep both modes feasible; invalid preferences are rejected
 });
 
 test('critical endpoints respect unique rings, repeatable pairs, exclusions and a locked right ring', async () => {
-  const backend = await adapter.createWasmSearchBackend(bytes);
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
   const input = fixture(1);
   input.slots = [12];
   input.foods = [{ id: 1, name: 'flat crit', stats: { CRT: 7 }, statRates: {} }];

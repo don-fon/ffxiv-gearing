@@ -95,3 +95,5 @@ node scripts/analyze-optimizer-materia.mjs early-speed --unlocked --plan
 本轮加入的是诊断和规则说明，没有用未经验证的贪心镶嵌或近似结果替代精确搜索。
 
 验证：71 项优化器测试、11 项生产浏览器测试、lint 和生产构建通过。浏览器测试覆盖诊断日志保留、三档偏好各自的 WASM 加载与回退，以及 Worker 诊断转发到页面 Console。
+
+后续已实施主属性树序与关联上界优化，修正后的 87 件战士输入默认模式约 6–7 秒完整求解。本文中旧计时及“优先验证方向”属于当时的分析，见 [新算法与同条件对照](optimizer-search-acceleration.md)。

@@ -81,7 +81,78 @@ static double budget_bound(const double *v,double critical_minimum,double budget
  double independent_factors=factor(1,v[2])*factor(2,v[3])*factor(3,v[4])*factor(4,v[5]);
  return minimum(independent,independent/independent_factors*wasm_exp(log_bound)*(1+1e-12));
 }
+/* On each raw CRT interval, the convex critical factor is below its secant.
+ * The logarithms of that affine secant and the other (food-capped) affine
+ * factors are concave, so their tangents give a linear upper bound in raw stats.
+ * Maximizing this linear form over EACH actual option node preserves attribute
+ * correlations; summing independent stat maxima would lose those constraints.
+ * A second support form keeps only secondaries, using exact main/weapon maxima
+ * to avoid unnecessary floor-relaxation gaps after those stats are fixed.
+ * Cache both supports per node/interval. Epsilon terms cover game's truncation.
+ */
+static double plane_weights[8],plane_constant,plane_low,plane_high,plane_best_log;
+static double plane_first,plane_last,plane_width;
+static address original_roots[ROOTS];
+static int plane_enabled,plane_count,plane_finished,plane_active;
+static unsigned int plane_generation;
+static double plane_support_kind(address pointer,int kind){
+ double *n=node(pointer);int cache=kind?20:16;
+ if(n[cache+1]==plane_generation)return n[cache];
+ double value=-__builtin_inf();
+ if(n[NODE_LENGTH]>0){
+  for(int p=0;p<(int)n[NODE_LENGTH];p++){
+   double *point=(double*)((address)n[NODE_POINTS]+p*POINT_BYTES),sum=0;
+   for(int i=kind?2:0;i<(kind?6:8);i++)sum+=plane_weights[i]*point[i];
+   value=maximum(value,sum);
+  }
+ }else value=maximum(plane_support_kind((address)n[NODE_LEFT],kind),plane_support_kind((address)n[NODE_RIGHT],kind));
+ n[cache]=value;n[cache+1]=plane_generation;return value;
+}
+static double plane_critical(double x){double t=0.2*(x-context[1])/context[2];return 1+(t+0.4+1e-10)*(t+0.05+1e-10);}
+static void plane_factor(int dimension,double a,double b,double reference){
+ double cap=context[20+dimension],rate=context[28+dimension];
+ double post=effective(reference,dimension,0)+1e-7;
+ double value=a+b*post;
+ double weight=b*(rate>=0&&reference*rate<cap?1+rate:1)/value;
+ plane_weights[dimension]=weight;plane_constant+=wasm_log(value)-weight*reference;
+}
+static double plane_secondary_constant;
+static void configure_plane(void){
+ for(int i=0;i<8;i++)plane_weights[i]=0;
+ plane_constant=wasm_log(0.01*context[8])+1e-10;
+ double lo=effective(plane_low,2,1),hi=effective(plane_high,2,0)+1e-7;
+ double slope=0.2/context[2]*(0.2*(lo+hi-2*context[1])/context[2]+0.45+2e-10);
+ plane_factor(2,plane_critical(lo)-slope*lo,slope,minimum(plane_high,maximum(plane_low,context[50])));
+ plane_factor(3,1-0.14/context[3]*context[0]+1e-10*context[4],0.14/context[3],context[51]);
+ plane_factor(4,1-0.1375/context[2]*context[1]+2.5e-11,0.1375/context[2],context[52]);
+ plane_factor(5,1-0.112/context[2]*context[1]+1e-10,0.112/context[2],context[53]);
+ plane_secondary_constant=plane_constant;
+ double main_slope=context[6]*context[7]/(100*context[0]);
+ plane_factor(0,1-context[6]/100+context[6]/context[0]*1e-9+1e-9,main_slope,context[48]);
+ int weapon=context[9]?7:6;
+ plane_factor(weapon,floor_game(context[0]*context[5]/1000),1,context[48+weapon]);
+ plane_generation++;
+}
+static double plane_main_raw,plane_main_log,plane_weapon_raw,plane_weapon_log;
+static double plane_primary_logs(double main,double weapon){
+ if(main!=plane_main_raw){plane_main_raw=main;plane_main_log=wasm_log(factor(0,main));}
+ if(weapon!=plane_weapon_raw){plane_weapon_raw=weapon;plane_weapon_log=wasm_log(factor(5,weapon));}
+ return plane_main_log+plane_weapon_log;
+}
+static double plane_bound(const address *roots,double *maximum_critical,double *minimum_critical){
+ double log_bound=plane_constant,secondary=plane_secondary_constant,main=0,weapon=0;
+ *maximum_critical=0;*minimum_critical=0;int weapon_stat=context[9]?7:6;
+ for(int i=0;i<root_count;i++){
+  double *n=node(roots[i]);*maximum_critical+=n[2];*minimum_critical+=n[10];
+  log_bound+=plane_support_kind(roots[i],0);secondary+=plane_support_kind(roots[i],1);
+  main+=n[0];weapon+=n[weapon_stat];
+ }
+ if(*minimum_critical>plane_high||*maximum_critical<plane_low)return -__builtin_inf();
+ return minimum(log_bound,secondary+plane_primary_logs(main,weapon));
+}
 static double upper(const address *roots){
+ double linear=__builtin_inf();
+ if(plane_enabled){double high,low;linear=plane_bound(roots,&high,&low);if(linear<=plane_best_log)return -__builtin_inf();}
  double v[8]={0},budget=0,critical_minimum=0;int has_tenacity=0;
  for(int i=0;i<root_count;i++){
   double *n=node(roots[i]);for(int stat=0;stat<8;stat++)v[stat]+=n[stat];
@@ -91,9 +162,10 @@ static double upper(const address *roots){
  double value=damage(v,has_tenacity);
  if(value<=best)return value;
  if(context[14]>0&&mitigation(v,has_tenacity)+1e-12<context[14])return -__builtin_inf();
- return budget_bound(v,critical_minimum,budget,value);
+ value=budget_bound(v,critical_minimum,budget,value);
+ return plane_enabled&&value>best?minimum(value,wasm_exp(linear)):value;
 }
-__attribute__((visibility("default"))) int search_abi(void){return 3;}
+__attribute__((visibility("default"))) int search_abi(void){return 4;}
 __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
 __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
 __attribute__((visibility("default"))) void configure_search(address pointer){
@@ -110,22 +182,57 @@ __attribute__((visibility("default"))) void configure_search(address pointer){
   }
  }
 }
+/* Adjacent closed intervals share the same computed boundary, including for
+ * fractional custom stats. Overlap is harmless; leaving any gap would not be.
+ * Optimality is reported only after every interval has been exhausted. */
+static int next_plane(void){
+ if(plane_active){plane_finished++;plane_active=0;}
+ if(plane_finished>=plane_count)return 0;
+ covered=0;
+ if(plane_enabled){
+  plane_low=plane_first+plane_finished*plane_width;plane_high=minimum(plane_last,plane_first+(plane_finished+1)*plane_width);
+  configure_plane();
+ }
+ for(int i=0;i<root_count;i++)frames[0].roots[i]=original_roots[i];
+ frames[0].work=1;frames[0].bound=upper(frames[0].roots);top=1;plane_active=1;return 1;
+}
 __attribute__((visibility("default"))) void start_search(address pointers,int count,double threshold){
+ plane_main_raw=-__builtin_inf();plane_weapon_raw=-__builtin_inf();
  root_count=count;best=threshold;visited=0;evaluated=0;covered=0;top=0;failure=0;
  if(count<1||count>ROOTS){failure=1;return;}
- for(int i=0;i<count;i++){frames[0].roots[i]=((address*)pointers)[i];selected[i]=0;}
- frames[0].work=1;frames[0].bound=upper(frames[0].roots);top=1;
+ double work=1;plane_first=0;plane_last=0;
+ for(int i=0;i<count;i++){
+  original_roots[i]=((address*)pointers)[i];selected[i]=0;double *n=node(original_roots[i]);
+  work*=n[NODE_COUNT];plane_first+=n[10];plane_last+=n[2];
+ }
+ plane_enabled=context[15]&&context[7]>0&&context[8]>0&&work>=context[47]&&count>1;
+ // The relaxation needs nonnegative secondary food and a positive reference.
+ if(plane_enabled){
+  for(int stat=2;stat<=5;stat++)if(context[20+stat]<0||context[28+stat]<0)plane_enabled=0;
+  if(factor(0,context[48])<=0||factor(5,context[48+(context[9]?7:6)])<=0)plane_enabled=0;
+ }
+ plane_width=maximum(64,__builtin_ceil((plane_last-plane_first+1)/256));
+ plane_count=plane_enabled?(int)maximum(1,__builtin_ceil((plane_last-plane_first)/plane_width)):1;
+ plane_best_log=best>0?wasm_log(best):-__builtin_inf();plane_finished=0;plane_active=0;
+ next_plane();
 }
 __attribute__((visibility("default"))) int step_search(int limit){
- for(int processed=0;processed<limit&&top>0;processed++){
+ if(failure)return 1;
+ for(int processed=0;processed<limit;processed++){
+  if(top==0&&!next_plane())break;
   Frame frame;top--;frame.bound=frames[top].bound;frame.work=frames[top].work;
   for(int i=0;i<root_count;i++)frame.roots[i]=frames[top].roots[i];
   if(frame.bound<=best){covered+=frame.work;continue;}
   visited++;
-  int split=-1,split_count=0,leaf=1;
+  int split=-1,split_count=0,leaf=1;double primary_uncertainty=-1;
   for(int i=0;i<root_count;i++){
    double *n=node(frame.roots[i]);
-   if(n[NODE_LENGTH]==0){leaf=0;if(n[NODE_COUNT]>split_count){split=i;split_count=(int)n[NODE_COUNT];}}
+   if(n[NODE_LENGTH]==0){
+    leaf=0;double uncertainty=plane_enabled?(n[0]-n[18])*plane_weights[0]+(n[6]-n[19])*plane_weights[6]:0;
+    if(uncertainty>primary_uncertainty||(uncertainty==primary_uncertainty&&n[NODE_COUNT]>split_count)){
+     primary_uncertainty=uncertainty;split=i;split_count=(int)n[NODE_COUNT];
+    }
+   }
   }
   if(leaf){
    double *prefix=node(frame.roots[0]);
@@ -135,9 +242,9 @@ __attribute__((visibility("default"))) int step_search(int limit){
      double *n=node(frame.roots[i]);address ptr=(address)n[NODE_POINTS]+(i==0?point*POINT_BYTES:0);choices[i]=ptr;
      double *p=(double*)ptr;for(int stat=0;stat<8;stat++)v[stat]+=p[stat];has_tenacity|=(int)p[8];
     }
-    evaluated++;double value=damage(v,has_tenacity);
+    evaluated++;if(plane_enabled&&(v[2]<plane_low||v[2]>plane_high))continue;double value=damage(v,has_tenacity);
     if(value>best&&(!context[46]||(effective(v[2],2,1)>=context[44]&&effective(v[2],2,1)<=context[45]))&&mitigation(v,has_tenacity)+1e-12>=context[14]){
-     best=value;for(int i=0;i<root_count;i++)selected[i]=choices[i];
+     best=value;plane_best_log=wasm_log(best);for(int i=0;i<root_count;i++)selected[i]=choices[i];
     }
    }
    covered+=frame.work;continue;
@@ -154,12 +261,13 @@ __attribute__((visibility("default"))) int step_search(int limit){
   frames[top].bound=second->bound;frames[top].work=second->work;
   for(int i=0;i<root_count;i++)frames[top].roots[i]=second->roots[i];top++;
  }
- return top==0;
+ if(failure){top=0;plane_finished=plane_count;return 1;}
+ return top==0&&plane_finished>=plane_count;
 }
 __attribute__((visibility("default"))) double search_damage(void){return best;}
 __attribute__((visibility("default"))) double search_visited(void){return visited;}
 __attribute__((visibility("default"))) double search_evaluated(void){return evaluated;}
-__attribute__((visibility("default"))) double search_coverage(void){return top==0?1:minimum(0.999999,covered);}
+__attribute__((visibility("default"))) double search_coverage(void){return top==0&&plane_finished>=plane_count?1:minimum(0.999999,(plane_finished+covered)/plane_count);}
 __attribute__((visibility("default"))) address search_selected(int index){return index>=0&&index<root_count?selected[index]:0;}
 __attribute__((visibility("default"))) int search_error(void){return failure;}
 /* LLVM may lower fixed-size structure copies to these freestanding routines. */

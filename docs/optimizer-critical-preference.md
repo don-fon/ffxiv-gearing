@@ -61,3 +61,5 @@ npm run benchmark:optimizer -- --chromium /usr/bin/chromium --engine auto --work
 ```
 
 同一输入可用 `--engine javascript` 验证回退求解器。WASM 重建方式见原性能报告。
+
+当前内核已升级到 ABI 4；暴击偏好规则保持不变，新版搜索加速数据见 [搜索实测](optimizer-search-acceleration.md)。

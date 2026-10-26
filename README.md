@@ -95,3 +95,7 @@ All FINAL FANTASY XIV contents and materials are copyrights of SQUARE ENIX, FINA
 ### 计算诊断
 
 浏览器 Console 筛选 `[自动配装]` 可查看实际后端、WASM 调用次数、回退原因和分片耗时。候选来源与列表显示范围一致，同步不会自动扩大范围。详见 [诊断日志、候选规则与魔晶石算法分析](docs/optimizer-diagnostics-and-materia.md)。
+
+### 350–375 战士搜索加速
+
+已调整武器伤害/主属性树序，并在原生大搜索中使用保留装备属性关联的上界，继续求精确解。同一 87 件候选、4 Worker 的云端浏览器测试从旧版 120 秒仍未结束，降至约 6–7 秒；其他偏好和设备耗时不同。详见 [搜索加速实测与验证](docs/optimizer-search-acceleration.md)。

@@ -1,0 +1,19 @@
+{
+  "inputFile": "test/fixtures/warrior-displayed-375-input.json",
+  "inputSha256": "4c77fac0aee78b7f72736cb4522270635a785577e23c523cfc44947b0fc79396",
+  "candidates": 87,
+  "baselineRef": "f8075f1",
+  "workers": 4,
+  "baselineStatus": "timeout",
+  "baselineMilliseconds": 120000.80000000447,
+  "treeMilliseconds": 27985.10000000149,
+  "optimizedMilliseconds": [
+    5866.89999999851,
+    6366.19999999553,
+    6818.60000000149,
+    6446.89999999851
+  ],
+  "conservativeReduction": 0.9431787121419087,
+  "incrementalReductionFromTree": 0.7563489142436108,
+  "damage": 7.966430616454143
+}

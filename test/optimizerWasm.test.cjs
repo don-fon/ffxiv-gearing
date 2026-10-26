@@ -19,7 +19,7 @@ function loadTypeScript(file, dependencies = {}, transform = source => source) {
 const formulas = loadTypeScript('../src/statFormulas.ts');
 const solver = loadTypeScript('../src/optimizer.ts', { './statFormulas': formulas }, source => source
   .replace('const maximumStateExpansion = 1_000_000;', 'const maximumStateExpansion = 4;')
-  .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;') + '\nexport const testPareto = paretoFrontier;');
+  .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;') + '\nexport const testPareto = paretoFrontier; export const testAttributeTree = buildAttributeTree;');
 const adapter = loadTypeScript('../src/optimizerWasm.ts');
 const bytes = fs.readFileSync(require.resolve('../src/optimizerSearch.wasm'));
 
@@ -104,7 +104,7 @@ function compare(input, backend) {
 }
 
 test('WASM matches JavaScript across jobs, levels, foods, meld caps, locks and objectives', async () => {
-  const backend = await adapter.createWasmSearchBackend(bytes);
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
   const jobs = new Set();
   let improvements = 0;
   const counted = (task, report) => {
@@ -119,7 +119,7 @@ test('WASM matches JavaScript across jobs, levels, foods, meld caps, locks and o
 });
 
 test('WASM preserves unique-ring pairing and multiple food searches', async () => {
-  const backend = await adapter.createWasmSearchBackend(bytes);
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
   const input = fixture(1);
   input.slots = [12];
   input.lockedGearIds = [];
@@ -142,7 +142,7 @@ test('WASM can leave small final tree products on the JavaScript backend', async
 
 
 test('WASM dominance frontier matches JavaScript with duplicates and signed coordinates', async () => {
-  const backend = await adapter.createWasmSearchBackend(bytes);
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
   const dimensions = ['STR', 'DEX', 'INT', 'MND', 'CRT', 'DET', 'DHT', 'TEN', 'PDMG', 'MDMG'];
   let randomState = 17;
   const random = maximum => {
@@ -164,7 +164,7 @@ test('WASM dominance frontier matches JavaScript with duplicates and signed coor
 });
 
 test('candidate shards cover the exact optimum across objectives, locks and food inputs', async () => {
-  const backend = await adapter.createWasmSearchBackend(bytes);
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
   for (let seed = 0; seed < 32; seed++) {
     const input = fixture(seed);
     let expected;
@@ -181,7 +181,82 @@ test('candidate shards cover the exact optimum across objectives, locks and food
 });
 
 test('bounded pair warm starts preserve the exact optimum', async () => {
-  const backend = await adapter.createWasmSearchBackend(bytes);
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
   backend.warmStartMinimumWork = 0;
   for (let seed = 0; seed < 40; seed++) compare(fixture(seed), backend);
+});
+
+test('large-search bounds preserve exhaustive optima across raw CRT bands, including fractional stats', async () => {
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
+  let state = 713;
+  const random = n => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0;return state % n; };
+  const add = (left, right) => {
+    const stats = { ...left };
+    for (const [stat, value] of Object.entries(right)) stats[stat] = (stats[stat] ?? 0) + value;
+    return stats;
+  };
+  const foodStats = (raw, food) => {
+    const stats = { ...raw };
+    for (const [stat, cap] of Object.entries(food?.stats ?? {})) {
+      const rate = food.statRates[stat];
+      stats[stat] = (stats[stat] ?? 0) + (rate === undefined ? cap :
+        Math.min(cap, Math.trunc((stats[stat] ?? 0) * rate / 100 + 1e-7)));
+    }
+    return stats;
+  };
+  for (let seed = 0; seed < 180; seed++) {
+    const input = fixture(seed * 4);
+    input.damage.partyBonus = seed % 2 ? 1.05 : 1;
+    if (seed % 7) input.food = { id: 81, name: 'food-cap crossings',
+      stats: { CRT: 100 + random(700), DET: 100 + random(700), DHT: 100 + random(700),
+        TEN: 50 + random(500), STR: 30 + random(90), PDMG: 3 },
+      statRates: { CRT: 5 + random(31), DET: 5 + random(31), DHT: 5 + random(31),
+        TEN: 5 + random(31), STR: 10, PDMG: 10 } };
+    input.objective = { type: 'minimumTenacity', minimumTenacityMitigation: seed % 3 ? 0 : 0.01 };
+    const prefix = [0, 1].map(index => ({ stats: add(input.fixedStats,
+      { STR: index * 7 + (seed % 4 === 0 ? 0.25 : 0), CRT: index * 13 + (seed % 4 === 0 ? 0.125 : 0) }), choices: [] }));
+    const groups = Array.from({ length: 3 }, (_, group) => Array.from({ length: 4 }, (_, option) => ({
+      stats: { STR: random(37), CRT: random(1700) + (seed % 4 === 0 ? 0.25 : 0),
+        DET: random(1400), DHT: random(1300), TEN: random(500), PDMG: random(4) },
+      choices: [{ id: group * 4 + option }],
+    })));
+    let combinations = prefix.map(point => point.stats);
+    for (const group of groups) combinations = combinations.flatMap(point => group.map(option => add(point, option.stats)));
+    const valid = combinations.map(point => foodStats(point, input.food)).filter(point =>
+      solver.calculateTenacityMitigation(point.TEN, input.damage.level) + 1e-12 >= input.objective.minimumTenacityMitigation);
+    assert.ok(valid.length > 0);
+    if (seed % 3) {
+      const minimum = Math.min(...valid.map(point => point.CRT));
+      const maximum = Math.max(...valid.map(point => point.CRT));
+      input.criticalPreference = seed % 3 === 1 ? 'high' : 'low';
+      input.criticalRange = { minimum, maximum, midpoint: (minimum + maximum) / 2 };
+    }
+    const eligible = valid.filter(point => !input.criticalRange || (input.criticalPreference === 'high'
+      ? point.CRT >= input.criticalRange.midpoint : point.CRT <= input.criticalRange.midpoint));
+    const expected = Math.max(...eligible.map(point => solver.calculateExpectedDamage(point, input.damage)));
+    const result = backend({ input, prefix: solver.testAttributeTree(prefix, 16),
+      options: groups.map(group => solver.testAttributeTree(group, 1)), reference: combinations[0], minimumDamage: 0 }, () => {});
+    assert.ok(result.complete);
+    assert.ok(Math.abs(result.damage - expected) <= 1e-11, `raw-band seed ${seed}: ${result.damage} != ${expected}`);
+  }
+});
+
+
+test('adjacent CRT bands leave no gaps for fractional custom stats', async () => {
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
+  const input = fixture(0);
+  input.food = undefined;
+  input.objective = { type: 'damage' };
+  const stats = { ...input.fixedStats, CRT: input.fixedStats.CRT + 0.125 };
+  const options = [
+    { stats: { STR: 0, CRT: 0.5 }, choices: [{ id: 1 }] },
+    { stats: { STR: 150, CRT: 63.75 }, choices: [{ id: 2 }] },
+    { stats: { STR: 0, CRT: 128.5 }, choices: [{ id: 3 }] },
+  ];
+  const result = backend({ input, prefix: solver.testAttributeTree([{ stats, choices: [] }], 1),
+    options: [solver.testAttributeTree(options, 1)], reference: stats, minimumDamage: 0 }, () => {});
+  assert.ok(result.complete);
+  assert.equal(result.options[0].choices[0].id, 2);
+  assert.equal(result.damage, solver.calculateExpectedDamage({ ...stats, STR: stats.STR + 150,
+    CRT: stats.CRT + 63.75 }, input.damage));
 });
