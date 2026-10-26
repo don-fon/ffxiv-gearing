@@ -11,7 +11,7 @@ typedef unsigned int address;
 #define NODE_POINTS 13
 #define NODE_LENGTH 14
 #define NODE_COUNT 15
-#define POINT_BYTES 72
+#define POINT_BYTES 80
 static double *context;
 static double *factors;
 static double budget_weights[4], budget_constant;
@@ -125,7 +125,7 @@ static void configure_plane(void){
  plane_factor(2,plane_critical(lo)-slope*lo,slope,minimum(plane_high,maximum(plane_low,context[50])));
  plane_factor(3,1-0.14/context[3]*context[0]+1e-10*context[4],0.14/context[3],context[51]);
  plane_factor(4,1-0.1375/context[2]*context[1]+2.5e-11,0.1375/context[2],context[52]);
- plane_factor(5,1-0.112/context[2]*context[1]+1e-10,0.112/context[2],context[53]);
+ if(!context[56])plane_factor(5,1-0.112/context[2]*context[1]+1e-10,0.112/context[2],context[53]);
  plane_secondary_constant=plane_constant;
  double main_slope=context[6]*context[7]/(100*context[0]);
  plane_factor(0,1-context[6]/100+context[6]/context[0]*1e-9+1e-9,main_slope,context[48]);
@@ -150,7 +150,20 @@ static double plane_bound(const address *roots,double *maximum_critical,double *
  if(*minimum_critical>plane_high||*maximum_critical<plane_low)return -__builtin_inf();
  return minimum(log_bound,secondary+plane_primary_logs(main,weapon));
 }
+static double speed_gcd(double raw){
+ double cap=context[60],rate=context[61];
+ double speed=raw+(rate<0?cap:minimum(cap,floor_game(raw*rate)));
+ return floor_game(floor_game((1000-floor_game(130*(speed-context[1])/context[2]))*2500/1000)*context[62]/1000);
+}
 static double upper(const address *roots){
+ if(plane_enabled&&context[46]&&(effective(plane_high,2,0)+1e-7<context[44]||effective(plane_low,2,1)>context[45]))return -__builtin_inf();
+ double speed_budget=__builtin_inf();
+ if(context[57]){
+  double low=0,high=0,total=0;
+  for(int i=0;i<root_count;i++){double *n=node(roots[i]);low+=n[23];high+=n[22];total+=n[24];}
+  if(low>context[59]||high<context[58])return -__builtin_inf();
+  speed_budget=total-context[58];
+ }
  double linear=__builtin_inf();
  if(plane_enabled){double high,low;linear=plane_bound(roots,&high,&low);if(linear<=plane_best_log)return -__builtin_inf();}
  double v[8]={0},budget=0,critical_minimum=0;int has_tenacity=0;
@@ -158,15 +171,21 @@ static double upper(const address *roots){
   double *n=node(roots[i]);for(int stat=0;stat<8;stat++)v[stat]+=n[stat];
   has_tenacity|=(int)n[8];budget+=n[9];critical_minimum+=n[10];
  }
+ if(plane_enabled){
+  v[2]=minimum(v[2],plane_high);critical_minimum=maximum(critical_minimum,plane_low);
+  if(context[46]){v[2]=minimum(v[2],context[45]);critical_minimum=maximum(critical_minimum,context[44]-context[22]);}
+  if(critical_minimum>v[2])return -__builtin_inf();
+ }
  if(context[46]&&(effective(v[2],2,1)<context[44]||effective(critical_minimum,2,1)>context[45]))return -__builtin_inf();
  double value=damage(v,has_tenacity);
  if(value<=best)return value;
  if(context[14]>0&&mitigation(v,has_tenacity)+1e-12<context[14])return -__builtin_inf();
+ budget=minimum(budget,speed_budget);
  if(context[56]){v[5]=context[1];budget+=context[1];}
  value=budget_bound(v,critical_minimum,budget,value);
  return plane_enabled&&value>best?minimum(value,wasm_exp(linear)):value;
 }
-__attribute__((visibility("default"))) int search_abi(void){return 5;}
+__attribute__((visibility("default"))) int search_abi(void){return 6;}
 __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
 __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
 __attribute__((visibility("default"))) void configure_search(address pointer){
@@ -191,7 +210,8 @@ static int next_plane(void){
  if(plane_finished>=plane_count)return 0;
  covered=0;
  if(plane_enabled){
-  plane_low=plane_first+plane_finished*plane_width;plane_high=minimum(plane_last,plane_first+(plane_finished+1)*plane_width);
+  int index=plane_finished;
+  plane_low=plane_first+index*plane_width;plane_high=minimum(plane_last,plane_first+(index+1)*plane_width);
   configure_plane();
  }
  for(int i=0;i<root_count;i++)frames[0].roots[i]=original_roots[i];
@@ -206,7 +226,7 @@ __attribute__((visibility("default"))) void start_search(address pointers,int co
   original_roots[i]=((address*)pointers)[i];selected[i]=0;double *n=node(original_roots[i]);
   work*=n[NODE_COUNT];plane_first+=n[10];plane_last+=n[2];
  }
- plane_enabled=context[15]&&!context[56]&&context[7]>0&&context[8]>0&&work>=context[47]&&count>1;
+ plane_enabled=context[15]&&(!context[56]||context[57])&&context[7]>0&&context[8]>0&&work>=context[47]&&count>1;
  // The relaxation needs nonnegative secondary food and a positive reference.
  if(plane_enabled){
   for(int stat=2;stat<=5;stat++)if(context[20+stat]<0||context[28+stat]<0)plane_enabled=0;
@@ -238,12 +258,12 @@ __attribute__((visibility("default"))) int step_search(int limit){
   if(leaf){
    double *prefix=node(frame.roots[0]);
    for(int point=0;point<(int)prefix[NODE_LENGTH];point++){
-    double v[8]={0};int has_tenacity=0;address choices[ROOTS];
+    double v[8]={0},speed=0;int has_tenacity=0;address choices[ROOTS];
     for(int i=0;i<root_count;i++){
      double *n=node(frame.roots[i]);address ptr=(address)n[NODE_POINTS]+(i==0?point*POINT_BYTES:0);choices[i]=ptr;
-     double *p=(double*)ptr;for(int stat=0;stat<8;stat++)v[stat]+=p[stat];has_tenacity|=(int)p[8];
+     double *p=(double*)ptr;for(int stat=0;stat<8;stat++)v[stat]+=p[stat];has_tenacity|=(int)p[8];speed+=p[9];
     }
-    evaluated++;if(plane_enabled&&(v[2]<plane_low||v[2]>plane_high))continue;double value=damage(v,has_tenacity);
+    evaluated++;if(context[57]&&(speed<context[58]||speed>context[59]||speed_gcd(speed)!=context[63]))continue;if(plane_enabled&&(v[2]<plane_low||v[2]>plane_high))continue;double value=damage(v,has_tenacity);
     if(value>best&&(!context[46]||(effective(v[2],2,1)>=context[44]&&effective(v[2],2,1)<=context[45]))&&mitigation(v,has_tenacity)+1e-12>=context[14]){
      best=value;plane_best_log=wasm_log(best);for(int i=0;i<root_count;i++)selected[i]=choices[i];
     }

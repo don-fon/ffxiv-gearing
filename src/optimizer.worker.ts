@@ -76,7 +76,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       engine = 'WASM';
       const native = backend;
       const tracked: OptimizerSearchBackend = (task, report) => {
-        activePhase = 'WASM 精确搜索';
+        activePhase = task.speedBounds === undefined ? 'WASM 精确搜索' : 'WASM GCD 区间搜索';
         counts.wasmSearchCalls++;
         const before = Date.now();
         const result = native(task, update => { heartbeat(update);report(update); });

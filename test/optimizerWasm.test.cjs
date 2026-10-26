@@ -288,3 +288,111 @@ test('repeated queries reuse their root pointers without growing WASM memory', a
   }
   assert.equal(backend.memoryBytes(), bytesBefore);
 });
+
+test('native GCD intervals match 300 independent exhaustive searches', async () => {
+    const floor = x => Math.trunc(x + 1e-7); const add = (a, b) => { const out = { ...a }; for (const k of Object.keys(b))
+        out[k] = (out[k] ?? 0) + b[k]; return out; };
+    const food = (a, f) => { const out = { ...a }; for (const k of Object.keys(f?.stats ?? {}))
+        out[k] = (out[k] ?? 0) + (f.statRates[k] === undefined ? f.stats[k] : Math.min(f.stats[k], floor((a[k] ?? 0) * f.statRates[k] / 100))); return out; };
+    const gcd = (x, input) => floor(floor((1000 - floor(130 * (x - input.damage.level.sub) / input.damage.level.div)) * 2500 / 1000) * (input.damage.jobLevel >= 80 ? input.damage.statModifiers.gcd ?? 100 : 100) / 1000);
+    function bounds(input) { const fn = x => gcd(food({ [input.speedStat]: x }, input.food)[input.speedStat], input); const target = Math.round(input.targetGcd * 100); const find = strict => { let lo = 0; let hi = 100000; while (lo < hi) {
+        const m = Math.floor((lo + hi) / 2);
+        if (strict ? fn(m) < target : fn(m) <= target)
+            hi = m;
+        else
+            lo = m + 1;
+    } return lo; }; return { minimum: find(false) - 1, maximum: find(true) }; }
+    const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
+    let state = 913;
+    const random = n => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state % n; };
+    for (let seed = 0; seed < 300; seed++) {
+        const input = fixture(seed);
+        const main = input.damage.mainStat === 'VIT' ? 'STR' : input.damage.mainStat;
+        input.objective = { type: 'damage' };
+        input.targetSpeedContribution = undefined;
+        input.food = seed % 4 ? { id: 1, name: 'speed food', stats: { CRT: 100, DET: 100, [input.speedStat]: 80 }, statRates: { CRT: 10, DET: 10, ...(seed % 3 ? { [input.speedStat]: 10 } : {}) } } : undefined;
+        if (seed % 5 === 0) {
+            input.damage.jobLevel = 100;
+            input.damage.statModifiers.gcd = 80;
+        }
+        const prefixes = [{ stats: { ...input.fixedStats, [input.speedStat]: input.fixedStats[input.speedStat] + (seed % 2 ? 0.125 : 0) }, choices: [] }];
+        const groups = Array.from({ length: 3 }, () => Array.from({ length: 4 }, () => ({ stats: { [main]: random(80) + (seed % 2 ? 0.125 : 0), CRT: random(700) + (seed % 2 ? 0.25 : 0), DET: random(500), DHT: random(500), [input.speedStat]: random(120) + (seed % 2 ? 0.125 : 0), ...(input.damage.mainStat === 'VIT' ? { TEN: random(80) } : {}) }, choices: [] })));
+        let all = prefixes.map(p => p.stats);
+        for (const group of groups)
+            all = all.flatMap(p => group.map(o => add(p, o.stats)));
+        const finished = all.map(p => food(p, input.food));
+        input.targetGcd = gcd(finished[seed % finished.length][input.speedStat], input) / 100;
+        const viable = finished.filter(p => gcd(p[input.speedStat], input) === Math.round(input.targetGcd * 100));
+        assert.ok(viable.length);
+        if (seed % 3) {
+            const minimum = Math.min(...viable.map(p => p.CRT)); const maximum = Math.max(...viable.map(p => p.CRT));
+            input.criticalPreference = seed % 3 === 1 ? 'high' : 'low';
+            input.criticalRange = { minimum, maximum, midpoint: (minimum + maximum) / 2 };
+        }
+        const eligible = viable.filter(p => !input.criticalRange || (input.criticalPreference === 'high' ? p.CRT >= input.criticalRange.midpoint : p.CRT <= input.criticalRange.midpoint));
+        const expected = Math.max(...eligible.map(p => solver.calculateExpectedDamage(p, input.damage)));
+        const result = native({ input, prefix: solver.testAttributeTree(prefixes, 1, input.speedStat), options: groups.map(g => solver.testAttributeTree(g, 1, input.speedStat)), reference: all[0], minimumDamage: seed % 2 ? expected * (1 - 1e-10) : 0, speedBounds: bounds(input) }, () => { });
+        assert.ok(result.complete);
+        assert.ok(Math.abs(result.damage - expected) < 1e-10, JSON.stringify({ seed, expected, actual: result.damage }));
+    }
+});
+test('speed-only tree differences survive and interval changes reconfigure cached inputs', async () => {
+    const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
+    const input = fixture(1);
+    input.food = undefined;
+    input.objective = { type: 'damage' };
+    const raw = input.fixedStats.SKS + 120;
+    const floor = value => Math.trunc(value + 1e-7);
+    input.targetGcd = floor(floor((1000 - floor(130 * (raw - input.damage.level.sub) /
+        input.damage.level.div)) * 2500 / 1000) * 100 / 1000) / 100;
+    const prefix = solver.testAttributeTree([{ stats: input.fixedStats, choices: [] }], 1, 'SKS');
+    const options = [{ stats: { STR: 100, SKS: 0 }, choices: [] },
+        { stats: { STR: 0, SKS: 120 }, choices: [] }];
+    const tree = solver.testAttributeTree(options.slice(), 1, 'SKS');
+    const task = { input, prefix, options: [tree], reference: input.fixedStats, minimumDamage: 0 };
+    const unrestricted = native(task, () => { });
+    const speedBounds = { minimum: raw, maximum: raw };
+    const limited = native({ ...task, speedBounds }, () => { });
+    assert.equal(limited.options[0], options[1]);
+    assert.ok(limited.damage < unrestricted.damage);
+    assert.equal(native(task, () => { }).damage, unrestricted.damage);
+    assert.equal(native({ ...task, speedBounds }, () => { }).damage, limited.damage);
+    speedBounds.minimum = speedBounds.maximum = input.fixedStats.SKS;
+    assert.equal(native({ ...task, speedBounds }, () => { }).damage, 0);
+    const equalDamage = [{ stats: { STR: 100, SKS: 0 }, choices: [] },
+        { stats: { STR: 100, SKS: 120 }, choices: [] }];
+    const equalTree = solver.testAttributeTree(equalDamage.slice(), 1, 'SKS');
+    const selected = native({ ...task, options: [equalTree], speedBounds: { minimum: raw, maximum: raw } }, () => { });
+    assert.equal(selected.options[0], equalDamage[1]);
+});
+test('whole-GCD worker partitions preserve JS optima and shared CRT ranges', async () => {
+    const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
+    let intervalCalls = 0;
+    const backend = (task, report) => {
+        if (task.speedBounds !== undefined)
+            intervalCalls++;
+        return native(task, report);
+    };
+    Object.assign(backend, native);
+    backend.speedRangeMinimumWork = 0;
+    for (const seed of [1, 2, 5, 6, 9, 10]) {
+        for (const criticalPreference of ['none', 'high', 'low']) {
+            const input = { ...fixture(seed), criticalPreference };
+            let expected;
+            try {
+                expected = solver.optimizeGearset(input);
+            }
+            catch (error) {
+                assert.match(error.message, /没有找到/);
+                assert.throws(() => solver.optimizeGearset(input, undefined, backend), /没有找到/);
+                continue;
+            }
+            const plan = solver.planGearOptimization(input, backend);
+            assert.ok(plan.partitions.every(task => task.contribution === undefined));
+            const actual = solver.optimizeGearset(input, undefined, backend);
+            assert.ok(Math.abs(actual.damage - expected.damage) < 1e-12);
+            assert.deepEqual(actual.criticalRange, expected.criticalRange);
+        }
+    }
+    assert.ok(intervalCalls >= 10);
+});

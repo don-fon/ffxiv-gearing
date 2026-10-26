@@ -100,7 +100,7 @@ export type GearOptimizationObjective =
 export interface OptimizerSpeedPartition {
   candidateShard?: { index: number; count: number };
   foodId?: number;
-  contribution: number;
+  contribution?: number;
   heuristicDamage: number;
   estimatedWork: number;
 }
@@ -188,6 +188,7 @@ export interface OptimizerSearchTask {
   reference: OptimizerStats;
   minimumDamage: number;
   branchLimit?: number;
+  speedBounds?: { minimum: number; maximum: number };
 }
 
 export interface OptimizerSearchUpdate {
@@ -211,6 +212,7 @@ export type OptimizerSearchBackend = ((task: OptimizerSearchTask,
     warmStartMinimumWork?: number;
     candidateShardCount?: number;
     memoryBytes?: () => number;
+    speedRangeMinimumWork?: number;
   };
 
 interface SpeedSearchPlan {
@@ -699,7 +701,7 @@ function maximumOptionStats(options: GearOption[]): OptimizerStats {
 }
 
 function buildAttributeTree<T extends GearOption>(options: T[],
-  leafSize = finalOptionLeafSize): AttributeTreeNode<T> {
+  leafSize = finalOptionLeafSize, speedStat?: 'SKS' | 'SPS'): AttributeTreeNode<T> {
   const node: AttributeTreeNode<T> = {
     maxima: maximumOptionStats(options),
     count: options.length,
@@ -712,13 +714,14 @@ function buildAttributeTree<T extends GearOption>(options: T[],
     node.items = options;
     return node;
   }
-  let splitStat = scoredStats[0];
+  let splitStat: OptimizerStat = scoredStats[0];
   let maximumDistinct = 0;
   // Keep weapon/main-stat alternatives near the top so bounds cannot borrow
   // their damage from a different secondary-stat allocation deep in the tree.
   const primary = (['PDMG', 'MDMG', 'STR', 'DEX', 'INT', 'MND'] as const).find(stat =>
     options.some(option => (option.stats[stat] ?? 0) !== (options[0].stats[stat] ?? 0)));
-  for (const stat of primary === undefined ? scoredStats : [primary]) {
+  const dimensions = speedStat === undefined ? scoredStats : [...scoredStats, speedStat];
+  for (const stat of primary === undefined ? dimensions : [primary]) {
     const distinct = new Set(options.map(option => option.stats[stat] ?? 0)).size;
     if (distinct > maximumDistinct) {
       maximumDistinct = distinct;
@@ -733,8 +736,8 @@ function buildAttributeTree<T extends GearOption>(options: T[],
   options.sort((left, right) =>
     (right.stats[splitStat] ?? 0) - (left.stats[splitStat] ?? 0));
   const middle = Math.ceil(options.length / 2);
-  node.left = buildAttributeTree(options.slice(0, middle), leafSize);
-  node.right = buildAttributeTree(options.slice(middle), leafSize);
+  node.left = buildAttributeTree(options.slice(0, middle), leafSize, speedStat);
+  node.right = buildAttributeTree(options.slice(middle), leafSize, speedStat);
   return node;
 }
 
@@ -1427,6 +1430,14 @@ function estimatePartitionWork(plan: SpeedSearchPlan): number {
     Math.min(Number.MAX_SAFE_INTEGER, total + count), 0);
 }
 
+function canSearchSpeedInterval(input: GearOptimizationInput, plan: SpeedSearchPlan,
+  backend?: OptimizerSearchBackend): boolean {
+  return backend?.speedRangeMinimumWork !== undefined && input.damage.mainStat !== 'VIT' &&
+    input.damage.job !== 'BLU' && plan.optionsBySpeed.length < 16 &&
+    estimatePartitionWork(plan) >= backend.speedRangeMinimumWork &&
+    (input.food?.statRates[input.speedStat] ?? 0) >= 0;
+}
+
 function planFixedFoodGearOptimization(input: GearOptimizationInput,
   backend?: OptimizerSearchBackend): GearOptimizationPlan {
   validateOptimizationInput(input);
@@ -1434,8 +1445,22 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput,
   delete planningInput.targetSpeedContribution;
   delete planningInput.globalMinimumDamage;
   const groups = prepareSearchGroups(planningInput, backend);
-  const contributions = buildSpeedSearchPlan(groups, planningInput).targetContributions;
+  const wholePlan = buildSpeedSearchPlan(groups, planningInput);
+  const contributions = wholePlan.targetContributions;
   const criticalSeeds = hasCriticalPreference(input) ? criticalEndpoints(planningInput, groups) : undefined;
+  if (canSearchSpeedInterval(planningInput, wholePlan, backend)) {
+    const fallback = criticalSeeds === undefined ? findGreedySolution(planningInput, wholePlan) :
+      criticalSeed(criticalSeeds, planningInput);
+    const state = fallback;
+    const stats = applyFood(state.stats, input.food);
+    const evaluation = evaluateStats(stats, input);
+    return {
+      partitions: [{ foodId: input.food?.id, heuristicDamage: evaluation.damage,
+        estimatedWork: estimatePartitionWork(wholePlan) }],
+      heuristicResult: { ...evaluation, stats, gears: reconstruct(state), food: input.food,
+        criticalRange: input.criticalRange, exploredStates: 0 },
+    };
+  }
   let heuristicResult: GearOptimizationResult | undefined;
   const partitions: OptimizerSpeedPartition[] = [];
   for (const contribution of contributions) {
@@ -1592,6 +1617,44 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
   let bestStats: OptimizerStats | undefined = applyFood(bestState.stats, input.food);
   let bestEvaluation = evaluateStats(bestStats, input);
   let pruningDamage = Math.max(bestEvaluation.damage, input.globalMinimumDamage ?? -Infinity);
+  if (input.targetSpeedContribution === undefined && canSearchSpeedInterval(input, speedPlan, searchBackend)) {
+    bestStats = applyFood(bestState.stats, input.food);
+    bestEvaluation = evaluateStats(bestStats, input);
+    pruningDamage = Math.max(bestEvaluation.damage, input.globalMinimumDamage ?? -Infinity);
+    const minimum = speedPlan.fixedSpeed + speedPlan.targetContributions[0];
+    const maximum = speedPlan.fixedSpeed + speedPlan.targetContributions[speedPlan.targetContributions.length - 1];
+    const margin = 1e-7 + Math.max(Math.abs(minimum), Math.abs(maximum)) * 1e-12;
+    const prefix = buildAttributeTree([{ stats: input.fixedStats, choices: [] }], 1, input.speedStat);
+    const result = searchBackend!({ input, prefix,
+      options: groups.map(group => buildAttributeTree(group.slice(), 1, input.speedStat)),
+      reference: bestState.stats, minimumDamage: pruningDamage,
+      speedBounds: { minimum: minimum - margin, maximum: maximum + margin },
+    }, update => onProgress?.({ completedGroups: 0, totalGroups: groups.length,
+      states: update.states, visitedBranches: update.visitedBranches, searchProgress: update.fraction }));
+    if (result !== undefined) {
+      if (!result.complete) throw new Error('Incomplete WASM interval search cannot establish an exact result.');
+      if (result.prefix !== undefined) {
+        const raw = result.options!.reduce((stats, option) => addStats(stats, option.stats), result.prefix.stats);
+        const stats = applyFood(raw, input.food);
+        const evaluation = evaluateStats(stats, input);
+        if (!meetsCombinedObjective(evaluation, raw, {}, input) ||
+            gcdHundredths(stats[input.speedStat] ?? 0, input) !== targetGcdHundredths(input) ||
+            Math.abs(evaluation.damage - result.damage) > 1e-10 * Math.max(1, evaluation.damage)) {
+          throw new Error('WASM 区间求解结果未通过属性或约束校验。');
+        }
+        if (evaluation.damage > bestEvaluation.damage) {
+          bestEvaluation = evaluation;
+          bestStats = stats;
+          bestState = { stats: raw, choices: [], previous: result.prefix,
+            selected: result.options!.flatMap(option => option.choices) };
+        }
+      }
+      onProgress?.({ completedGroups: groups.length, totalGroups: groups.length,
+        states: result.states, visitedBranches: result.visitedBranches, searchProgress: 1 });
+      return { ...bestEvaluation, stats: bestStats!, gears: reconstruct(bestState!), food: input.food,
+        criticalRange: input.criticalRange, exploredStates: result.states };
+    }
+  }
   let exploredStates = 0;
   let states: SearchState[] = [{ stats: input.fixedStats, choices: [] }];
 
@@ -1958,10 +2021,13 @@ export function planGearOptimization(request: GearOptimizationInput,
   const heuristicResult = plans.map(plan => plan.heuristicResult)
     .reduce((best, candidate) => candidate.damage > best.damage ? candidate : best);
   const shardCount = Math.max(1, Math.min(64, Math.trunc(backend?.candidateShardCount ?? 1)));
-  const tasks = partitions.flatMap(partition => shardCount === 1 || partition.estimatedWork < 10_000_000_000
-    ? [partition]
-    : Array.from({ length: shardCount }, (_, index) => ({ ...partition,
-      candidateShard: { index, count: shardCount }, estimatedWork: partition.estimatedWork / shardCount })));
+  const tasks = partitions.flatMap(partition => {
+    const count = partition.contribution === undefined
+      ? Math.max(1, Math.ceil(shardCount / partitions.length)) : shardCount;
+    return count === 1 || partition.estimatedWork < 10_000_000_000 ? [partition] :
+      Array.from({ length: count }, (_, index) => ({ ...partition,
+        candidateShard: { index, count }, estimatedWork: partition.estimatedWork / count }));
+  });
   return { partitions: tasks, heuristicResult, criticalRange: input.criticalRange };
 }
 
