@@ -271,3 +271,20 @@ test('adjacent CRT bands leave no gaps for fractional custom stats', async () =>
   assert.equal(result.damage, solver.calculateExpectedDamage({ ...stats, STR: stats.STR + 150,
     CRT: stats.CRT + 63.75 }, input.damage));
 });
+
+test('repeated queries reuse their root pointers without growing WASM memory', async () => {
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, Infinity);
+  const input = fixture(0);
+  const prefix = solver.testAttributeTree([{ stats: input.fixedStats, choices: [] }], 1);
+  const option = solver.testAttributeTree([{ stats: { STR: 1, CRT: 1 }, choices: [] }], 1);
+  const task = { input, prefix, options: Array(15).fill(option),
+    reference: input.fixedStats, minimumDamage: Number.MAX_VALUE };
+  assert.ok(backend(task, () => {}).complete);
+  const bytesBefore = backend.memoryBytes();
+  for (let index = 0; index < 100000; index++) {
+    const result = backend(task, () => {});
+    assert.ok(result.complete);
+    assert.equal(result.damage, Number.MAX_VALUE);
+  }
+  assert.equal(backend.memoryBytes(), bytesBefore);
+});

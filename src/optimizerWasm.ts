@@ -40,6 +40,8 @@ export async function createWasmSearchBackend(bytes: BufferSource,
   if (core.search_abi() !== 5) throw new Error('Unsupported optimizer WASM ABI.');
   const heapBase = Number(core.__heap_base.value);
   let nextAddress = heapBase;
+  let rootAddress = 0;
+  const rootPointers: number[] = [];
   let currentInput: GearOptimizationInput | undefined;
   let attackStat: OptimizerStat = 'STR';
   let treePointers = new WeakMap<AttributeTreeNode<GearOption>, number>();
@@ -96,6 +98,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     const pointer = allocate(64 * 8);
     const cache = allocate(core.search_cache_bytes());
     const frames = allocate(core.search_frame_bytes());
+    rootAddress = allocate(16 * 4);
     const additions = damage.job === 'BLU' ? damage.bluMdmgAdditions : [];
     const lookup = allocate(additions.length * 8);
     if (additions.length > 0) new Float64Array(memory.buffer, lookup, additions.length).set(additions);
@@ -137,11 +140,15 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     const combinations = task.options.reduce((count, tree) => count * tree.count, task.prefix.count);
     if (combinations < minimumCombinations || task.options.length >= 16) return undefined;
     if (currentInput !== task.input) configure(task);
-    const trees = [task.prefix, ...task.options];
-    const roots = trees.map(tree => packTree(tree));
-    const rootAddress = allocate(roots.length * 4);
-    new Uint32Array(memory.buffer, rootAddress, roots.length).set(roots);
-    core.start_search(rootAddress, roots.length, task.minimumDamage);
+    const rootCount = task.options.length + 1;
+    rootPointers.length = rootCount;
+    rootPointers[0] = packTree(task.prefix);
+    for (let index = 0; index < task.options.length; index++) {
+      rootPointers[index + 1] = packTree(task.options[index]);
+    }
+    // Packing may grow memory and invalidate views. Construct the view afterwards.
+    new Uint32Array(memory.buffer, rootAddress, 16).set(rootPointers);
+    core.start_search(rootAddress, rootCount, task.minimumDamage);
     let lastReport = Date.now();
     let complete = false;
     while (!(complete = core.step_search(50_000) !== 0)) {
@@ -153,7 +160,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
       }
     }
     if (core.search_error() !== 0) throw new Error(`Optimizer WASM search failed (${core.search_error()}).`);
-    const selected = roots.map((root, index) => points.get(core.search_selected(index)));
+    const selected = Array.from({ length: rootCount }, (_, index) => points.get(core.search_selected(index)));
     return {
       prefix: selected[0] as SearchState | undefined,
       options: selected[0] === undefined ? undefined : selected.slice(1) as GearOption[],
