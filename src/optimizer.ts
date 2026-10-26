@@ -1432,6 +1432,8 @@ function estimatePartitionWork(plan: SpeedSearchPlan): number {
 
 function betterSpeedIntervalSeed(input: GearOptimizationInput, plan: SpeedSearchPlan,
   fallback: SearchState): SearchState {
+  // Unrestricted searches already start from findGreedySolution. Critical
+  // searches also compare it with their legal endpoint seed.
   if (!hasCriticalPreference(input)) return fallback;
   try {
     const greedy = findGreedySolution(input, plan);
@@ -1446,7 +1448,9 @@ function betterSpeedIntervalSeed(input: GearOptimizationInput, plan: SpeedSearch
 
 function improveSpeedIntervalSeed(input: GearOptimizationInput, plan: SpeedSearchPlan,
   groups: GearOption[][], initial: SearchState, backend: OptimizerSearchBackend): SearchState {
-  if (!hasCriticalPreference(input) || backend.warmStartMinimumWork === undefined ||
+  // Pair substitutions can improve a legal lower bound with or without a
+  // critical preference; only backend capability and work size gate this pass.
+  if (backend.warmStartMinimumWork === undefined ||
       estimatePartitionWork(plan) < backend.warmStartMinimumWork) return initial;
   const selected: GearOption[] = Array.from({ length: groups.length });
   let cursor = initial;
