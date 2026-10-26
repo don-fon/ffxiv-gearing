@@ -148,6 +148,8 @@ test('overall progress weights partitions and retains completed work', async ({ 
 });
 
 test('critical preference and the shared range reach every search worker', async ({ page }) => {
+  const messages: string[] = [];
+  page.on('console', message => messages.push(message.text()));
   await page.getByLabel('暴击属性策略', { exact: true }).selectOption('low');
   await page.evaluate(() => {
     class CriticalWorker {
@@ -157,6 +159,8 @@ test('critical preference and the shared range reach every search worker', async
         const result = { damage: 1, stats: { CRT: 1400 }, gears: [], exploredStates: 1,
           tenacityMitigation: 0, criticalRange: range };
         if (message.input.criticalPreference !== 'low') throw new Error('Missing critical preference');
+        queueMicrotask(() => this.onmessage?.({ data: { type: 'diagnostics',
+          diagnostics: { engine: 'WASM', stage: '引擎就绪', version: 'test' } } }));
         if (message.type === 'plan') queueMicrotask(() => this.onmessage?.({ data: {
           type: 'plan', plan: { partitions: [{ contribution: 0 }], heuristicResult: result, criticalRange: range },
         } }));
@@ -173,6 +177,8 @@ test('critical preference and the shared range reach every search worker', async
   await expect(page.locator('.gear-optimization_critical-range')).toContainText('1000–2001');
   await expect(page.locator('.gear-optimization_critical-range')).toContainText('中点 1500.5');
   await expect(page.locator('.gear-optimization_critical-range')).toContainText('≤ 1500');
+  expect(messages.some(message => message.includes('[自动配装] 规划 Worker'))).toBe(true);
+  expect(messages.some(message => message.includes('[自动配装] 搜索 Worker'))).toBe(true);
   await page.getByLabel('暴击属性策略', { exact: true }).selectOption('high');
   await expect(page.locator('.gear-optimization_result')).toHaveCount(0);
 });

@@ -23,6 +23,7 @@ import { Icon } from './components/Icon';
 
 type Status = 'idle' | 'loading' | 'running' | 'done' | 'error';
 type WorkerResponse =
+  { type: 'diagnostics', diagnostics: Record<string, unknown> } |
   { type: 'plan', plan: GearOptimizationPlan } |
   { type: 'progress', progress: OptimizerProgress } |
   { type: 'result', result: GearOptimizationResult } |
@@ -180,6 +181,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   };
 
   const start = async () => {
+    const runStarted = Date.now();
     const calculationExcludedGearIds = excludedGearIds.slice();
     const calculationExcludedGearCategories = activeExcludedGearCategories.slice();
     const calculationExcludedGearKey = exclusionKey(
@@ -211,6 +213,8 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     setProgress(undefined);
     setError('');
     setBaselineDamage(hasCompleteGearset ? store.equippedEffects?.damage : undefined);
+    console.log('[自动配装] 开始加载装备数据', { page: window.location.pathname,
+      hardwareConcurrency: navigator.hardwareConcurrency, workers: selectedWorkerCount });
     store.setOptimizationDataLoading(true);
     try {
       const minimumLevel = store.syncLevel === undefined
@@ -249,6 +253,16 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         }
         : { ...input, objective: { type: 'damage' } };
       input.criticalPreference = criticalPreference;
+      const outside = input.gears.filter(gear => gear.level < store.minLevel || gear.level > store.maxLevel);
+      console.log('[自动配装] 输入概况', { job: store.job, filter: [store.minLevel, store.maxLevel],
+        syncLevel: store.syncLevel, targetGcd: parsedTargetGcd, workers: selectedWorkerCount,
+        candidates: input.gears.length, foods: input.foods?.length ?? 0,
+        outsideFilter: outside.length, syncedOutsideFilter: outside.filter(gear => gear.synced).length,
+        exampleSyncedArmor: outside.filter(gear => gear.synced && gear.slot === 4).slice(0, 3)
+          .map(gear => ({ id: gear.id, name: gear.name, itemLevel: gear.level, effectiveStats: gear.stats })),
+        outsideLevels: Array.from(new Set(outside.map(gear => gear.level))).sort((left, right) => left - right),
+        materiaSlots: input.gears.reduce((count, gear) => count + gear.materiaSlots.length, 0),
+        criticalPreference, minimumTenacityMitigation: parsedMinimumTenacityMitigation });
     } catch (inputError) {
       setError(inputError instanceof Error ? inputError.message : String(inputError));
       setStatus('error');
@@ -268,6 +282,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     planner.onerror = event => fail(event.message || '自动配装计算失败。');
     planner.onmessage = (event: MessageEvent<WorkerResponse>) => {
       if (!mountedRef.current) return;
+      if (event.data.type === 'diagnostics') {
+        console.log('[自动配装] 规划 Worker', event.data.diagnostics);
+        return;
+      }
       if (event.data.type === 'error') {
         fail(event.data.message);
         return;
@@ -338,7 +356,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         worker.onerror = workerError => fail(workerError.message || '自动配装计算失败。');
         worker.onmessage = (workerEvent: MessageEvent<WorkerResponse>) => {
           if (!mountedRef.current) return;
-          if (workerEvent.data.type === 'error') {
+          if (workerEvent.data.type === 'diagnostics') {
+            console.log('[自动配装] 搜索 Worker', { partition: activePartitionIndexes.get(worker),
+              ...workerEvent.data.diagnostics });
+          } else if (workerEvent.data.type === 'error') {
             fail(workerEvent.data.message);
           } else if (workerEvent.data.type === 'progress') {
             activeProgress.set(worker, workerEvent.data.progress);
@@ -360,6 +381,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
               workersRef.current = [];
               setResult({ ...bestResult, exploredStates });
               setResultExcludedGearKey(calculationExcludedGearKey);
+              console.log('[自动配装] 全部完成', { elapsedMs: Date.now() - runStarted,
+                partitions: partitions.length, workers: workerCount, damage: bestResult.damage,
+                exploredStates, selectedGear: bestResult.gears.map(gear => ({ id: gear.id,
+                  name: gear.name, itemLevel: gear.level, synced: gear.synced })) });
               setStatus('done');
             } else {
               assign(worker);

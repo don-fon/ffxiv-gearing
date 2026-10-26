@@ -210,6 +210,7 @@ export type OptimizerSearchBackend = ((task: OptimizerSearchTask,
     pareto?: <T extends GearOption>(options: T[]) => T[] | undefined;
     warmStartMinimumWork?: number;
     candidateShardCount?: number;
+    memoryBytes?: () => number;
   };
 
 interface SpeedSearchPlan {

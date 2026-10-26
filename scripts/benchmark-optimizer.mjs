@@ -78,18 +78,22 @@ try {
         const started = performance.now();
         const WorkerClass = window.benchmarkWorker;
         const active = [];
+        const diagnostics = [];
         let settled = false, completed = 0, taskCount = 0, next = 0, best, explored = 0;
         let lastLog = performance.now();
         const finish = detail => {
           if (settled) return;settled = true;clearTimeout(timer);
           for (const worker of active) worker.terminate();
           resolve({ ...detail, milliseconds: performance.now() - started,
-            completed, partitions: taskCount, exploredStates: explored });
+            completed, partitions: taskCount, exploredStates: explored, diagnostics });
         };
         const timer = setTimeout(() => finish({ status: 'timeout', bestDamage: best?.damage }), config.timeout);
         const planner = new WorkerClass(window.benchmarkWorkerUrl);active.push(planner);
         planner.onerror = event => finish({ status: 'error', message: event.message });
         planner.onmessage = event => {
+          if (event.data.type === 'diagnostics') {
+            diagnostics.push({ worker: 'planner', ...event.data.diagnostics });return;
+          }
           if (event.data.type === 'error') { finish({ status: 'error', message: event.data.message });return; }
           if (event.data.type !== 'plan') return;
           planner.terminate();
@@ -108,6 +112,9 @@ try {
             const worker = new WorkerClass(window.benchmarkWorkerUrl);active.push(worker);
             worker.onerror = error => finish({ status: 'error', message: error.message });
             worker.onmessage = message => {
+              if (message.data.type === 'diagnostics') {
+                diagnostics.push({ worker: index, ...message.data.diagnostics });return;
+              }
               if (message.data.type === 'error') { finish({ status: 'error', message: message.data.message });return; }
               if (message.data.type === 'progress' && performance.now() - lastLog > 10000) {
                 lastLog = performance.now();console.log('BENCH ' + JSON.stringify({ engine: config.engine,

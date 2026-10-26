@@ -170,5 +170,6 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     if (count < 0) throw new Error(`Optimizer WASM dominance search failed (${count}).`);
     return Array.from(new Uint32Array(memory.buffer, output, count), index => options[index]);
   };
+  backend.memoryBytes = () => memory.buffer.byteLength;
   return backend;
 }

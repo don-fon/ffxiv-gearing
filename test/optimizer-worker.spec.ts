@@ -15,6 +15,8 @@ input.foods = [expected.food];
 for (const preference of ['none', 'high', 'low']) {
 for (const blocked of [false, true]) {
   test(`production worker ${preference}: ${blocked ? 'falls back when WASM download fails' : 'loads WASM and returns a legal result'}`, async ({ page, context }) => {
+    const consoleMessages: string[] = [];
+    page.on('console', message => consoleMessages.push(message.text()));
     if (blocked) await context.route('**/*.wasm', route => route.abort());
     await page.addInitScript(() => {
       const scope = window as unknown as { RealOptimizerWorker: typeof Worker, optimizerWorkerUrl: string };
@@ -33,11 +35,13 @@ for (const blocked of [false, true]) {
       const scope = window as unknown as { RealOptimizerWorker: typeof Worker, optimizerWorkerUrl: string };
       const worker = new scope.RealOptimizerWorker(scope.optimizerWorkerUrl);
       try {
-        return await new Promise<{ type: string, engine: string, result: { damage: number, stats: unknown } }>((resolve, reject) => {
+        const diagnostics: Array<{ engine: string, stage: string, fallbackReason?: string, version: string }> = [];
+        return await new Promise<{ type: string, engine: string, diagnostics: typeof diagnostics, result: { damage: number, stats: unknown } }>((resolve, reject) => {
           worker.onerror = event => reject(new Error(event.message));
           worker.onmessage = event => {
+            if (event.data.type === 'diagnostics') diagnostics.push(event.data.diagnostics);
             if (event.data.type === 'error') reject(new Error(event.data.message));
-            if (event.data.type === 'result') resolve(event.data);
+            if (event.data.type === 'result') resolve({ ...event.data, diagnostics });
           };
           worker.postMessage({ type: 'optimize', input: lockedInput });
         });
@@ -46,6 +50,13 @@ for (const blocked of [false, true]) {
     expect(response.engine).toBe(blocked ? 'javascript' : 'wasm-warm');
     expect(response.result.damage).toBeCloseTo(expected.damage, 10);
     expect(response.result.stats).toEqual(expected.stats);
+    expect(response.diagnostics[0].engine).toBe(blocked ? 'JavaScript' : 'WASM');
+    expect(response.diagnostics[0].version).toBe('2026-10-26-console-v1');
+    expect(response.diagnostics.at(-1)?.stage).toBe('分片完成');
+    if (blocked) expect(response.diagnostics[0].fallbackReason).toBeTruthy();
+    expect(consoleMessages.some(message => message.includes('[自动配装] Worker 启动'))).toBe(true);
+    expect(consoleMessages.some(message => message.includes('分片完成'))).toBe(true);
+    if (blocked) expect(consoleMessages.some(message => message.includes('WASM 初始化失败'))).toBe(true);
   });
 }
 }
