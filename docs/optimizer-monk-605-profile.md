@@ -19,3 +19,5 @@
 后续应针对这些热点验证：复用递归中的节点数组、减少属性对象复制，以及在更高层的速度前缀上应用有效预算界，避免先枚举再逐次调用 WASM 排除。每项应在同一固定任务上验证结果与耗时，再回到整轮运行。
 
 摘要：[采样与阶段数据](benchmarks/monk-605-profile-summary.json)。完整文件位于云工作区 `/workspace/.cloud-setup/mnk-profile/`：`cpu.cpuprofile` 可由 DevTools 加载，`stages.jsonl` 为阶段事件，`task-input.json` 为重现输入，`child.cjs` 和 `run.mjs` 为私有诊断脚本。
+
+后续已按这些热点实现并验证缓冲区复用和速度前缀剪枝，见 [优化实测](optimizer-monk-605-route-optimization.md)。

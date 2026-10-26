@@ -1,0 +1,50 @@
+[
+  {
+    "status": "timeout",
+    "bestDamage": 27.280971280704218,
+    "milliseconds": 180000.5,
+    "completed": 0,
+    "partitions": 1,
+    "exploredStates": 0,
+    "diagnostics": [
+      {
+        "worker": 0,
+        "version": "2026-10-26-console-v1",
+        "task": "optimize",
+        "job": "MNK",
+        "syncLevel": 605,
+        "foodId": 49240,
+        "speed": 369,
+        "shard": {
+          "index": 0,
+          "count": 4
+        },
+        "stage": "引擎就绪",
+        "engine": "WASM",
+        "activePhase": "准备候选与镶嵌",
+        "elapsedMs": 11,
+        "initializationMs": 7,
+        "wasmSearchCalls": 0,
+        "wasmSearchMs": 0,
+        "wasmVisitedBranches": 0,
+        "wasmEvaluatedCombinations": 0,
+        "wasmParetoCalls": 0,
+        "wasmParetoMs": 0,
+        "wasmParetoInputOptions": 0,
+        "wasmParetoOutputOptions": 0,
+        "jsTreeFallbacks": 0,
+        "wasmUsed": false,
+        "wasmMemoryMiB": 8
+      }
+    ],
+    "run": 0,
+    "engine": "auto",
+    "workers": 1,
+    "shards": "auto",
+    "lockedSlots": [],
+    "food": "auto",
+    "criticalPreference": "high",
+    "browser": "154.0.8037.57",
+    "source": "production worker pipeline"
+  }
+]
