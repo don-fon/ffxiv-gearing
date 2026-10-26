@@ -186,3 +186,31 @@ test('critical endpoints respect unique rings, repeatable pairs, exclusions and 
   input.excludedGearIds = [3];
   assert.equal(production.optimizeGearset({ ...input, criticalPreference: 'high' }).criticalRange.maximum, 507);
 });
+
+test('CRT-half searches eliminate redundant speed tiers only when a non-CRT replacement exists', () => {
+  const input = fixture(1);
+  input.slots = [3];
+  input.gears = [{ id: 1, name: 'one socket', slot: 3, unique: true, level: 350, synced: false,
+    stats: { STR: 100, CRT: 20 }, caps: { CRT: 200, DET: 200, SKS: 200 },
+    materiaSlots: [{ grade: 5, value: 6 }] }];
+  input.foods = [{ id: 1, name: 'no speed food', stats: {}, statRates: {} }];
+  input.targetGcd = 2.50;
+  input.lockedGears = [];
+  input.lockedGearIds = [];
+  input.excludedGearIds = [];
+  input.materiaStats = ['CRT', 'DET', 'SKS'];
+  const valid = oracle(input);
+  for (const criticalPreference of ['high', 'low']) {
+    const request = { ...input, criticalPreference };
+    const plan = production.planGearOptimization(request);
+    assert.deepEqual(Array.from(new Set(plan.partitions.map(task => task.contribution))), [0]);
+    const midpoint = plan.criticalRange.midpoint;
+    const expected = Math.max(...valid.filter(stats => criticalPreference === 'high'
+      ? stats.CRT >= midpoint : stats.CRT <= midpoint).map(stats => solver.calculateExpectedDamage(stats, input.damage)));
+    assert.equal(production.optimizeGearset(request).damage, expected);
+  }
+  const request = { ...input, materiaStats: ['CRT', 'SKS'], criticalPreference: 'low' };
+  const plan = production.planGearOptimization(request);
+  assert.ok(plan.partitions.some(task => task.contribution === 6));
+  assert.equal(production.optimizeGearset(request).stats.CRT, input.fixedStats.CRT + 20);
+});

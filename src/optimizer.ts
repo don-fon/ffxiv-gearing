@@ -495,7 +495,11 @@ function hasRemovableSpeedMeld(option: GearOption, input: GearOptimizationInput)
 
 function filterRemovableSpeedMeldOptions(groups: GearOption[][],
   input: GearOptimizationInput): GearOption[][] {
-  if (input.targetSpeedContribution === undefined || hasCriticalPreference(input)) return groups;
+  if (input.targetSpeedContribution === undefined) return groups;
+  // Replacing excess speed with a non-CRT damage stat preserves either CRT half.
+  // With only CRT/speed materia, a low-CRT solution may require the speed meld.
+  if (hasCriticalPreference(input) && !input.materiaStats.some(stat =>
+    stat !== input.speedStat && stat !== 'CRT')) return groups;
   const filtered = groups.map(group => group.filter(option => !hasRemovableSpeedMeld(option, input)));
   if (filtered.some(group => group.length === 0)) throw new NoFeasibleOptimizationSolution();
   return filtered;
