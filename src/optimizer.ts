@@ -710,7 +710,11 @@ function buildAttributeTree<T extends GearOption>(options: T[],
   }
   let splitStat = scoredStats[0];
   let maximumDistinct = 0;
-  for (const stat of scoredStats) {
+  // Keep weapon/main-stat alternatives near the top so bounds cannot borrow
+  // their damage from a different secondary-stat allocation deep in the tree.
+  const primary = (['PDMG', 'MDMG', 'STR', 'DEX', 'INT', 'MND'] as const).find(stat =>
+    options.some(option => (option.stats[stat] ?? 0) !== (options[0].stats[stat] ?? 0)));
+  for (const stat of primary === undefined ? scoredStats : [primary]) {
     const distinct = new Set(options.map(option => option.stats[stat] ?? 0)).size;
     if (distinct > maximumDistinct) {
       maximumDistinct = distinct;
