@@ -1,0 +1,213 @@
+{
+  "method": "Node 24/V8 inspector, same TypeScript optimizer and WASM kernel; stage wrappers; one actual task; 1000us sampling interval; not a Chromium wall-time benchmark",
+  "task": {
+    "event": "PROFILE_READY",
+    "task": {
+      "foodId": 49240,
+      "contribution": 369,
+      "heuristicDamage": 27.067383919927405,
+      "estimatedWork": 2251799813685247.8,
+      "candidateShard": {
+        "index": 0,
+        "count": 4
+      }
+    },
+    "criticalRange": {
+      "minimum": 669,
+      "maximum": 2472,
+      "midpoint": 1570.5
+    }
+  },
+  "sampleSeconds": 120.157114,
+  "selfTimePercent": [
+    {
+      "function": "addStats",
+      "url": "evalmachine.<anonymous>",
+      "percent": 38.04534869237954
+    },
+    {
+      "function": "visitFinalSpeeds",
+      "url": "evalmachine.<anonymous>",
+      "percent": 21.730952193142723
+    },
+    {
+      "function": "(garbage collector)",
+      "url": "",
+      "percent": 19.845688038079874
+    },
+    {
+      "function": "backend",
+      "url": "evalmachine.<anonymous>",
+      "percent": 2.6864310339544275
+    },
+    {
+      "function": "",
+      "url": "evalmachine.<anonymous>",
+      "percent": 2.052402823190311
+    },
+    {
+      "function": "wasm-function[10]",
+      "url": "wasm://wasm/0001920e",
+      "percent": 1.7176677529055833
+    },
+    {
+      "function": "cached",
+      "url": "evalmachine.<anonymous>",
+      "percent": 1.6021731347508894
+    },
+    {
+      "function": "combinedDamageValue",
+      "url": "evalmachine.<anonymous>",
+      "percent": 1.596270030253889
+    },
+    {
+      "function": "grow",
+      "url": "",
+      "percent": 1.2683077591227765
+    },
+    {
+      "function": "feasibleDamageBound",
+      "url": "evalmachine.<anonymous>",
+      "percent": 1.2403693384313474
+    },
+    {
+      "function": "packTree",
+      "url": "evalmachine.<anonymous>",
+      "percent": 1.083609581368607
+    },
+    {
+      "function": "rawValue",
+      "url": "evalmachine.<anonymous>",
+      "percent": 0.9398619544074602
+    },
+    {
+      "function": "global.__measure",
+      "url": "file:///workspace/.cloud-setup/mnk-profile/child.cjs",
+      "percent": 0.8355859812012463
+    },
+    {
+      "function": "wasm-function[7]",
+      "url": "wasm://wasm/0001920e",
+      "percent": 0.8171126680023291
+    },
+    {
+      "function": "now",
+      "url": "",
+      "percent": 0.6692495959914616
+    },
+    {
+      "function": "wasm-function[11]",
+      "url": "wasm://wasm/0001920e",
+      "percent": 0.5324595262832295
+    },
+    {
+      "function": "wasm-function[12]",
+      "url": "wasm://wasm/0001920e",
+      "percent": 0.4752902104489627
+    },
+    {
+      "function": "combinedStatValue",
+      "url": "evalmachine.<anonymous>",
+      "percent": 0.23569640662308186
+    },
+    {
+      "function": "statSignature",
+      "url": "evalmachine.<anonymous>",
+      "percent": 0.22833770791132685
+    },
+    {
+      "function": "backend",
+      "url": "file:///workspace/.cloud-setup/mnk-profile/child.cjs",
+      "percent": 0.2268088762518048
+    },
+    {
+      "function": "",
+      "url": "file:///workspace/.cloud-setup/mnk-profile/child.cjs",
+      "percent": 0.17069650990452384
+    },
+    {
+      "function": "(program)",
+      "url": "",
+      "percent": 0.16977105492064332
+    },
+    {
+      "function": "get buffer",
+      "url": "",
+      "percent": 0.16338275235205799
+    },
+    {
+      "function": "combineGroups",
+      "url": "evalmachine.<anonymous>",
+      "percent": 0.14270981907904345
+    },
+    {
+      "function": "deduplicateOptions",
+      "url": "evalmachine.<anonymous>",
+      "percent": 0.1261107186712224
+    }
+  ],
+  "lastStageSnapshot": {
+    "event": "enter",
+    "t": 160134.270047,
+    "stack": [
+      {
+        "name": "WASM.search"
+      }
+    ],
+    "totals": {
+      "gearOptions": {
+        "calls": 978,
+        "inclusiveMs": 97.45942499984812
+      },
+      "WASM.pareto": {
+        "calls": 5237,
+        "inclusiveMs": 357.06914299971686
+      },
+      "paretoFrontier": {
+        "calls": 5237,
+        "inclusiveMs": 392.8959809999578
+      },
+      "pruneDominatedOptions": {
+        "calls": 999,
+        "inclusiveMs": 327.46463699999003
+      },
+      "buildGroups": {
+        "calls": 1,
+        "inclusiveMs": 983.7431389999983
+      },
+      "buildSpeedSearchPlan": {
+        "calls": 3,
+        "inclusiveMs": 395.6750680000041
+      },
+      "filterToViableSpeedOptions": {
+        "calls": 1,
+        "inclusiveMs": 133.45224600000074
+      },
+      "contractEquivalentGroups": {
+        "calls": 1,
+        "inclusiveMs": 612.2632129999984
+      },
+      "prepareSearchGroups": {
+        "calls": 1,
+        "inclusiveMs": 1779.4365899999975
+      },
+      "criticalEndpoints": {
+        "calls": 1,
+        "inclusiveMs": 408.6290950000039
+      },
+      "improveGreedySolution": {
+        "calls": 1,
+        "inclusiveMs": 4.629130999994231
+      },
+      "buildAttributeTree": {
+        "calls": 60350,
+        "inclusiveMs": 999.6642119998214
+      },
+      "WASM.search": {
+        "calls": 5958689,
+        "inclusiveMs": 13853.262832965083
+      }
+    }
+  },
+  "caution": "Inclusive stage timings overlap. Sampling includes instrumentation overhead. Profile was stopped at 120 seconds without establishing an optimal result."
+}
