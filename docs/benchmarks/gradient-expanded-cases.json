@@ -1,0 +1,198 @@
+[
+  {
+    "id": "mnk605-193",
+    "label": "武僧605 / GCD1.93",
+    "source": "test/fixtures/monk-605-phantom-input.json",
+    "overrides": {
+      "targetGcd": 1.93
+    },
+    "critical": "none",
+    "job": "MNK",
+    "syncLevel": 605,
+    "targetGcd": 1.93,
+    "gearCount": 1167,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 795
+  },
+  {
+    "id": "mnk605-195",
+    "label": "武僧605 / GCD1.95",
+    "source": "test/fixtures/monk-605-phantom-input.json",
+    "overrides": {
+      "targetGcd": 1.95
+    },
+    "critical": "none",
+    "job": "MNK",
+    "syncLevel": 605,
+    "targetGcd": 1.95,
+    "gearCount": 1167,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 795
+  },
+  {
+    "id": "mnk375",
+    "label": "武僧375 / GCD2.50",
+    "source": "test/fixtures/monk-375-input.json",
+    "overrides": {},
+    "critical": "none",
+    "job": "MNK",
+    "syncLevel": 375,
+    "targetGcd": 2.5,
+    "gearCount": 956,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 795
+  },
+  {
+    "id": "pct375-high",
+    "label": "画家375 / 高暴击",
+    "source": "test/fixtures/pictomancer-375-phantom-input.json",
+    "overrides": {},
+    "critical": "high",
+    "job": "PCT",
+    "syncLevel": 375,
+    "targetGcd": 2.5,
+    "gearCount": 1157,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 795
+  },
+  {
+    "id": "pct375-low",
+    "label": "画家375 / 低暴击",
+    "source": "test/fixtures/pictomancer-375-phantom-input.json",
+    "overrides": {},
+    "critical": "low",
+    "job": "PCT",
+    "syncLevel": 375,
+    "targetGcd": 2.5,
+    "gearCount": 1157,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 795
+  },
+  {
+    "id": "war375-wide",
+    "label": "战士375 / 350–795",
+    "source": "test/fixtures/warrior-375-input.json",
+    "overrides": {},
+    "critical": "none",
+    "job": "WAR",
+    "syncLevel": 375,
+    "targetGcd": 2.5,
+    "gearCount": 956,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 795
+  },
+  {
+    "id": "war375-minimum",
+    "label": "战士375 / 最低减伤10%",
+    "source": "test/fixtures/warrior-displayed-375-input.json",
+    "overrides": {
+      "objective": {
+        "type": "minimumTenacity",
+        "minimumTenacityMitigation": 0.1
+      }
+    },
+    "critical": "none",
+    "job": "WAR",
+    "syncLevel": 375,
+    "targetGcd": 2.5,
+    "gearCount": 87,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 375
+  },
+  {
+    "id": "war375-tradeoff10",
+    "label": "战士375 / 折算比例10%",
+    "source": "test/fixtures/warrior-displayed-375-input.json",
+    "overrides": {
+      "objective": {
+        "type": "tenacityTradeoff",
+        "mitigationPointsPerDamagePercent": 10
+      }
+    },
+    "critical": "none",
+    "job": "WAR",
+    "syncLevel": 375,
+    "targetGcd": 2.5,
+    "gearCount": 87,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 375
+  },
+  {
+    "id": "drg605",
+    "label": "龙骑605 / 580–605",
+    "source": "test/fixtures/gradient-expanded/drg605.json",
+    "overrides": {},
+    "critical": "none",
+    "job": "DRG",
+    "syncLevel": 605,
+    "targetGcd": 2.5,
+    "gearCount": 80,
+    "itemLevelMinimum": 580,
+    "itemLevelMaximum": 605
+  },
+  {
+    "id": "sam665",
+    "label": "武士665 / 640–665",
+    "source": "test/fixtures/gradient-expanded/sam665.json",
+    "overrides": {},
+    "critical": "none",
+    "job": "SAM",
+    "syncLevel": 665,
+    "targetGcd": 2.14,
+    "gearCount": 108,
+    "itemLevelMinimum": 640,
+    "itemLevelMaximum": 665
+  },
+  {
+    "id": "brd525",
+    "label": "诗人525 / 500–525",
+    "source": "test/fixtures/gradient-expanded/brd525.json",
+    "overrides": {},
+    "critical": "none",
+    "job": "BRD",
+    "syncLevel": 525,
+    "targetGcd": 2.5,
+    "gearCount": 114,
+    "itemLevelMinimum": 500,
+    "itemLevelMaximum": 525
+  },
+  {
+    "id": "whm375",
+    "label": "白魔375 / 350–375",
+    "source": "test/fixtures/gradient-expanded/whm375.json",
+    "overrides": {},
+    "critical": "none",
+    "job": "WHM",
+    "syncLevel": 375,
+    "targetGcd": 2.5,
+    "gearCount": 87,
+    "itemLevelMinimum": 350,
+    "itemLevelMaximum": 375
+  },
+  {
+    "id": "pld605",
+    "label": "骑士605 / 580–605",
+    "source": "test/fixtures/gradient-expanded/pld605.json",
+    "overrides": {},
+    "critical": "none",
+    "job": "PLD",
+    "syncLevel": 605,
+    "targetGcd": 2.5,
+    "gearCount": 87,
+    "itemLevelMinimum": 580,
+    "itemLevelMaximum": 605
+  },
+  {
+    "id": "pct795",
+    "label": "画家795 / 770–795",
+    "source": "test/fixtures/gradient-expanded/pct795.json",
+    "overrides": {},
+    "critical": "none",
+    "job": "PCT",
+    "syncLevel": 795,
+    "targetGcd": 2.5,
+    "gearCount": 90,
+    "itemLevelMinimum": 770,
+    "itemLevelMaximum": 795
+  }
+]

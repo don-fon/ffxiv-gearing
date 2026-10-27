@@ -96,3 +96,5 @@ node scripts/benchmark-optimizer.mjs --skip-build --chromium /usr/bin/chromium \
 `test/fixtures/pictomancer-375-phantom-input.json`。
 战士折算输入从同一战士输入复制，仅将 objective 改为
 `{"type":"tenacityTradeoff","mitigationPointsPerDamagePercent":0.5}`。
+
+后续的 14 个新案例和原场景复测见[扩大测试报告](optimizer-gradient-expanded.md)。
