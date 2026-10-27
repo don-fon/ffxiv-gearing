@@ -1,0 +1,383 @@
+{
+  "status": "completed",
+  "result": {
+    "damage": 27.280971280704218,
+    "tenacityMitigation": 0,
+    "stats": {
+      "PDMG": 120,
+      "MDMG": 0,
+      "DLY": 2560,
+      "STR": 2586,
+      "CRT": 2091,
+      "DET": 1697,
+      "DHT": 1447,
+      "SKS": 766,
+      "VIT": 2915
+    },
+    "gears": [
+      {
+        "id": 51001,
+        "name": "幻境旋棍·秘影",
+        "level": 795,
+        "slot": 13,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 35306,
+        "name": "日影兰强攻项链",
+        "level": 600,
+        "slot": 10,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 38971,
+        "name": "冥魂强袭铠靴",
+        "level": 605,
+        "slot": 8,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 38967,
+        "name": "冥魂强袭头盔",
+        "level": 605,
+        "slot": 3,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 38969,
+        "name": "冥魂强袭手铠",
+        "level": 605,
+        "slot": 5,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 44616,
+        "name": "黯云强袭长衣",
+        "level": 730,
+        "slot": 4,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 43136,
+        "name": "黑马冠军强袭衬裤",
+        "level": 730,
+        "slot": 7,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 35241,
+        "name": "改良型星战士强攻戒指",
+        "level": 600,
+        "slot": 12,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35241,
+        "name": "改良型星战士强攻戒指",
+        "level": 600,
+        "slot": 12,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35301,
+        "name": "日影兰强攻耳坠",
+        "level": 600,
+        "slot": 9,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35311,
+        "name": "日影兰强攻手镯",
+        "level": 600,
+        "slot": 11,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "CRT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      }
+    ],
+    "food": {
+      "id": 49240,
+      "name": "焦糖爆米花",
+      "stats": {
+        "DET": 151,
+        "VIT": 297,
+        "CRT": 91
+      },
+      "statRates": {
+        "DET": 10,
+        "VIT": 10,
+        "CRT": 10
+      }
+    },
+    "criticalRange": {
+      "minimum": 669,
+      "maximum": 2472,
+      "midpoint": 1570.5,
+      "threshold": 2021.25
+    },
+    "exploredStates": 7
+  },
+  "milliseconds": 39662,
+  "completed": 4,
+  "partitions": 4,
+  "exploredStates": 7,
+  "diagnostics": [
+    {
+      "worker": "planner",
+      "version": "2026-10-26-console-v1",
+      "task": "plan",
+      "job": "MNK",
+      "syncLevel": 605,
+      "stage": "规划完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 17278,
+      "initializationMs": 5,
+      "otherMs": 15509,
+      "wasmSearchCalls": 144,
+      "wasmSearchMs": 777,
+      "wasmVisitedBranches": 133479,
+      "wasmEvaluatedCombinations": 50,
+      "wasmParetoCalls": 6388,
+      "wasmParetoMs": 987,
+      "wasmParetoInputOptions": 2327700,
+      "wasmParetoOutputOptions": 402132,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 27.3
+    },
+    {
+      "worker": 3,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "MNK",
+      "syncLevel": 605,
+      "foodId": 49246,
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 5171,
+      "initializationMs": 9,
+      "otherMs": 4374,
+      "wasmSearchCalls": 37,
+      "wasmSearchMs": 445,
+      "wasmVisitedBranches": 67285,
+      "wasmEvaluatedCombinations": 16,
+      "wasmParetoCalls": 700,
+      "wasmParetoMs": 343,
+      "wasmParetoInputOptions": 495756,
+      "wasmParetoOutputOptions": 89125,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 27.3
+    },
+    {
+      "worker": 1,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "MNK",
+      "syncLevel": 605,
+      "foodId": 49239,
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 8249,
+      "initializationMs": 11,
+      "otherMs": 4657,
+      "wasmSearchCalls": 37,
+      "wasmSearchMs": 3200,
+      "wasmVisitedBranches": 7611476,
+      "wasmEvaluatedCombinations": 13,
+      "wasmParetoCalls": 700,
+      "wasmParetoMs": 381,
+      "wasmParetoInputOptions": 495756,
+      "wasmParetoOutputOptions": 89125,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 27.3
+    },
+    {
+      "worker": 0,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "MNK",
+      "syncLevel": 605,
+      "foodId": 49240,
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 21905,
+      "initializationMs": 8,
+      "otherMs": 4668,
+      "wasmSearchCalls": 37,
+      "wasmSearchMs": 16906,
+      "wasmVisitedBranches": 44045006,
+      "wasmEvaluatedCombinations": 15,
+      "wasmParetoCalls": 700,
+      "wasmParetoMs": 323,
+      "wasmParetoInputOptions": 495756,
+      "wasmParetoOutputOptions": 89125,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 27.3
+    },
+    {
+      "worker": 2,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "MNK",
+      "syncLevel": 605,
+      "foodId": 49245,
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 22315,
+      "initializationMs": 9,
+      "otherMs": 4827,
+      "wasmSearchCalls": 37,
+      "wasmSearchMs": 17151,
+      "wasmVisitedBranches": 44000136,
+      "wasmEvaluatedCombinations": 13,
+      "wasmParetoCalls": 700,
+      "wasmParetoMs": 328,
+      "wasmParetoInputOptions": 495756,
+      "wasmParetoOutputOptions": 89125,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 27.3
+    }
+  ],
+  "run": 0,
+  "engine": "auto",
+  "workers": 4,
+  "shards": "auto",
+  "lockedSlots": [],
+  "food": "auto",
+  "criticalPreference": "high",
+  "browser": "154.0.8037.57",
+  "source": "production worker pipeline"
+}
