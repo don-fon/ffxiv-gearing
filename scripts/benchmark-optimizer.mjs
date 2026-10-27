@@ -112,7 +112,7 @@ try {
               : config.input.foods.find(candidate => candidate.id === task.foodId);
             worker.postMessage({ type: 'optimize', engine: config.engine,
               input: { ...config.input, food, foods: undefined, candidateShard: task.candidateShard, criticalRange,
-                targetSpeedContribution: task.contribution, globalMinimumDamage: config.fixedPlan?.heuristicResult.damage ?? best.damage } });
+                targetSpeedContribution: task.contribution, globalMinimumDamage: config.fixedPlan?.heuristicResult.score ?? config.fixedPlan?.heuristicResult.damage ?? best.score ?? best.damage } });
           };
           for (let index = 0; index < Math.min(config.workers, partitions.length); index++) {
             const worker = new WorkerClass(window.benchmarkWorkerUrl);active.push(worker);
@@ -128,7 +128,7 @@ try {
               }
               if (message.data.type !== 'result') return;
               completed++;explored += message.data.result.exploredStates;
-              if (message.data.result.damage > best.damage) best = message.data.result;
+              if ((message.data.result.score ?? message.data.result.damage) > (best.score ?? best.damage)) best = message.data.result;
               if (completed === partitions.length) finish({ status: 'completed', result: best });
               else assign(worker);
             };

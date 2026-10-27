@@ -43,6 +43,7 @@ static double factor(int dimension,double raw){
  if(cacheable)factors[dimension*CACHE+(int)raw]=value;
  return value;
 }
+static double mitigation(const double *v,int has_tenacity);
 static double damage(const double *v,int has_tenacity){
  double weapon=factor(5,v[context[9]?7:6]);
  if(context[10]){
@@ -50,7 +51,7 @@ static double damage(const double *v,int has_tenacity){
   if(index>=0&&index<context[13]&&__builtin_trunc(index)==index)weapon+=((double*)(address)context[12])[(int)index];
  }
  int tenacity_present=has_tenacity||(context[10]&&context[16]);
- return 0.01*weapon*factor(0,v[0])*factor(2,v[3])*(tenacity_present?factor(4,v[5]):1)*context[8]*factor(1,v[2])*factor(3,v[4]);
+ return 0.01*weapon*factor(0,v[0])*factor(2,v[3])*(tenacity_present?factor(4,v[5]):1)*context[8]*factor(1,v[2])*factor(3,v[4])*(context[19]?(1+context[19]*maximum(0,mitigation(v,has_tenacity))):1);
 }
 static double mitigation(const double *v,int has_tenacity){
  double tenacity=has_tenacity||context[16]?effective(v[5],5,1):context[1];
@@ -165,7 +166,9 @@ static double upper(const address *roots){
   speed_budget=total-context[58];
  }
  double linear=__builtin_inf();
- if(plane_enabled){double high,low;linear=plane_bound(roots,&high,&low);if(linear<=plane_best_log)return -__builtin_inf();}
+ if(plane_enabled){double high,low;linear=plane_bound(roots,&high,&low);
+  if(context[19]){double v[8]={0};int present=0;for(int i=0;i<root_count;i++){double *n=node(roots[i]);v[5]+=n[5];present|=(int)n[8];}linear+=wasm_log(1+context[19]*maximum(0,mitigation(v,present)));}
+  if(linear<=plane_best_log)return -__builtin_inf();}
  double v[8]={0},budget=0,critical_minimum=0;int has_tenacity=0;
  for(int i=0;i<root_count;i++){
   double *n=node(roots[i]);for(int stat=0;stat<8;stat++)v[stat]+=n[stat];
@@ -185,7 +188,7 @@ static double upper(const address *roots){
  value=budget_bound(v,critical_minimum,budget,value);
  return plane_enabled&&value>best?minimum(value,wasm_exp(linear)):value;
 }
-__attribute__((visibility("default"))) int search_abi(void){return 6;}
+__attribute__((visibility("default"))) int search_abi(void){return 7;}
 __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
 __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
 __attribute__((visibility("default"))) void configure_search(address pointer){

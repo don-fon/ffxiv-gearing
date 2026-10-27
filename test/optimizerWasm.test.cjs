@@ -308,7 +308,9 @@ test('native GCD intervals match 300 independent exhaustive searches', async () 
     for (let seed = 0; seed < 300; seed++) {
         const input = fixture(seed);
         const main = input.damage.mainStat === 'VIT' ? 'STR' : input.damage.mainStat;
-        input.objective = { type: 'damage' };
+        input.objective = input.damage.mainStat === 'VIT'
+          ? { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: [0.1, 0.5, 2][seed % 3] }
+          : { type: 'damage' };
         input.targetSpeedContribution = undefined;
         input.food = seed % 4 ? { id: 1, name: 'speed food', stats: { CRT: 100, DET: 100, [input.speedStat]: 80 }, statRates: { CRT: 10, DET: 10, ...(seed % 3 ? { [input.speedStat]: 10 } : {}) } } : undefined;
         if (seed % 5 === 0) {
@@ -330,7 +332,8 @@ test('native GCD intervals match 300 independent exhaustive searches', async () 
             input.criticalRange = { minimum, maximum, midpoint: (minimum + maximum) / 2 };
         }
         const eligible = viable.filter(p => !input.criticalRange || (input.criticalPreference === 'high' ? p.CRT >= input.criticalRange.midpoint : p.CRT <= input.criticalRange.midpoint));
-        const expected = Math.max(...eligible.map(p => solver.calculateExpectedDamage(p, input.damage)));
+        const expected = Math.max(...eligible.map(p => solver.calculateExpectedDamage(p, input.damage) *
+          (input.objective.type === 'tenacityTradeoff' ? 1 + Math.max(0, floor(200 * ((p.TEN ?? input.damage.level.sub) - input.damage.level.sub) / input.damage.level.div) / 1000) / input.objective.mitigationPointsPerDamagePercent : 1)));
         const result = native({ input, prefix: solver.testAttributeTree(prefixes, 1, input.speedStat), options: groups.map(g => solver.testAttributeTree(g, 1, input.speedStat)), reference: all[0], minimumDamage: seed % 2 ? expected * (1 - 1e-10) : 0, speedBounds: bounds(input) }, () => { });
         assert.ok(result.complete);
         assert.ok(Math.abs(result.damage - expected) < 1e-10, JSON.stringify({ seed, expected, actual: result.damage }));

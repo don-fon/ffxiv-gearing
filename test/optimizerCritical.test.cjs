@@ -248,3 +248,51 @@ test('speed-route buffers and prefix budgets preserve fractional-stat optima in 
     }
   }
 });
+
+test('tenacity tradeoff matches exhaustive scores without changing reported damage', async () => {
+  const backend = await adapter.createWasmSearchBackend(bytes, 0, 0);
+  let different = 0;
+  for (const seed of [0, 2, 4, 6, 8, 10]) {
+    for (const ratio of [0.1, 0.5, 2]) {
+      for (const criticalPreference of ['none', 'high', 'low']) {
+        const input = { ...fixture(seed), criticalPreference,
+          objective: { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: ratio } };
+        const valid = oracle(input);
+        if (!valid.length) continue;
+        const minimum = Math.min(...valid.map(stats => stats.CRT));
+        const maximum = Math.max(...valid.map(stats => stats.CRT));
+        const threshold = minimum + (maximum - minimum) * (criticalPreference === 'high' ? 0.75 : 0.25);
+        const eligible = valid.filter(stats => criticalPreference === 'none' ||
+          (criticalPreference === 'high' ? stats.CRT >= threshold : stats.CRT <= threshold));
+        const score = stats => solver.calculateExpectedDamage(stats, input.damage) *
+          (1 + Math.max(0, Math.trunc(200 * ((stats.TEN ?? 420) - 420) / 2780 + 1e-7) / 1000) / ratio);
+        const expected = Math.max(...eligible.map(score));
+        for (const native of [undefined, backend]) {
+          const result = production.optimizeGearset(input, undefined, native);
+          assert.ok(Math.abs(result.score - expected) < 1e-10, `${seed}/${ratio}/${criticalPreference}`);
+          assert.equal(result.damage, solver.calculateExpectedDamage(result.stats, input.damage));
+          assert.ok(Math.abs(result.score - score(result.stats)) < 1e-10);
+          const rawBest = Math.max(...eligible.map(stats => solver.calculateExpectedDamage(stats, input.damage)));
+          if (result.damage < rawBest - 1e-10) different++;
+        }
+        const plan = production.planGearOptimization(input, backend);
+        let best = plan.heuristicResult;
+        for (const task of plan.partitions) {
+          const candidate = production.optimizeGearset({ ...input,
+            food: input.foods.find(food => food.id === task.foodId), foods: undefined,
+            criticalRange: plan.criticalRange, targetSpeedContribution: task.contribution,
+            candidateShard: task.candidateShard, globalMinimumDamage: best.score }, undefined, backend);
+          if (candidate.score > best.score) best = candidate;
+        }
+        assert.ok(Math.abs(best.score - expected) < 1e-10, 'worker aggregation must compare scores');
+      }
+    }
+  }
+  assert.ok(different > 0, 'tradeoff must sometimes prefer lower actual damage');
+  for (const ratio of [0, -1, NaN, Infinity, 0.001, 101]) {
+    assert.throws(() => production.optimizeGearset({ ...fixture(0),
+      objective: { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: ratio } }), /兑换比例/);
+  }
+  assert.throws(() => production.optimizeGearset({ ...fixture(1),
+    objective: { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: 0.5 } }), /坦克/);
+});

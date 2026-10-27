@@ -88,6 +88,7 @@ export interface GearOptimizationInput {
   speedStat: 'SKS' | 'SPS';
   targetGcd: number;
   targetSpeedContribution?: number;
+  /** Lower bound in objective units (score for tenacityTradeoff, otherwise damage). */
   globalMinimumDamage?: number;
   objective?: GearOptimizationObjective;
   food?: OptimizerFood;
@@ -97,7 +98,8 @@ export interface GearOptimizationInput {
 
 export type GearOptimizationObjective =
   { type: 'damage' } |
-  { type: 'minimumTenacity', minimumTenacityMitigation: number };
+  { type: 'minimumTenacity', minimumTenacityMitigation: number } |
+  { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: number };
 
 export interface OptimizerSpeedPartition {
   candidateShard?: { index: number; count: number };
@@ -132,6 +134,8 @@ export interface OptimizerGearChoice {
 }
 
 export interface GearOptimizationResult {
+  /** Selection score; damage always remains the actual expected damage. */
+  score?: number;
   criticalRange?: OptimizerCriticalRange;
   empty?: boolean;
   damage: number;
@@ -922,6 +926,21 @@ function minimumTenacityMitigation(input: GearOptimizationInput): number | undef
     : undefined;
 }
 
+function tenacityTradeoffCoefficient(input: GearOptimizationInput): number {
+  return input.objective?.type === 'tenacityTradeoff'
+    ? 1 / input.objective.mitigationPointsPerDamagePercent : 0;
+}
+
+function objectiveScore(damage: number, mitigation: number, input: GearOptimizationInput): number {
+  return input.objective?.type === 'tenacityTradeoff'
+    ? damage * (1 + tenacityTradeoffCoefficient(input) * Math.max(0, mitigation)) : damage;
+}
+
+function publicResult(result: GearOptimizationResult, input: GearOptimizationInput): GearOptimizationResult {
+  if (input.objective?.type !== 'tenacityTradeoff' || result.empty) return result;
+  return { ...result, score: result.damage, damage: calculateExpectedDamage(result.stats, input.damage) };
+}
+
 function meetsObjective(evaluation: OptimizationEvaluation, input: GearOptimizationInput): boolean {
   const minimum = minimumTenacityMitigation(input);
   return minimum === undefined || evaluation.tenacityMitigation + 1e-12 >= minimum;
@@ -930,7 +949,7 @@ function meetsObjective(evaluation: OptimizationEvaluation, input: GearOptimizat
 function evaluateStats(stats: OptimizerStats, input: GearOptimizationInput): OptimizationEvaluation {
   const damage = calculateExpectedDamage(stats, input.damage);
   const tenacityMitigation = calculateTenacityMitigation(stats.TEN, input.damage.level);
-  return { damage, tenacityMitigation };
+  return { damage: objectiveScore(damage, tenacityMitigation, input), tenacityMitigation };
 }
 
 function calculateExpectedDamageComponents(attackMainValue: number, intelligence: number,
@@ -1052,9 +1071,11 @@ function createCombinedDamageCalculator(input: GearOptimizationInput):
 function combinedDamageValue(left: OptimizerStats, right: OptimizerStats,
   input: GearOptimizationInput,
   calculateDamage?: (left: OptimizerStats, right: OptimizerStats) => number): number {
-  return calculateDamage === undefined
+  const damage = calculateDamage === undefined
     ? calculateCombinedExpectedDamage(left, right, input)
     : calculateDamage(left, right);
+  return input.objective?.type === 'tenacityTradeoff'
+    ? objectiveScore(damage, calculateCombinedTenacityMitigation(left, right, input), input) : damage;
 }
 
 function feasibleDamageBound(left: OptimizerStats, right: OptimizerStats,
@@ -1367,6 +1388,13 @@ function resolveCriticalPreference(input: GearOptimizationInput,
 }
 
 function validateOptimizationInput(input: GearOptimizationInput): void {
+  if (input.objective?.type === 'tenacityTradeoff' &&
+      (input.damage.mainStat !== 'VIT' ||
+       !Number.isFinite(input.objective.mitigationPointsPerDamagePercent) ||
+       input.objective.mitigationPointsPerDamagePercent < 0.01 ||
+       input.objective.mitigationPointsPerDamagePercent > 100)) {
+    throw new Error('坚韧折算仅适用于坦克，减伤兑换比例须在 0.01–100 个百分点之间。');
+  }
   if (input.criticalPreference !== undefined && !['none', 'high', 'low'].includes(input.criticalPreference)) {
     throw new Error('暴击偏好无效。');
   }
@@ -2104,7 +2132,7 @@ export function planGearOptimization(request: GearOptimizationInput,
       Array.from({ length: count }, (_, index) => ({ ...partition,
         candidateShard: { index, count }, estimatedWork: partition.estimatedWork / count }));
   });
-  return { partitions: tasks, heuristicResult, criticalRange: input.criticalRange };
+  return { partitions: tasks, heuristicResult: publicResult(heuristicResult, input), criticalRange: input.criticalRange };
 }
 
 export function optimizeGearset(request: GearOptimizationInput,
@@ -2133,5 +2161,5 @@ export function optimizeGearset(request: GearOptimizationInput,
       tenacityMitigation: 0, stats: {}, gears: [], exploredStates };
     throw noFeasibleOptimizationError(input);
   }
-  return { ...best, exploredStates };
+  return publicResult({ ...best, exploredStates }, input);
 }

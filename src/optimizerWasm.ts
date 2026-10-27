@@ -22,10 +22,11 @@ interface SearchExports extends WebAssembly.Exports {
     result: number, count: number, capacity: number) => number;
 }
 
-/** ABI 6: node = 25 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
+/** ABI 7: node = 25 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
  * Vectors: attack-main, INT, CRT, DET, DHT, TEN, PDMG, MDMG, TEN-present.
  * Node tail: secondary-total max, CRT min, left, right, points, length, count.
  * Node tail (16–21): two support caches/generations, minimum main/weapon stats.
+ * Context (19): nonnegative mitigation score coefficient (zero disables it).
  * Context (44–63): CRT limits/flag, plane threshold, raw reference, neutral
  * tenacity, speed interval/food/GCD. Node tail (22–24): speed max/min and
  * maximum secondary total including speed. Point tail (9): raw speed.
@@ -38,7 +39,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     env: { memory, log: Math.log, exp: Math.exp },
   });
   const core = instance.exports as SearchExports;
-  if (core.search_abi() !== 6) throw new Error('Unsupported optimizer WASM ABI.');
+  if (core.search_abi() !== 7) throw new Error('Unsupported optimizer WASM ABI.');
   const heapBase = Number(core.__heap_base.value);
   let nextAddress = heapBase;
   let rootAddress = 0;
@@ -133,7 +134,8 @@ export async function createWasmSearchBackend(bytes: BufferSource,
       Number(damage.mainStat === 'INT' || damage.mainStat === 'MND'), Number(damage.job === 'BLU'),
       damage.baseStats.INT ?? 0, lookup, additions.length,
       currentInput.objective?.type === 'minimumTenacity' ? currentInput.objective.minimumTenacityMitigation : 0,
-      Number(budgetEnabled), Number(food?.stats.TEN !== undefined), cache, frames, 0,
+      Number(budgetEnabled), Number(food?.stats.TEN !== undefined), cache, frames, currentInput.objective?.type === 'tenacityTradeoff'
+        ? 1 / currentInput.objective.mitigationPointsPerDamagePercent : 0,
       ...stats.map(stat => food?.stats[stat] ?? 0),
       ...stats.map(stat => food?.statRates[stat] === undefined
         ? food?.stats[stat] === undefined ? 0 : -1 : food.statRates[stat]! / 100),
