@@ -1,0 +1,136 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -91,6 +91,7 @@
+  * to avoid unnecessary floor-relaxation gaps after those stats are fixed.
+  * Cache both supports per node/interval. Epsilon terms cover game's truncation.
+  */
++static double plane_speed_weight;
+ static double plane_weights[8],plane_constant,plane_low,plane_high,plane_best_log;
+ static double plane_first,plane_last,plane_width;
+ static address original_roots[ROOTS];
+@@ -104,6 +105,7 @@
+   for(int p=0;p<(int)n[NODE_LENGTH];p++){
+    double *point=(double*)((address)n[NODE_POINTS]+p*POINT_BYTES),sum=0;
+    for(int i=kind?2:0;i<(kind?6:8);i++)sum+=plane_weights[i]*point[i];
++   sum+=plane_speed_weight*point[9];
+    value=maximum(value,sum);
+   }
+  }else value=maximum(plane_support_kind((address)n[NODE_LEFT],kind),plane_support_kind((address)n[NODE_RIGHT],kind));
+@@ -117,13 +119,18 @@
+  double weight=b*(rate>=0&&reference*rate<cap?1+rate:1)/value;
+  plane_weights[dimension]=weight;plane_constant+=wasm_log(value)-weight*reference;
+ }
++#ifndef RELAX_MODE
++#define RELAX_MODE 3
++#endif
+ static double plane_secondary_constant;
++static int relaxation_reference;
+ static void configure_plane(void){
++ plane_speed_weight=0;
+  for(int i=0;i<8;i++)plane_weights[i]=0;
+  plane_constant=wasm_log(0.01*context[8])+1e-10;
+  double lo=effective(plane_low,2,1),hi=effective(plane_high,2,0)+1e-7;
+  double slope=0.2/context[2]*(0.2*(lo+hi-2*context[1])/context[2]+0.45+2e-10);
+- plane_factor(2,plane_critical(lo)-slope*lo,slope,minimum(plane_high,maximum(plane_low,context[50])));
++ plane_factor(2,plane_critical(lo)-slope*lo,slope,relaxation_reference?context[50]:minimum(plane_high,maximum(plane_low,context[50])));
+  plane_factor(3,1-0.14/context[3]*context[0]+1e-10*context[4],0.14/context[3],context[51]);
+  plane_factor(4,1-0.1375/context[2]*context[1]+2.5e-11,0.1375/context[2],context[52]);
+  if(!context[56])plane_factor(5,1-0.112/context[2]*context[1]+1e-10,0.112/context[2],context[53]);
+@@ -155,6 +162,89 @@
+  double cap=context[60],rate=context[61];
+  double speed=raw+(rate<0?cap:minimum(cap,floor_game(raw*rate)));
+  return floor_game(floor_game((1000-floor_game(130*(speed-context[1])/context[2]))*2500/1000)*context[62]/1000);
++}
++/* Experimental conditional-gradient relaxation. Each group is relaxed to the
++ * convex hull of its options. Quadratic constraint penalties guide iterates;
++ * only affine Lagrange terms (valid on the original feasible domain) are used
++ * for pruning. Every rounded vertex is checked with the exact game formulas.
++ * No convergence assumption is needed for correctness of a tangent bound. */
++static double relaxation_vertex(address pointer,address *choice){
++ double *n=node(pointer),value=-__builtin_inf();
++ if(n[NODE_LENGTH]>0){
++  for(int j=0;j<(int)n[NODE_LENGTH];j++){
++   address ptr=(address)n[NODE_POINTS]+j*POINT_BYTES;double *p=(double*)ptr;
++   double v=plane_speed_weight*p[9];for(int k=0;k<8;k++)v+=plane_weights[k]*p[k];
++   if(v>value){value=v;*choice=ptr;}
++  }
++ }else{
++  address a=0,b=0;double l=relaxation_vertex((address)n[NODE_LEFT],&a);
++  double r=relaxation_vertex((address)n[NODE_RIGHT],&b);
++  value=maximum(l,r);*choice=l>=r?a:b;
++ }
++ return value;
++}
++static void refine_plane(void){
++ if(!RELAX_MODE||root_count<=3)return;
++ double saved[8],x[8],winner[8],winner_constant=plane_constant;
++ double winner_secondary=plane_secondary_constant,winner_speed=0,low,high;
++ double best_bound=plane_bound(original_roots,&high,&low),speed=0;
++ for(int k=0;k<8;k++){saved[k]=context[48+k];x[k]=saved[k];winner[k]=plane_weights[k];}
++ for(int i=0;i<root_count;i++)speed+=(node(original_roots[i])[22]+node(original_roots[i])[23])*0.5;
++ relaxation_reference=1;
++ for(int iteration=0;iteration<16;iteration++){
++  for(int k=0;k<8;k++)context[48+k]=x[k];
++  configure_plane();
++  double crt_target=minimum(plane_high,maximum(plane_low,x[2]));
++  double lambda=(crt_target-x[2])*0.00001;
++  plane_weights[2]+=lambda;
++  double offset=-lambda*(lambda>=0?plane_low:plane_high);
++  if(context[57]){
++   double target=minimum(context[59],maximum(context[58],speed));
++   plane_speed_weight=(target-speed)*0.00001;
++   offset-=plane_speed_weight*(plane_speed_weight>=0?context[58]:context[59]);
++  }
++  plane_constant+=offset;plane_secondary_constant+=offset;
++  double bound=plane_bound(original_roots,&high,&low);
++  if(bound<best_bound){
++   best_bound=bound;winner_constant=plane_constant;winner_secondary=plane_secondary_constant;winner_speed=plane_speed_weight;
++   for(int k=0;k<8;k++)winner[k]=plane_weights[k];
++  }
++  double v[8]={0},vspeed=0;int present=0;address choices[ROOTS];
++  for(int i=0;i<root_count;i++){
++   relaxation_vertex(original_roots[i],&choices[i]);double *p=(double*)choices[i];
++   for(int k=0;k<8;k++)v[k]+=p[k];vspeed+=p[9];present|=(int)p[8];
++  }
++  if((RELAX_MODE&1)&&v[2]>=plane_low&&v[2]<=plane_high&&
++    (!context[57]||(vspeed>=context[58]&&vspeed<=context[59]&&speed_gcd(vspeed)==context[63]))&&
++    (!context[46]||(effective(v[2],2,1)>=context[44]&&effective(v[2],2,1)<=context[45]))&&
++    mitigation(v,present)+1e-12>=context[14]){
++   double value=damage(v,present);
++   if(value>best){best=value;plane_best_log=wasm_log(best);for(int i=0;i<root_count;i++)selected[i]=choices[i];}
++  }
++  /* Concave smooth objective minus squared distance to each constraint.
++   * Bisection on its directional derivative avoids fixed-step oscillation. */
++  double left=0,right=1;
++  for(int search=0;search<12;search++){
++   double t=(left+right)*0.5,derivative=0;
++   for(int k=0;k<8;k++)context[48+k]=x[k]+t*(v[k]-x[k]);
++   configure_plane();
++   for(int k=0;k<8;k++)derivative+=plane_weights[k]*(v[k]-x[k]);
++   double c=context[50],sp=speed+t*(vspeed-speed);
++   derivative+=(minimum(plane_high,maximum(plane_low,c))-c)*0.00001*(v[2]-x[2]);
++   if(context[57])derivative+=(minimum(context[59],maximum(context[58],sp))-sp)*0.00001*(vspeed-speed);
++   if(derivative>0)left=t;else right=t;
++  }
++  double step=(left+right)*0.5;
++  for(int k=0;k<8;k++)x[k]+=step*(v[k]-x[k]);speed+=step*(vspeed-speed);
++ }
++ relaxation_reference=0;
++ for(int k=0;k<8;k++)context[48+k]=saved[k];
++ configure_plane();
++ if(RELAX_MODE&2){
++  for(int k=0;k<8;k++)plane_weights[k]=winner[k];
++  plane_constant=winner_constant;plane_secondary_constant=winner_secondary;plane_speed_weight=winner_speed;
++  plane_generation++;
++ }
+ }
+ static double upper(const address *roots){
+  if(plane_enabled&&context[46]&&(effective(plane_high,2,0)+1e-7<context[44]||effective(plane_low,2,1)>context[45]))return -__builtin_inf();
+@@ -216,6 +306,7 @@
+   int index=plane_finished;
+   plane_low=plane_first+index*plane_width;plane_high=minimum(plane_last,plane_first+(index+1)*plane_width);
+   configure_plane();
++  refine_plane();
+  }
+  for(int i=0;i<root_count;i++)frames[0].roots[i]=original_roots[i];
+  frames[0].work=1;frames[0].bound=upper(frames[0].roots);top=1;plane_active=1;return 1;
