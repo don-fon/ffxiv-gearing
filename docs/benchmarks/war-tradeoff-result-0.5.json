@@ -1,0 +1,894 @@
+{
+  "status": "completed",
+  "result": {
+    "damage": 7.667420178189943,
+    "tenacityMitigation": 0.236,
+    "stats": {
+      "PDMG": 89,
+      "MDMG": 0,
+      "DLY": 3360,
+      "STR": 1259,
+      "CRT": 837,
+      "DET": 911,
+      "DHT": 526,
+      "SKS": 364,
+      "TEN": 1426,
+      "VIT": 1423
+    },
+    "gears": [
+      {
+        "id": 21804,
+        "name": "华美型夜钢御敌战甲",
+        "level": 350,
+        "slot": 4,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          },
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 2
+          },
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 3
+          },
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 4
+          }
+        ]
+      },
+      {
+        "id": 24415,
+        "name": "联盟御敌项链",
+        "level": 375,
+        "slot": 10,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          }
+        ]
+      },
+      {
+        "id": 21768,
+        "name": "清银御敌戒指",
+        "level": 350,
+        "slot": 12,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          },
+          {
+            "stat": "TEN",
+            "grade": 5,
+            "value": 6,
+            "slot": 2
+          },
+          {
+            "stat": "DET",
+            "grade": 5,
+            "value": 6,
+            "slot": 3
+          },
+          {
+            "stat": "DET",
+            "grade": 5,
+            "value": 6,
+            "slot": 4
+          }
+        ]
+      },
+      {
+        "id": 21768,
+        "name": "清银御敌戒指",
+        "level": 350,
+        "slot": 12,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          },
+          {
+            "stat": "TEN",
+            "grade": 5,
+            "value": 6,
+            "slot": 2
+          },
+          {
+            "stat": "DHT",
+            "grade": 5,
+            "value": 6,
+            "slot": 3
+          },
+          {
+            "stat": "DET",
+            "grade": 5,
+            "value": 6,
+            "slot": 4
+          }
+        ]
+      },
+      {
+        "id": 22245,
+        "name": "残暴锁甲靴·常风",
+        "level": 350,
+        "slot": 8,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          },
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 2
+          },
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 3
+          },
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 4
+          }
+        ]
+      },
+      {
+        "id": 21763,
+        "name": "黑柳御敌腕环",
+        "level": 350,
+        "slot": 11,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          },
+          {
+            "stat": "TEN",
+            "grade": 5,
+            "value": 6,
+            "slot": 2
+          },
+          {
+            "stat": "DHT",
+            "grade": 5,
+            "value": 6,
+            "slot": 3
+          },
+          {
+            "stat": "DHT",
+            "grade": 5,
+            "value": 6,
+            "slot": 4
+          }
+        ]
+      },
+      {
+        "id": 22854,
+        "name": "月读命大斧",
+        "level": 365,
+        "slot": 13,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 22243,
+        "name": "残暴手铠·常风",
+        "level": 350,
+        "slot": 5,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          },
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 2
+          },
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 3
+          },
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 4
+          }
+        ]
+      },
+      {
+        "id": 23748,
+        "name": "志愿兵御敌耳坠",
+        "level": 355,
+        "slot": 9,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          }
+        ]
+      },
+      {
+        "id": 24368,
+        "name": "联盟御敌头盔",
+        "level": 375,
+        "slot": 3,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "DET",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 24371,
+        "name": "联盟御敌软甲裤",
+        "level": 375,
+        "slot": 7,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 0
+          },
+          {
+            "stat": "TEN",
+            "grade": 6,
+            "value": 16,
+            "slot": 1
+          }
+        ]
+      }
+    ],
+    "food": {
+      "id": 49247,
+      "name": "蛤蜊糕",
+      "stats": {
+        "TEN": 151,
+        "VIT": 297,
+        "DET": 91
+      },
+      "statRates": {
+        "TEN": 10,
+        "VIT": 10,
+        "DET": 10
+      }
+    },
+    "exploredStates": 0,
+    "score": 11.286442502295596
+  },
+  "milliseconds": 7625.70000000298,
+  "completed": 16,
+  "partitions": 16,
+  "exploredStates": 3115053,
+  "diagnostics": [
+    {
+      "worker": "planner",
+      "version": "2026-10-26-console-v1",
+      "task": "plan",
+      "job": "WAR",
+      "syncLevel": 375,
+      "stage": "规划完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1207,
+      "initializationMs": 6,
+      "otherMs": 884,
+      "wasmSearchCalls": 80,
+      "wasmSearchMs": 210,
+      "wasmVisitedBranches": 356489,
+      "wasmEvaluatedCombinations": 65,
+      "wasmParetoCalls": 422,
+      "wasmParetoMs": 107,
+      "wasmParetoInputOptions": 138868,
+      "wasmParetoOutputOptions": 90286,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 8
+    },
+    {
+      "worker": 3,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49247,
+      "speed": 0,
+      "shard": {
+        "index": 3,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 2678,
+      "initializationMs": 18,
+      "otherMs": 917,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 1584,
+      "wasmVisitedBranches": 4661179,
+      "wasmEvaluatedCombinations": 632879,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 159,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.7
+    },
+    {
+      "worker": 0,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49247,
+      "speed": 0,
+      "shard": {
+        "index": 0,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 2721,
+      "initializationMs": 12,
+      "otherMs": 917,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 1604,
+      "wasmVisitedBranches": 4558417,
+      "wasmEvaluatedCombinations": 714065,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 188,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.8
+    },
+    {
+      "worker": 2,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49247,
+      "speed": 0,
+      "shard": {
+        "index": 2,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 2985,
+      "initializationMs": 11,
+      "otherMs": 946,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 1861,
+      "wasmVisitedBranches": 5144057,
+      "wasmEvaluatedCombinations": 872434,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 167,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.9
+    },
+    {
+      "worker": 1,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49247,
+      "speed": 0,
+      "shard": {
+        "index": 1,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 3128,
+      "initializationMs": 15,
+      "otherMs": 979,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 1979,
+      "wasmVisitedBranches": 5497198,
+      "wasmEvaluatedCombinations": 866079,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 155,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.6
+    },
+    {
+      "worker": 0,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49248,
+      "speed": 0,
+      "shard": {
+        "index": 1,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1167,
+      "initializationMs": 0,
+      "otherMs": 801,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 183,
+      "wasmVisitedBranches": 247170,
+      "wasmEvaluatedCombinations": 4,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 183,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.8
+    },
+    {
+      "worker": 3,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49248,
+      "speed": 0,
+      "shard": {
+        "index": 0,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1203,
+      "initializationMs": 0,
+      "otherMs": 795,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 207,
+      "wasmVisitedBranches": 272483,
+      "wasmEvaluatedCombinations": 8,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 201,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.8
+    },
+    {
+      "worker": 2,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49248,
+      "speed": 0,
+      "shard": {
+        "index": 2,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1144,
+      "initializationMs": 0,
+      "otherMs": 774,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 191,
+      "wasmVisitedBranches": 276596,
+      "wasmEvaluatedCombinations": 7,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 179,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.9
+    },
+    {
+      "worker": 1,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49248,
+      "speed": 0,
+      "shard": {
+        "index": 3,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1142,
+      "initializationMs": 0,
+      "otherMs": 769,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 198,
+      "wasmVisitedBranches": 264799,
+      "wasmEvaluatedCombinations": 9,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 175,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.7
+    },
+    {
+      "worker": 3,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49240,
+      "speed": 0,
+      "shard": {
+        "index": 1,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1126,
+      "initializationMs": 0,
+      "otherMs": 764,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 181,
+      "wasmVisitedBranches": 232830,
+      "wasmEvaluatedCombinations": 8,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 181,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.8
+    },
+    {
+      "worker": 0,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49240,
+      "speed": 0,
+      "shard": {
+        "index": 0,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1186,
+      "initializationMs": 0,
+      "otherMs": 815,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 191,
+      "wasmVisitedBranches": 184315,
+      "wasmEvaluatedCombinations": 4,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 180,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.8
+    },
+    {
+      "worker": 1,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49240,
+      "speed": 0,
+      "shard": {
+        "index": 3,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1048,
+      "initializationMs": 0,
+      "otherMs": 717,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 172,
+      "wasmVisitedBranches": 200428,
+      "wasmEvaluatedCombinations": 6,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 159,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.7
+    },
+    {
+      "worker": 2,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49240,
+      "speed": 0,
+      "shard": {
+        "index": 2,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1174,
+      "initializationMs": 0,
+      "otherMs": 850,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 176,
+      "wasmVisitedBranches": 211833,
+      "wasmEvaluatedCombinations": 8,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 148,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.9
+    },
+    {
+      "worker": 3,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49245,
+      "speed": 0,
+      "shard": {
+        "index": 0,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1001,
+      "initializationMs": 0,
+      "otherMs": 673,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 174,
+      "wasmVisitedBranches": 136971,
+      "wasmEvaluatedCombinations": 10,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 154,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.8
+    },
+    {
+      "worker": 0,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49245,
+      "speed": 0,
+      "shard": {
+        "index": 1,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1059,
+      "initializationMs": 0,
+      "otherMs": 710,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 148,
+      "wasmVisitedBranches": 160950,
+      "wasmEvaluatedCombinations": 25,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 201,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.8
+    },
+    {
+      "worker": 2,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49245,
+      "speed": 0,
+      "shard": {
+        "index": 3,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1028,
+      "initializationMs": 0,
+      "otherMs": 713,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 161,
+      "wasmVisitedBranches": 163371,
+      "wasmEvaluatedCombinations": 21,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 154,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.9
+    },
+    {
+      "worker": 1,
+      "version": "2026-10-26-console-v1",
+      "task": "optimize",
+      "job": "WAR",
+      "syncLevel": 375,
+      "foodId": 49245,
+      "speed": 0,
+      "shard": {
+        "index": 2,
+        "count": 4
+      },
+      "stage": "分片完成",
+      "engine": "WASM",
+      "activePhase": "done",
+      "elapsedMs": 1058,
+      "initializationMs": 0,
+      "otherMs": 725,
+      "wasmSearchCalls": 13,
+      "wasmSearchMs": 185,
+      "wasmVisitedBranches": 166300,
+      "wasmEvaluatedCombinations": 29,
+      "wasmParetoCalls": 70,
+      "wasmParetoMs": 148,
+      "wasmParetoInputOptions": 80227,
+      "wasmParetoOutputOptions": 53153,
+      "jsTreeFallbacks": 0,
+      "wasmUsed": true,
+      "wasmMemoryMiB": 11.9
+    }
+  ],
+  "run": 0,
+  "engine": "auto",
+  "workers": 4,
+  "shards": "auto",
+  "lockedSlots": [],
+  "food": "auto",
+  "criticalPreference": "none",
+  "browser": "154.0.8037.57",
+  "source": "production worker pipeline"
+}
