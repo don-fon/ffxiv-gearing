@@ -14,7 +14,7 @@ const { values } = parseArgs({ options: {
   timeout: { type: 'string', default: '300000' }, runs: { type: 'string', default: '1' },
   output: { type: 'string' }, input: { type: 'string' }, chromium: { type: 'string' },
   'skip-build': { type: 'boolean', default: false },
-  'fixed-plan': { type: 'string' },
+  'fixed-plan': { type: 'string' }, dist: { type: 'string' },
 } });
 if (!['none', 'high', 'low'].includes(values.critical)) throw new Error('Unknown critical preference.');
 if (!['auto', 'javascript', 'wasm', 'wasm-warm'].includes(values.engine)) throw new Error('Unknown benchmark engine.');
@@ -24,6 +24,7 @@ for (const [name, minimum, maximum] of [['workers', 1, 4], ['locks', 0, 4], ['ru
 }
 if (values.shards !== undefined && (!Number.isInteger(Number(values.shards)) ||
     Number(values.shards) < 1 || Number(values.shards) > 64)) throw new Error('Invalid shards.');
+if (values.dist && !values['skip-build']) throw new Error('--dist requires --skip-build.');
 if (!values['skip-build']) {
   const build = spawnSync('npm', ['run', 'build'], { cwd: root, stdio: 'inherit' });
   if (build.status !== 0) throw new Error('Production build failed.');
@@ -37,7 +38,7 @@ input.lockedGears = expected.gears.filter(gear => lockedSlots.includes(gear.slot
   .map(gear => ({ id: gear.id, slot: gear.slot, melds: gear.melds }));
 input.lockedGearIds = input.lockedGears.map(gear => gear.id);
 if (values.food) input.foods = input.foods.filter(food => food.id === Number(values.food));
-const dist = path.join(root, 'dist');
+const dist = path.resolve(values.dist || path.join(root, 'dist'));
 const server = http.createServer((request, response) => {
   const pathname = new URL(request.url, 'http://localhost').pathname;
   const relative = pathname.replace(/^\/ffxiv-gearing\//, '') || 'index.html';
