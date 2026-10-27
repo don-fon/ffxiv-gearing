@@ -65,7 +65,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const [ criticalPreference, setCriticalPreference ] = React.useState<CriticalPreference>('none');
   const [ minimumTenacityMitigation, setMinimumTenacityMitigation ] = React.useState('0.0');
   const [ tradeTenacity, setTradeTenacity ] = React.useState(false);
-  const [ mitigationExchange, setMitigationExchange ] = React.useState('0.5');
+  const [ mitigationExchange, setMitigationExchange ] = React.useState('10');
   const [ selectedWorkerCount, setSelectedWorkerCount ] = React.useState(() => Math.min(
     Math.max(1, typeof navigator === 'undefined' ? 4 : navigator.hardwareConcurrency || 4), 4));
   const [ error, setError ] = React.useState('');
