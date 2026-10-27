@@ -289,7 +289,7 @@ test('repeated queries reuse their root pointers without growing WASM memory', a
   assert.equal(backend.memoryBytes(), bytesBefore);
 });
 
-test('native GCD intervals match 300 independent exhaustive searches', async () => {
+test('native GCD intervals match 900 independent exhaustive searches', async () => {
     const floor = x => Math.trunc(x + 1e-7); const add = (a, b) => { const out = { ...a }; for (const k of Object.keys(b))
         out[k] = (out[k] ?? 0) + b[k]; return out; };
     const food = (a, f) => { const out = { ...a }; for (const k of Object.keys(f?.stats ?? {}))
@@ -305,7 +305,7 @@ test('native GCD intervals match 300 independent exhaustive searches', async () 
     const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
     let state = 913;
     const random = n => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state % n; };
-    for (let seed = 0; seed < 300; seed++) {
+    for (let seed = 0; seed < 900; seed++) {
         const input = fixture(seed);
         const main = input.damage.mainStat === 'VIT' ? 'STR' : input.damage.mainStat;
         input.objective = input.damage.mainStat === 'VIT'
@@ -318,7 +318,7 @@ test('native GCD intervals match 300 independent exhaustive searches', async () 
             input.damage.statModifiers.gcd = 80;
         }
         const prefixes = [{ stats: { ...input.fixedStats, [input.speedStat]: input.fixedStats[input.speedStat] + (seed % 2 ? 0.125 : 0) }, choices: [] }];
-        const groups = Array.from({ length: 3 }, () => Array.from({ length: 4 }, () => ({ stats: { [main]: random(80) + (seed % 2 ? 0.125 : 0), CRT: random(700) + (seed % 2 ? 0.25 : 0), DET: random(500), DHT: random(500), [input.speedStat]: random(120) + (seed % 2 ? 0.125 : 0), ...(input.damage.mainStat === 'VIT' ? { TEN: random(80) } : {}) }, choices: [] })));
+        const groups = Array.from({ length: 3 + seed % 3 }, () => Array.from({ length: 4 }, () => ({ stats: { [main]: random(80) + (seed % 2 ? 0.125 : 0), CRT: random(700) + (seed % 2 ? 0.25 : 0), DET: random(500), DHT: random(500), [input.speedStat]: random(120) + (seed % 2 ? 0.125 : 0), ...(input.damage.mainStat === 'VIT' ? { TEN: random(80) } : {}) }, choices: [] })));
         let all = prefixes.map(p => p.stats);
         for (const group of groups)
             all = all.flatMap(p => group.map(o => add(p, o.stats)));
