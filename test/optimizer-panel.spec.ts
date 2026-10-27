@@ -237,14 +237,14 @@ test(`350–375 candidates match the display ${selected ? 'with a manually selec
 
 test('tenacity tradeoff replaces the minimum and workers rank by score', async ({ page }) => {
   await page.getByLabel('最低坚韧减伤').fill('99');
-  await page.getByLabel('坚韧减伤折算', { exact: true }).check();
+  await page.getByLabel('坚韧策略', { exact: true }).selectOption('tradeoff');
   await expect(page.getByLabel('最低坚韧减伤')).toHaveCount(0);
   await page.getByLabel('减伤兑换比例').fill('0');
   await expect(page.getByRole('button', { name: '开始计算', exact: true })).toBeDisabled();
   await page.getByLabel('减伤兑换比例').fill('0.5');
   await page.locator('body').click({ position: { x: 1400, y: 1100 } });
   await page.getByRole('button', { name: '自动配装', exact: true }).click();
-  await expect(page.getByLabel('坚韧减伤折算', { exact: true })).toBeChecked();
+  await expect(page.getByLabel('坚韧策略', { exact: true })).toHaveValue('tradeoff');
   await expect(page.getByLabel('减伤兑换比例')).toHaveValue('0.5');
   await page.evaluate(() => {
     class ScoreWorker {
@@ -274,7 +274,7 @@ test('tenacity tradeoff replaces the minimum and workers rank by score', async (
   await expect(page.locator('.gear-optimization_result')).toContainText('伤害 95.00000');
   await expect(page.locator('.gear-optimization_result')).toContainText('折算评分 114.00000');
   await expect(page.locator('.gear-optimization_result')).toContainText('坚韧减伤 10.0%');
-  await page.getByLabel('坚韧减伤折算', { exact: true }).uncheck();
+  await page.getByLabel('坚韧策略', { exact: true }).selectOption('minimum');
   await expect(page.getByLabel('最低坚韧减伤')).toHaveValue('99');
   await expect(page.locator('.gear-optimization_result')).toHaveCount(0);
 });

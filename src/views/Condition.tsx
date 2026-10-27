@@ -145,6 +145,7 @@ export const Condition = mobxReact.observer(() => {
           key={store.job}
           keepMounted
           popper={GearOptimizationPanel}
+          modifiers={[{ name: 'preventOverflow', options: { tether: false, padding: 12 } }]}
           placement="bottom-start"
         />
       )}

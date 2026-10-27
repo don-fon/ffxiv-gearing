@@ -504,48 +504,42 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           }}
         />
       </div>
-      {isTank && !tradeTenacity && (
-        <div className="gear-optimization_constraint-row">
-          <span>坚韧减伤不低于</span>
-          <input
-            aria-label="最低坚韧减伤"
-            className="gear-optimization_minimum-tenacity-mitigation"
-            type="number"
-            min="0"
-            max="99.9"
-            step="0.1"
-            value={minimumTenacityMitigation}
-            disabled={busy}
-            onChange={event => {
-              setMinimumTenacityMitigation(event.target.value);
-              setStatus('idle');
-              setResult(undefined);
-              setResultExcludedGearKey(undefined);
-            }}
-          />
-          <span>%</span>
-        </div>
-      )}
       {isTank && (
-        <div className="gear-optimization_constraint-row gear-optimization_tradeoff-row">
-          <label>
-            <input type="checkbox" aria-label="坚韧减伤折算" checked={tradeTenacity} disabled={busy}
+        <div className="gear-optimization_tenacity">
+          <div className="gear-optimization_constraint-row">
+            <span>坚韧策略</span>
+            <select aria-label="坚韧策略" value={tradeTenacity ? 'tradeoff' : 'minimum'} disabled={busy}
               onChange={event => {
-                setTradeTenacity(event.target.checked);
+                setTradeTenacity(event.target.value === 'tradeoff');
                 setStatus('idle'); setResult(undefined); setResultExcludedGearKey(undefined);
-              }} />
-            坚韧减伤折算
-          </label>
-          {tradeTenacity && <>
-            <span>每</span>
-            <input type="number" aria-label="减伤兑换比例" min="0.01" max="100" step="0.1"
-              value={mitigationExchange} disabled={busy}
-              onChange={event => {
-                setMitigationExchange(event.target.value);
-                setStatus('idle'); setResult(undefined); setResultExcludedGearKey(undefined);
-              }} />
-            <span>% 坚韧减伤视为 1% 增伤</span>
-          </>}
+              }}>
+              <option value="minimum">最低减伤</option>
+              <option value="tradeoff">减伤折算</option>
+            </select>
+          </div>
+          <div className="gear-optimization_tenacity-value">
+            {tradeTenacity ? <>
+              <span>每</span>
+              <input type="number" aria-label="减伤兑换比例" min="0.01" max="100" step="0.1"
+                value={mitigationExchange} disabled={busy}
+                onChange={event => {
+                  setMitigationExchange(event.target.value);
+                  setStatus('idle'); setResult(undefined); setResultExcludedGearKey(undefined);
+                }} />
+              <span>% 减伤</span>
+              <span className="gear-optimization_exchange-equals">＝</span>
+              <span>1% 增伤</span>
+            </> : <>
+              <span>减伤不低于</span>
+              <input aria-label="最低坚韧减伤" type="number" min="0" max="99.9" step="0.1"
+                value={minimumTenacityMitigation} disabled={busy}
+                onChange={event => {
+                  setMinimumTenacityMitigation(event.target.value);
+                  setStatus('idle'); setResult(undefined); setResultExcludedGearKey(undefined);
+                }} />
+              <span>%</span>
+            </>}
+          </div>
         </div>
       )}
       <div className="gear-optimization_constraint-row">
