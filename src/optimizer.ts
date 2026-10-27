@@ -69,6 +69,8 @@ export interface OptimizerCriticalRange {
   minimum: number;
   maximum: number;
   midpoint: number;
+  /** Shared preference boundary. Older explicit plans fall back to midpoint. */
+  threshold?: number;
 }
 
 export interface GearOptimizationInput {
@@ -1059,7 +1061,7 @@ function feasibleDamageBound(left: OptimizerStats, right: OptimizerStats,
   input: GearOptimizationInput,
   calculateDamage?: (left: OptimizerStats, right: OptimizerStats) => number): number {
   if (input.criticalRange !== undefined && input.criticalPreference === 'high' &&
-      (combinedStatValue(left, right, 'CRT', input.food) ?? 0) < input.criticalRange.midpoint) return -Infinity;
+      (combinedStatValue(left, right, 'CRT', input.food) ?? 0) < (input.criticalRange.threshold ?? input.criticalRange.midpoint)) return -Infinity;
   const damage = combinedDamageValue(left, right, input, calculateDamage);
   const minimum = minimumTenacityMitigation(input);
   if (minimum === undefined || minimum <= 0) return damage;
@@ -1196,8 +1198,8 @@ function meetsCombinedObjective(evaluation: OptimizationEvaluation, left: Optimi
   if (!meetsObjective(evaluation, input)) return false;
   if (input.criticalRange === undefined) return true;
   const critical = combinedStatValue(left, right, 'CRT', input.food) ?? 0;
-  return input.criticalPreference === 'high' ? critical >= input.criticalRange.midpoint :
-    input.criticalPreference !== 'low' || critical <= input.criticalRange.midpoint;
+  return input.criticalPreference === 'high' ? critical >= (input.criticalRange.threshold ?? input.criticalRange.midpoint) :
+    input.criticalPreference !== 'low' || critical <= (input.criticalRange.threshold ?? input.criticalRange.midpoint);
 }
 
 /** Protect both endpoints while measuring the range. An upper CRT limit needs
@@ -1360,7 +1362,8 @@ function resolveCriticalPreference(input: GearOptimizationInput,
     }
   }
   if (!Number.isFinite(minimum)) throw noFeasibleOptimizationError(input);
-  return { ...input, criticalRange: { minimum, maximum, midpoint: (minimum + maximum) / 2 } };
+  return { ...input, criticalRange: { minimum, maximum, midpoint: (minimum + maximum) / 2,
+    threshold: minimum + (maximum - minimum) * (input.criticalPreference === 'high' ? 0.75 : 0.25) } };
 }
 
 function validateOptimizationInput(input: GearOptimizationInput): void {
@@ -1368,9 +1371,10 @@ function validateOptimizationInput(input: GearOptimizationInput): void {
     throw new Error('暴击偏好无效。');
   }
   if (input.criticalRange !== undefined) {
-    const { minimum, maximum, midpoint } = input.criticalRange;
+    const { minimum, maximum, midpoint, threshold } = input.criticalRange;
     if (![minimum, maximum, midpoint].every(Number.isFinite) || minimum > maximum ||
-        midpoint !== (minimum + maximum) / 2) throw new Error('暴击范围无效。');
+        midpoint !== (minimum + maximum) / 2 ||
+        threshold !== undefined && (!Number.isFinite(threshold) || threshold < minimum || threshold > maximum)) throw new Error('暴击范围无效。');
   }
   if (input.candidateShard !== undefined && (!Number.isInteger(input.candidateShard.count) ||
       !Number.isInteger(input.candidateShard.index) || input.candidateShard.count < 1 ||
@@ -1815,7 +1819,7 @@ function optimizeFixedFoodGearset(input: GearOptimizationInput,
     optionNodes: AttributeTreeNode<GearOption>[]): number => {
     if (input.criticalRange !== undefined && input.criticalPreference === 'low' &&
         criticalAfterFood(stateNode.minimumCritical + optionNodes.reduce((sum, node) =>
-          sum + node.minimumCritical, 0), input) > input.criticalRange.midpoint) return -Infinity;
+          sum + node.minimumCritical, 0), input) > (input.criticalRange.threshold ?? input.criticalRange.midpoint)) return -Infinity;
     const independent = feasibleDamageBound(stateNode.maxima, maxima, input, combinedDamage);
     if (secondaryBudgetBound === undefined || independent <= pruningDamage) return independent;
     return secondaryBudgetBound(addStats(stateNode.maxima, maxima),

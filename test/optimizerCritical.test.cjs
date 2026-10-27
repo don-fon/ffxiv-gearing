@@ -92,7 +92,7 @@ function fixture(seed) {
   };
 }
 
-test('critical halves match exhaustive legal ranges and optimal damage in JS and WASM', async () => {
+test('critical outer quarters match exhaustive legal ranges and optimal damage in JS and WASM', async () => {
   const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
   let checked = 0;
   for (let seed = 0; seed < 64; seed++) {
@@ -107,13 +107,14 @@ test('critical halves match exhaustive legal ranges and optimal damage in JS and
       const minimum = Math.min(...valid.map(stats => stats.CRT));
       const maximum = Math.max(...valid.map(stats => stats.CRT));
       const midpoint = (minimum + maximum) / 2;
-      const eligible = valid.filter(stats => preference === 'high' ? stats.CRT >= midpoint : stats.CRT <= midpoint);
+      const threshold = minimum + (maximum - minimum) * (preference === 'high' ? 0.75 : 0.25);
+      const eligible = valid.filter(stats => preference === 'high' ? stats.CRT >= threshold : stats.CRT <= threshold);
       const expected = Math.max(...eligible.map(stats => solver.calculateExpectedDamage(stats, input.damage)));
       for (const backend of [undefined, native]) {
         const result = solver.optimizeGearset(selected, undefined, backend);
-        assert.deepEqual(result.criticalRange, { minimum, maximum, midpoint }, `range seed ${seed}`);
+        assert.deepEqual(result.criticalRange, { minimum, maximum, midpoint, threshold }, `range seed ${seed}`);
         assert.ok(Math.abs(result.damage - expected) < 1e-12, `damage seed ${seed}, ${preference}`);
-        assert.ok(preference === 'high' ? result.stats.CRT >= midpoint : result.stats.CRT <= midpoint);
+        assert.ok(preference === 'high' ? result.stats.CRT >= threshold : result.stats.CRT <= threshold);
       }
       if (seed < 12) {
         const result = production.optimizeGearset(selected, undefined, native);
@@ -159,6 +160,10 @@ test('equal endpoints keep both modes feasible; invalid preferences are rejected
     assert.equal(result.criticalRange.minimum, result.criticalRange.maximum);
   }
   assert.throws(() => production.optimizeGearset({ ...input, criticalPreference: 'invalid' }), /暴击偏好/);
+  for (const threshold of [NaN, Infinity, 999, 2001]) {
+    assert.throws(() => production.optimizeGearset({ ...input, criticalPreference: 'low',
+      criticalRange: { minimum: 1000, maximum: 2000, midpoint: 1500, threshold } }), /暴击范围/);
+  }
 });
 
 test('critical endpoints respect unique rings, repeatable pairs, exclusions and a locked right ring', async () => {
@@ -176,7 +181,8 @@ test('critical endpoints respect unique rings, repeatable pairs, exclusions and 
     const maximum = 522;
     for (const criticalPreference of ['high', 'low']) {
       const result = production.optimizeGearset({ ...input, criticalPreference }, undefined, backend);
-      assert.deepEqual(result.criticalRange, { minimum, maximum, midpoint: (minimum + maximum) / 2 });
+      assert.deepEqual(result.criticalRange, { minimum, maximum, midpoint: (minimum + maximum) / 2,
+        threshold: minimum + (maximum - minimum) * (criticalPreference === 'high' ? 0.75 : 0.25) });
       assert.ok(result.gears.filter(gear => gear.id === 2).length <= 1);
       if (locked) assert.equal(result.gears.filter(gear => gear.id === 2).length, 1);
     }
@@ -204,7 +210,7 @@ test('CRT-half searches eliminate redundant speed tiers only when a non-CRT repl
     const request = { ...input, criticalPreference };
     const plan = production.planGearOptimization(request);
     assert.deepEqual(Array.from(new Set(plan.partitions.map(task => task.contribution))), [0]);
-    const midpoint = plan.criticalRange.midpoint;
+    const midpoint = plan.criticalRange.threshold;
     const expected = Math.max(...valid.filter(stats => criticalPreference === 'high'
       ? stats.CRT >= midpoint : stats.CRT <= midpoint).map(stats => solver.calculateExpectedDamage(stats, input.damage)));
     assert.equal(production.optimizeGearset(request).damage, expected);
@@ -229,8 +235,8 @@ test('speed-route buffers and prefix budgets preserve fractional-stat optima in 
     if (!valid.length) continue;
     const minimum = Math.min(...valid.map(stats => stats.CRT));
     const maximum = Math.max(...valid.map(stats => stats.CRT));
-    const midpoint = (minimum + maximum) / 2;
     for (const criticalPreference of ['none', 'high', 'low']) {
+      const midpoint = minimum + (maximum - minimum) * (criticalPreference === 'high' ? 0.75 : 0.25);
       const eligible = valid.filter(stats => criticalPreference === 'none' ||
         (criticalPreference === 'high' ? stats.CRT >= midpoint : stats.CRT <= midpoint));
       const expected = Math.max(...eligible.map(stats => solver.calculateExpectedDamage(stats, input.damage)));

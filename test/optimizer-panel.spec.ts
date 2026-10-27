@@ -155,8 +155,8 @@ test('critical preference and the shared range reach every search worker', async
     class CriticalWorker {
       onmessage?: (event: { data: unknown }) => void;
       postMessage(message: { type: string, input: { criticalPreference?: string, criticalRange?: unknown } }) {
-        const range = { minimum: 1000, maximum: 2001, midpoint: 1500.5 };
-        const result = { damage: 1, stats: { CRT: 1400 }, gears: [], exploredStates: 1,
+        const range = { minimum: 1000, maximum: 2001, midpoint: 1500.5, threshold: 1250.25 };
+        const result = { damage: 1, stats: { CRT: 1200 }, gears: [], exploredStates: 1,
           tenacityMitigation: 0, criticalRange: range };
         if (message.input.criticalPreference !== 'low') throw new Error('Missing critical preference');
         queueMicrotask(() => this.onmessage?.({ data: { type: 'diagnostics',
@@ -175,8 +175,7 @@ test('critical preference and the shared range reach every search worker', async
   });
   await page.getByRole('button', { name: '开始计算', exact: true }).click();
   await expect(page.locator('.gear-optimization_critical-range')).toContainText('1000–2001');
-  await expect(page.locator('.gear-optimization_critical-range')).toContainText('中点 1500.5');
-  await expect(page.locator('.gear-optimization_critical-range')).toContainText('≤ 1500');
+  await expect(page.locator('.gear-optimization_critical-range')).toContainText('≤ 1250');
   expect(messages.some(message => message.includes('[自动配装] 规划 Worker'))).toBe(true);
   expect(messages.some(message => message.includes('[自动配装] 搜索 Worker'))).toBe(true);
   await page.getByLabel('暴击属性策略', { exact: true }).selectOption('high');

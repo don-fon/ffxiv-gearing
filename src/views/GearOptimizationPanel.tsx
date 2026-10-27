@@ -535,11 +535,6 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           <option value="low">低暴击</option>
         </select>
       </div>
-      {criticalPreference !== 'none' && (
-        <div className="gear-optimization_worker-tip">
-          在满足最终 GCD、最低坚韧等条件的可行总暴击范围内，以中点划分较高与较低区间；限定区间后，仍以伤害期望最高为优化目标。
-        </div>
-      )}
       <div className="gear-optimization_constraint-row">
         <span>Worker 数量</span>
         <select
@@ -754,9 +749,9 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           </div>
           {result.criticalRange !== undefined && (
             <div className="gear-optimization_critical-range">
-              总暴击范围 {result.criticalRange.minimum}–{result.criticalRange.maximum}，中点 {result.criticalRange.midpoint}；
-              {criticalPreference === 'high' ? `本次要求 ≥ ${Math.ceil(result.criticalRange.midpoint)}` :
-                `本次要求 ≤ ${Math.floor(result.criticalRange.midpoint)}`}
+              总暴击范围 {result.criticalRange.minimum}–{result.criticalRange.maximum}；
+              {criticalPreference === 'high' ? `本次要求 ≥ ${Math.ceil(result.criticalRange.threshold ?? result.criticalRange.midpoint)}` :
+                `本次要求 ≤ ${Math.floor(result.criticalRange.threshold ?? result.criticalRange.midpoint)}`}
             </div>
           )}
           <div className="gear-optimization_stats">
