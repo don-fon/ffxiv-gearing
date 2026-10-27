@@ -64,6 +64,8 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   const [ baselineDamage, setBaselineDamage ] = React.useState<number>();
   const [ criticalPreference, setCriticalPreference ] = React.useState<CriticalPreference>('none');
   const [ minimumTenacityMitigation, setMinimumTenacityMitigation ] = React.useState('0.0');
+  const [ tradeTenacity, setTradeTenacity ] = React.useState(false);
+  const [ mitigationExchange, setMitigationExchange ] = React.useState('0.5');
   const [ selectedWorkerCount, setSelectedWorkerCount ] = React.useState(() => Math.min(
     Math.max(1, typeof navigator === 'undefined' ? 4 : navigator.hardwareConcurrency || 4), 4));
   const [ error, setError ] = React.useState('');
@@ -198,10 +200,15 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       setStatus('error');
       return;
     }
-    if (isTank &&
+    if (isTank && !tradeTenacity &&
         (!Number.isFinite(parsedMinimumTenacityMitigation) ||
           parsedMinimumTenacityMitigation < 0 || parsedMinimumTenacityMitigation >= 100)) {
       setError('请输入大于等于 0 且小于 100 的最低坚韧减伤百分比。');
+      setStatus('error');
+      return;
+    }
+    if (isTank && tradeTenacity && !exchangeValid) {
+      setError('请输入 0.01–100 之间的减伤兑换比例。');
       setStatus('error');
       return;
     }
@@ -240,9 +247,10 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       input = isTank
         ? {
           ...input,
-          objective: {
-            type: 'minimumTenacity',
-            minimumTenacityMitigation: parsedMinimumTenacityMitigation / 100,
+          objective: tradeTenacity ? {
+            type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: Number(mitigationExchange),
+          } : {
+            type: 'minimumTenacity', minimumTenacityMitigation: parsedMinimumTenacityMitigation / 100,
           },
         }
         : { ...input, objective: { type: 'damage' } };
@@ -343,7 +351,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             food,
             foods: undefined,
             targetSpeedContribution,
-            globalMinimumDamage: bestResult.damage,
+            globalMinimumDamage: bestResult.score ?? bestResult.damage,
           },
         });
       };
@@ -366,7 +374,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             partitionProgress[activePartitionIndexes.get(worker)!] = 1;
             completed++;
             exploredStates += workerEvent.data.result.exploredStates;
-            if (workerEvent.data.result.damage > bestResult.damage) {
+            if ((workerEvent.data.result.score ?? workerEvent.data.result.damage) > (bestResult.score ?? bestResult.damage)) {
               bestResult = workerEvent.data.result;
             }
             activeProgress.delete(worker);
@@ -401,7 +409,9 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     : Number(minimumTenacityMitigation);
   const minimumTenacityMitigationValid = Number.isFinite(parsedMinimumTenacityMitigation) &&
     parsedMinimumTenacityMitigation >= 0 && parsedMinimumTenacityMitigation < 100;
-  const tankObjectiveValid = !isTank || minimumTenacityMitigationValid;
+  const exchangeValid = mitigationExchange.trim() !== '' && Number.isFinite(Number(mitigationExchange)) &&
+    Number(mitigationExchange) >= 0.01 && Number(mitigationExchange) <= 100;
+  const tankObjectiveValid = !isTank || (tradeTenacity ? exchangeValid : minimumTenacityMitigationValid);
   const excludedGearKey = exclusionKey(excludedGearIds, activeExcludedGearCategories);
   const excludedGearIdSet = new Set(excludedGearIds);
   const resultIsStale = result !== undefined && resultExcludedGearKey !== excludedGearKey;
@@ -460,7 +470,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
   return (
     <div className="gear-optimization card">
       <div className="gear-optimization_intro">
-        <p>{`在指定最终 GCD 下，搜索最高每威力伤害期望配装（使用${speedName}计算）。`}</p>
+        <p>{`在指定最终 GCD 下，搜索符合当前优化目标的配装（使用${speedName}计算）。`}</p>
         <p>候选装备与当前列表显示范围一致：品级筛选范围内的装备，加上手动选定的装备。</p>
         {store.syncLevel !== undefined && (
           <p>品级同步只调整候选装备的属性，不会自动加入范围外装备；手动选定不等于锁定。</p>
@@ -494,7 +504,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           }}
         />
       </div>
-      {isTank && (
+      {isTank && !tradeTenacity && (
         <div className="gear-optimization_constraint-row">
           <span>坚韧减伤不低于</span>
           <input
@@ -514,6 +524,28 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             }}
           />
           <span>%</span>
+        </div>
+      )}
+      {isTank && (
+        <div className="gear-optimization_constraint-row gear-optimization_tradeoff-row">
+          <label>
+            <input type="checkbox" aria-label="坚韧减伤折算" checked={tradeTenacity} disabled={busy}
+              onChange={event => {
+                setTradeTenacity(event.target.checked);
+                setStatus('idle'); setResult(undefined); setResultExcludedGearKey(undefined);
+              }} />
+            坚韧减伤折算
+          </label>
+          {tradeTenacity && <>
+            <span>每</span>
+            <input type="number" aria-label="减伤兑换比例" min="0.01" max="100" step="0.1"
+              value={mitigationExchange} disabled={busy}
+              onChange={event => {
+                setMitigationExchange(event.target.value);
+                setStatus('idle'); setResult(undefined); setResultExcludedGearKey(undefined);
+              }} />
+            <span>% 坚韧减伤视为 1% 增伤</span>
+          </>}
         </div>
       )}
       <div className="gear-optimization_constraint-row">
@@ -737,7 +769,8 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
           )}
           <div className="gear-optimization_damage">
             {baselineDamage !== undefined && <span>当前 {baselineDamage.toFixed(5)}</span>}
-            <span>最优 {result.damage.toFixed(5)}</span>
+            <span>{result.score === undefined ? '最优' : '伤害'} {result.damage.toFixed(5)}</span>
+            {result.score !== undefined && <span>折算评分 {result.score.toFixed(5)}</span>}
             {baselineDamage !== undefined && (
               <span className={result.damage > baselineDamage ? '-better' : ''}>
                 {result.damage >= baselineDamage ? '+' : ''}{(result.damage - baselineDamage).toFixed(5)}

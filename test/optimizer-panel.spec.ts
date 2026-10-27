@@ -234,3 +234,47 @@ test(`350–375 candidates match the display ${selected ? 'with a manually selec
   expect(input.lockedGearIds).not.toContain(29278);
 });
 }
+
+test('tenacity tradeoff replaces the minimum and workers rank by score', async ({ page }) => {
+  await page.getByLabel('最低坚韧减伤').fill('99');
+  await page.getByLabel('坚韧减伤折算', { exact: true }).check();
+  await expect(page.getByLabel('最低坚韧减伤')).toHaveCount(0);
+  await page.getByLabel('减伤兑换比例').fill('0');
+  await expect(page.getByRole('button', { name: '开始计算', exact: true })).toBeDisabled();
+  await page.getByLabel('减伤兑换比例').fill('0.5');
+  await page.locator('body').click({ position: { x: 1400, y: 1100 } });
+  await page.getByRole('button', { name: '自动配装', exact: true }).click();
+  await expect(page.getByLabel('坚韧减伤折算', { exact: true })).toBeChecked();
+  await expect(page.getByLabel('减伤兑换比例')).toHaveValue('0.5');
+  await page.evaluate(() => {
+    class ScoreWorker {
+      onmessage?: (event: { data: unknown }) => void;
+      postMessage(message: { type: string, input: { objective: unknown, globalMinimumDamage?: number } }) {
+        if (JSON.stringify(message.input.objective) !== JSON.stringify({
+          type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: 0.5,
+        })) throw new Error('Unexpected tradeoff objective');
+        const result = { damage: 100, score: 110, stats: {}, gears: [], exploredStates: 1,
+          tenacityMitigation: 0.05 };
+        if (message.type === 'plan') {
+          queueMicrotask(() => this.onmessage?.({ data: { type: 'plan', plan: {
+            partitions: [{ contribution: 0 }], heuristicResult: result,
+          } } }));
+        } else {
+          if (message.input.globalMinimumDamage !== 110) throw new Error('Wrong score lower bound');
+          queueMicrotask(() => this.onmessage?.({ data: { type: 'result', result: {
+            ...result, damage: 95, score: 114, tenacityMitigation: 0.1,
+          } } }));
+        }
+      }
+      terminate() {}
+    }
+    window.Worker = ScoreWorker as unknown as typeof Worker;
+  });
+  await page.getByRole('button', { name: '开始计算', exact: true }).click();
+  await expect(page.locator('.gear-optimization_result')).toContainText('伤害 95.00000');
+  await expect(page.locator('.gear-optimization_result')).toContainText('折算评分 114.00000');
+  await expect(page.locator('.gear-optimization_result')).toContainText('坚韧减伤 10.0%');
+  await page.getByLabel('坚韧减伤折算', { exact: true }).uncheck();
+  await expect(page.getByLabel('最低坚韧减伤')).toHaveValue('99');
+  await expect(page.locator('.gear-optimization_result')).toHaveCount(0);
+});

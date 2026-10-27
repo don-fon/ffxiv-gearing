@@ -360,3 +360,16 @@
   font-size: 12px;
   opacity: .7;
 }
+
+.gear-optimization_tradeoff-row {
+  flex-wrap: wrap;
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  input[type='checkbox'] {
+    width: auto;
+    padding: 0;
+  }
+}

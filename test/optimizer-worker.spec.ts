@@ -12,7 +12,7 @@ input.lockedGears = expected.gears.map((gear: { id: number, slot: number, melds:
 input.lockedGearIds = input.lockedGears.map((gear: { id: number }) => gear.id);
 input.foods = [expected.food];
 
-for (const preference of ['none', 'high', 'low']) {
+for (const preference of ['none', 'high', 'low', 'tradeoff']) {
 for (const blocked of [false, true]) {
   test(`production worker ${preference}: ${blocked ? 'falls back when WASM download fails' : 'loads WASM and returns a legal result'}`, async ({ page, context }) => {
     const consoleMessages: string[] = [];
@@ -36,7 +36,7 @@ for (const blocked of [false, true]) {
       const worker = new scope.RealOptimizerWorker(scope.optimizerWorkerUrl);
       try {
         const diagnostics: Array<{ engine: string, stage: string, fallbackReason?: string, version: string }> = [];
-        return await new Promise<{ type: string, engine: string, diagnostics: typeof diagnostics, result: { damage: number, stats: unknown } }>((resolve, reject) => {
+        return await new Promise<{ type: string, engine: string, diagnostics: typeof diagnostics, result: { damage: number, score?: number, stats: unknown } }>((resolve, reject) => {
           worker.onerror = event => reject(new Error(event.message));
           worker.onmessage = event => {
             if (event.data.type === 'diagnostics') diagnostics.push(event.data.diagnostics);
@@ -46,10 +46,15 @@ for (const blocked of [false, true]) {
           worker.postMessage({ type: 'optimize', input: lockedInput });
         });
       } finally { worker.terminate(); }
-    }, { ...input, criticalPreference: preference });
+    }, { ...input, criticalPreference: preference === 'tradeoff' ? 'none' : preference,
+      objective: preference === 'tradeoff' ? { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: 0.5 } : input.objective });
     expect(response.engine).toBe(blocked ? 'javascript' : 'wasm-warm');
     expect(response.result.damage).toBeCloseTo(expected.damage, 10);
     expect(response.result.stats).toEqual(expected.stats);
+    if (preference === 'tradeoff') {
+      const mitigation = Math.trunc(200 * (expected.stats.TEN - input.damage.level.sub) / input.damage.level.div + 1e-7) / 1000;
+      expect(response.result.score).toBeCloseTo(expected.damage * (1 + mitigation / 0.5), 10);
+    }
     expect(response.diagnostics[0].engine).toBe(blocked ? 'JavaScript' : 'WASM');
     expect(response.diagnostics[0].version).toBe('2026-10-26-console-v1');
     expect(response.diagnostics.at(-1)?.stage).toBe('分片完成');
