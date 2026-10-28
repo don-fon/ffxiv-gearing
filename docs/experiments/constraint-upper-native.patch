@@ -1,0 +1,21 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -460,3 +460,7 @@
+  }
+  return retained;
+ }
++
++__attribute__((visibility("default"))) double audit_root_bound(double lo,double hi){
++ best=0;plane_best_log=-__builtin_inf();plane_enabled=1;plane_low=lo;plane_high=hi;configure_plane();return upper(original_roots);
++}
+--- a/scripts/build-optimizer-wasm.mjs
++++ b/scripts/build-optimizer-wasm.mjs
+@@ -10,7 +10,7 @@
+ const target = path.join(temporary, 'optimizerSearch.wasm');
+ const exports = ['search_abi', 'search_cache_bytes', 'search_frame_bytes', 'configure_search',
+   'start_search', 'step_search', 'search_damage', 'search_visited', 'search_evaluated',
+-  'search_coverage', 'search_selected', 'search_error', 'pareto_node_bytes', 'pareto_frontier', '__heap_base'];
++  'search_coverage', 'search_selected', 'search_error', 'pareto_node_bytes', 'pareto_frontier', '__heap_base', 'audit_root_bound'];
+ try {
+   const args = ['--target=wasm32', '-O3', '-ffp-contract=off', '-fno-builtin', '-nostdlib',
+     '-mbulk-memory', '-msimd128', `-fuse-ld=${process.env.WASM_LD || 'lld'}`,
