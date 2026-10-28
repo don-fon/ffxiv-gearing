@@ -1,0 +1,106 @@
+--- a/src/optimizer.ts
++++ b/src/optimizer.ts
+@@ -707,7 +707,7 @@
+ }
+ 
+ function buildAttributeTree<T extends GearOption>(options: T[],
+-  leafSize = finalOptionLeafSize, speedStat?: 'SKS' | 'SPS'): AttributeTreeNode<T> {
++  leafSize = finalOptionLeafSize, speedStat?: 'SKS' | 'SPS', preferredStat?: OptimizerStat): AttributeTreeNode<T> {
+   const node: AttributeTreeNode<T> = {
+     maxima: maximumOptionStats(options),
+     count: options.length,
+@@ -727,7 +727,9 @@
+   const primary = (['PDMG', 'MDMG', 'STR', 'DEX', 'INT', 'MND'] as const).find(stat =>
+     options.some(option => (option.stats[stat] ?? 0) !== (options[0].stats[stat] ?? 0)));
+   const dimensions = speedStat === undefined ? scoredStats : [...scoredStats, speedStat];
+-  for (const stat of primary === undefined ? dimensions : [primary]) {
++  const preferred = primary ?? (preferredStat !== undefined && options.some(option =>
++    (option.stats[preferredStat] ?? 0) !== (options[0].stats[preferredStat] ?? 0)) ? preferredStat : undefined);
++  for (const stat of preferred === undefined ? dimensions : [preferred]) {
+     const distinct = new Set(options.map(option => option.stats[stat] ?? 0)).size;
+     if (distinct > maximumDistinct) {
+       maximumDistinct = distinct;
+@@ -742,9 +744,15 @@
+   options.sort((left, right) =>
+     (right.stats[splitStat] ?? 0) - (left.stats[splitStat] ?? 0));
+   const middle = Math.ceil(options.length / 2);
+-  node.left = buildAttributeTree(options.slice(0, middle), leafSize, speedStat);
+-  node.right = buildAttributeTree(options.slice(middle), leafSize, speedStat);
++  node.left = buildAttributeTree(options.slice(0, middle), leafSize, speedStat, preferredStat);
++  node.right = buildAttributeTree(options.slice(middle), leafSize, speedStat, preferredStat);
+   return node;
++}
++
++function buildSearchAttributeTree<T extends GearOption>(options: T[], leafSize: number,
++  input: GearOptimizationInput): AttributeTreeNode<T> {
++  return buildAttributeTree(options, leafSize, input.speedStat,
++    (minimumTenacityMitigation(input) ?? 0) > 0 ? 'TEN' : undefined);
+ }
+ 
+ function applyFood(stats: OptimizerStats, food?: OptimizerFood): OptimizerStats {
+@@ -1168,7 +1176,7 @@
+     selected[index] = option;
+     cursor = cursor.previous!;
+   }
+-  const trees = groups.map(options => buildAttributeTree(options.slice()));
++  const trees = groups.map(options => buildSearchAttributeTree(options.slice(), finalOptionLeafSize, input));
+   const calculator = createCombinedDamageCalculator(input);
+   let evaluation = evaluateStats(applyFood(initial.stats, input.food), input);
+   for (let pass = 0; pass < 2; pass++) {
+@@ -1179,7 +1187,7 @@
+         for (let index = 0; index < groups.length; index++) {
+           if (index !== left && index !== right) others = addStats(others, selected[index].stats);
+         }
+-        const prefix = buildAttributeTree<SearchState>([{ stats: others, choices: [] }], finalStateLeafSize);
++        const prefix = buildSearchAttributeTree<SearchState>([{ stats: others, choices: [] }], finalStateLeafSize, input);
+         const candidate = backend({ input, prefix, options: [trees[left], trees[right]],
+           reference: initial.stats, minimumDamage: evaluation.damage, branchLimit: 500_000 }, () => {});
+         if (candidate?.prefix === undefined) continue;
+@@ -1492,7 +1500,7 @@
+     selected[index] = option;
+     cursor = cursor.previous!;
+   }
+-  const trees = groups.map(group => buildAttributeTree(group.slice(), 1, input.speedStat));
++  const trees = groups.map(group => buildSearchAttributeTree(group.slice(), 1, input));
+   const minimum = plan.fixedSpeed + plan.targetContributions[0];
+   const maximum = plan.fixedSpeed + plan.targetContributions[plan.targetContributions.length - 1];
+   const margin = 1e-7 + Math.max(Math.abs(minimum), Math.abs(maximum)) * 1e-12;
+@@ -1507,7 +1515,7 @@
+       for (let index = 0; index < groups.length; index++) {
+         if (index !== left && index !== right) others = addStats(others, selected[index].stats);
+       }
+-      const prefix = buildAttributeTree<SearchState>([{ stats: others, choices: [] }], 1, input.speedStat);
++      const prefix = buildSearchAttributeTree<SearchState>([{ stats: others, choices: [] }], 1, input);
+       const candidate = backend({ input: warmInput, prefix, options: [trees[left], trees[right]],
+         speedBounds, reference: initial.stats, minimumDamage: bestDamage, branchLimit: 50_000 }, () => {});
+       if (candidate?.prefix === undefined) continue;
+@@ -1728,9 +1736,9 @@
+     const minimum = speedPlan.fixedSpeed + speedPlan.targetContributions[0];
+     const maximum = speedPlan.fixedSpeed + speedPlan.targetContributions[speedPlan.targetContributions.length - 1];
+     const margin = 1e-7 + Math.max(Math.abs(minimum), Math.abs(maximum)) * 1e-12;
+-    const prefix = buildAttributeTree([{ stats: input.fixedStats, choices: [] }], 1, input.speedStat);
++    const prefix = buildSearchAttributeTree([{ stats: input.fixedStats, choices: [] }], 1, input);
+     const result = searchBackend!({ input, prefix,
+-      options: groups.map(group => buildAttributeTree(group.slice(), 1, input.speedStat)),
++      options: groups.map(group => buildSearchAttributeTree(group.slice(), 1, input)),
+       reference: bestState.stats, minimumDamage: pruningDamage,
+       speedBounds: { minimum: minimum - margin, maximum: maximum + margin },
+     }, update => onProgress?.({ completedGroups: 0, totalGroups: groups.length,
+@@ -1839,7 +1847,7 @@
+   }
+   const stateTrees = Array.from(statesBySpeed, ([ speed, sameSpeed ]) => ({
+     speed,
+-    tree: buildAttributeTree(sameSpeed, finalStateLeafSize),
++    tree: buildSearchAttributeTree(sameSpeed, finalStateLeafSize, input),
+   }));
+ 
+   const secondaryBudgetBound = createSecondaryBudgetBound(input, bestState.stats);
+@@ -2059,7 +2067,7 @@
+     for (const speed of allowedSpeeds) {
+       let tree = finalTrees[groupIndex].get(speed);
+       if (tree === undefined) {
+-        tree = buildAttributeTree(speedPlan.optionsBySpeed[groupIndex].get(speed)!);
++        tree = buildSearchAttributeTree(speedPlan.optionsBySpeed[groupIndex].get(speed)!, finalOptionLeafSize, input);
+         finalTrees[groupIndex].set(speed, tree);
+       }
+       nodes.push(tree);

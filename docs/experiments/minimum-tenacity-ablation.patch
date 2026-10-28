@@ -1,0 +1,259 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -14,6 +14,9 @@
+ #define POINT_BYTES 80
+ static double *context;
+ static double *factors;
++#ifndef TEN_BOUND_MODE
++#define TEN_BOUND_MODE 3
++#endif
+ static double budget_weights[4], budget_constant, minimum_tenacity_raw;
+ static double best, visited, evaluated, covered;
+ static address selected[ROOTS];
+@@ -58,7 +61,7 @@
+  return floor_game(200*(tenacity-context[1])/context[2])/1000;
+ }
+ static double critical_factor(double value){double x=0.2*(value-context[1])/context[2];return 1+(x+0.4)*(x+0.05);}
+-static double budget_bound(const double *v,double critical_minimum,double budget,double independent){
++static double budget_bound(const double *v,double critical_minimum,double budget,double independent,const double *floors){
+  double deficit=v[2]+v[3]+v[4]+v[5]-budget;
+  if(!context[15]||deficit<=0)return independent;
+  double lo=effective(critical_minimum,2,1),hi=effective(v[2],2,0);
+@@ -78,6 +81,7 @@
+  for(int i=0;i<4&&deficit>0;i++){
+   int stat=order[i];double lower=context[36+stat];
+   if(stat==3)lower=maximum(lower,minimum_tenacity_raw);
++  if(TEN_BOUND_MODE&2)lower=maximum(lower,floors[stat]);
+   double reduction=minimum(deficit,maximum(0,v[stat+2]-lower));
+   log_bound-=reduction*weights[stat];deficit-=reduction;
+  }
+@@ -98,6 +102,8 @@
+ static address original_roots[ROOTS];
+ static int plane_enabled,plane_count,plane_finished,plane_active;
+ static unsigned int plane_generation;
++static int dual_active;
++static double tenacity_price;
+ static double plane_support_kind(address pointer,int kind){
+  double *n=node(pointer);int cache=kind?20:16;
+  if(n[cache+1]==plane_generation)return n[cache];
+@@ -109,6 +115,22 @@
+    value=maximum(value,sum);
+   }
+  }else value=maximum(plane_support_kind((address)n[NODE_LEFT],kind),plane_support_kind((address)n[NODE_RIGHT],kind));
++ n[cache]=value;n[cache+1]=plane_generation;return value;
++}
++/* A feasible point satisfies lambda * (TEN - requiredTEN) >= 0.
++ * Adding this affine term preserves a safe upper bound. Its independent
++ * support cache retains the original plane and the original split weights. */
++static double dual_support(address pointer,int kind){
++ double *n=node(pointer);int cache=kind?27:25;
++ if(n[cache+1]==plane_generation)return n[cache];
++ double value=-__builtin_inf();
++ if(n[NODE_LENGTH]>0){
++  for(int p=0;p<(int)n[NODE_LENGTH];p++){
++   double *point=(double*)((address)n[NODE_POINTS]+p*POINT_BYTES),sum=tenacity_price*point[5];
++   for(int i=kind?2:0;i<(kind?6:8);i++)sum+=plane_weights[i]*point[i];
++   value=maximum(value,sum);
++  }
++ }else value=maximum(dual_support((address)n[NODE_LEFT],kind),dual_support((address)n[NODE_RIGHT],kind));
+  n[cache]=value;n[cache+1]=plane_generation;return value;
+ }
+ static double plane_critical(double x){double t=0.2*(x-context[1])/context[2];return 1+(t+0.4+1e-10)*(t+0.05+1e-10);}
+@@ -145,6 +167,8 @@
+  plane_factor(0,1-context[6]/100+context[6]/context[0]*1e-9+1e-9,main_slope,context[48]);
+  int weapon=context[9]?7:6;
+  plane_factor(weapon,floor_game(context[0]*context[5]/1000),1,context[48+weapon]);
++ tenacity_price=maximum(0,minimum(plane_weights[2],minimum(plane_weights[3],plane_weights[4]))-plane_weights[5]);
++ dual_active=(TEN_BOUND_MODE&1)&&context[14]>0&&tenacity_price>0;
+  plane_generation++;
+ }
+ static double plane_main_raw,plane_main_log,plane_weapon_raw,plane_weapon_log;
+@@ -155,19 +179,68 @@
+ }
+ static double plane_bound(const address *roots,double *maximum_critical,double *minimum_critical){
+  double log_bound=plane_constant,secondary=plane_secondary_constant,main=0,weapon=0;
++ double dual=plane_constant-tenacity_price*minimum_tenacity_raw,dual_secondary=plane_secondary_constant-tenacity_price*minimum_tenacity_raw,minimum_tenacity=0;
+  *maximum_critical=0;*minimum_critical=0;int weapon_stat=context[9]?7:6;
+  for(int i=0;i<root_count;i++){
+   double *n=node(roots[i]);*maximum_critical+=n[2];*minimum_critical+=n[10];
+   log_bound+=plane_support_kind(roots[i],0);secondary+=plane_support_kind(roots[i],1);
+-  main+=n[0];weapon+=n[weapon_stat];
++  main+=n[0];weapon+=n[weapon_stat];minimum_tenacity+=n[29];
+  }
+  if(*minimum_critical>plane_high||*maximum_critical<plane_low)return -__builtin_inf();
+- return minimum(log_bound,secondary+plane_primary_logs(main,weapon));
++ double primary=plane_primary_logs(main,weapon),bound=minimum(log_bound,secondary+primary);
++ if(dual_active&&minimum_tenacity<minimum_tenacity_raw){
++  for(int i=0;i<root_count;i++){dual+=dual_support(roots[i],0);dual_secondary+=dual_support(roots[i],1);}
++  bound=minimum(bound,minimum(dual,dual_secondary+primary));
++ }
++ return bound;
+ }
+ static double speed_gcd(double raw){
+  double cap=context[60],rate=context[61];
+  double speed=raw+(rate<0?cap:minimum(cap,floor_game(raw*rate)));
+  return floor_game(floor_game((1000-floor_game(130*(speed-context[1])/context[2]))*2500/1000)*context[62]/1000);
++}
++/* Bounds consistency for an additive lower bound. Upper constraints use
++ * sign=-1 and swap the node's min/max coordinate indices. Domain deletion
++ * keeps witnesses in the original tree and accounts for discarded work. */
++static int restrict_sum(Frame *frame,int max_axis,int min_axis,double sign,double required){
++ double maximum_sum=0,minimum_sum=0;
++ for(int i=0;i<root_count;i++){double *n=node(frame->roots[i]);maximum_sum+=sign*n[max_axis];minimum_sum+=sign*n[min_axis];}
++ double tolerance=1e-7+__builtin_fabs(required)*1e-12;
++ if(maximum_sum+tolerance<required)return -1;
++ if(minimum_sum+tolerance>=required)return 0;
++ int changed=0;
++ for(int i=0;i<root_count;i++){
++  double *n=node(frame->roots[i]);
++  while(n[NODE_LENGTH]==0){
++   address left=(address)n[NODE_LEFT],right=(address)n[NODE_RIGHT];double *l=node(left),*r=node(right);
++   double others=maximum_sum-sign*n[max_axis];
++   int can_left=others+sign*l[max_axis]+tolerance>=required,can_right=others+sign*r[max_axis]+tolerance>=required;
++   if(can_left&&can_right)break;
++   if(!can_left&&!can_right)return -1;
++   double *selected_node=can_left?l:r;address selected_pointer=can_left?left:right;
++   double remaining=frame->work*selected_node[NODE_COUNT]/(l[NODE_COUNT]+r[NODE_COUNT]);
++   covered+=frame->work-remaining;frame->work=remaining;
++   frame->roots[i]=selected_pointer;maximum_sum=others+sign*selected_node[max_axis];n=selected_node;changed=1;
++  }
++ }
++ return changed;
++}
++static int propagate_constraints(Frame *frame){
++ int any=0,changed;
++ do{
++  changed=0;int result;
++  if((TEN_BOUND_MODE&8)&&context[57]){
++   result=restrict_sum(frame,22,23,1,context[58]);if(result<0)return -1;changed|=result;
++   result=restrict_sum(frame,23,22,-1,-context[59]);if(result<0)return -1;changed|=result;
++  }
++  if((TEN_BOUND_MODE&8)&&plane_enabled){
++   result=restrict_sum(frame,2,10,1,plane_low);if(result<0)return -1;changed|=result;
++   result=restrict_sum(frame,10,2,-1,-plane_high);if(result<0)return -1;changed|=result;
++  }
++  if(context[14]>0){result=restrict_sum(frame,5,29,1,minimum_tenacity_raw);if(result<0)return -1;changed|=result;}
++  any|=changed;
++ }while(changed);
++ return any;
+ }
+ static double upper(const address *roots){
+  if(plane_enabled&&context[46]&&(effective(plane_high,2,0)+1e-7<context[44]||effective(plane_low,2,1)>context[45]))return -__builtin_inf();
+@@ -182,10 +255,11 @@
+  if(plane_enabled){double high,low;linear=plane_bound(roots,&high,&low);
+   if(context[19]&&!plane_score_integrated){double v[8]={0};int present=0;for(int i=0;i<root_count;i++){double *n=node(roots[i]);v[5]+=n[5];present|=(int)n[8];}linear+=wasm_log(1+context[19]*maximum(0,mitigation(v,present)));}
+   if(linear<=plane_best_log)return -__builtin_inf();}
+- double v[8]={0},budget=0,critical_minimum=0;int has_tenacity=0;
++ double v[8]={0},budget=0,critical_minimum=0,floors[4]={0};int has_tenacity=0;
+  for(int i=0;i<root_count;i++){
+   double *n=node(roots[i]);for(int stat=0;stat<8;stat++)v[stat]+=n[stat];
+   has_tenacity|=(int)n[8];budget+=n[9];critical_minimum+=n[10];
++  floors[0]+=n[10];floors[1]+=n[30];floors[2]+=n[31];floors[3]+=n[29];
+  }
+  if(plane_enabled){
+   v[2]=minimum(v[2],plane_high);critical_minimum=maximum(critical_minimum,plane_low);
+@@ -198,10 +272,11 @@
+  if(context[14]>0&&mitigation(v,has_tenacity)+1e-12<context[14])return -__builtin_inf();
+  budget=minimum(budget,speed_budget);
+  if(context[56]){v[5]=context[1];budget+=context[1];}
+- value=budget_bound(v,critical_minimum,budget,value);
++ floors[0]=maximum(floors[0],critical_minimum);
++ value=budget_bound(v,critical_minimum,budget,value,floors);
+  return plane_enabled&&value>best?minimum(value,wasm_exp(linear)):value;
+ }
+-__attribute__((visibility("default"))) int search_abi(void){return 7;}
++__attribute__((visibility("default"))) int search_abi(void){return 9;}
+ __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
+ __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
+ __attribute__((visibility("default"))) void configure_search(address pointer){
+@@ -263,21 +338,45 @@
+  plane_best_log=best>0?wasm_log(best):-__builtin_inf();plane_finished=0;plane_active=0;
+  next_plane();
+ }
++/* Prefer the group with greatest range relative to the remaining slack
++ * of an active hard constraint; keep existing primary-stat priority first. */
++static void constraint_pressure(const address *roots,double *pressure){
++ double low[3]={0},high[3]={0};
++ for(int i=0;i<root_count;i++){double *n=node(roots[i]);low[0]+=n[29];high[0]+=n[5];low[1]+=n[10];high[1]+=n[2];low[2]+=n[23];high[2]+=n[22];}
++ pressure[0]=context[14]>0&&low[0]<minimum_tenacity_raw?1/maximum(1,high[0]-minimum_tenacity_raw+1):0;
++ pressure[1]=0;
++ if(plane_enabled){
++  if(low[1]<plane_low)pressure[1]=1/maximum(1,high[1]-plane_low+1);
++  if(high[1]>plane_high)pressure[1]=maximum(pressure[1],1/maximum(1,plane_high-low[1]+1));
++ }
++ pressure[2]=0;
++ if(context[57]){
++  if(low[2]<context[58])pressure[2]=1/maximum(1,high[2]-context[58]+1);
++  if(high[2]>context[59])pressure[2]=maximum(pressure[2],1/maximum(1,context[59]-low[2]+1));
++ }
++}
+ __attribute__((visibility("default"))) int step_search(int limit){
+  if(failure)return 1;
+  for(int processed=0;processed<limit;processed++){
+   if(top==0&&!next_plane())break;
+   Frame frame;top--;frame.bound=frames[top].bound;frame.work=frames[top].work;
+   for(int i=0;i<root_count;i++)frame.roots[i]=frames[top].roots[i];
++  if((TEN_BOUND_MODE&12)&&frame.bound>best){
++   int propagation=propagate_constraints(&frame);
++   if(propagation<0){covered+=frame.work;continue;}
++   if(propagation>0)frame.bound=minimum(frame.bound,upper(frame.roots));
++  }
+   if(frame.bound<=best){covered+=frame.work;continue;}
+   visited++;
+-  int split=-1,split_count=0,leaf=1;double primary_uncertainty=-1;
++  int split=-1,split_count=0,leaf=1;double primary_uncertainty=-1,constraint_uncertainty=-1,pressure[3]={0};
++  if(TEN_BOUND_MODE&16)constraint_pressure(frame.roots,pressure);
+   for(int i=0;i<root_count;i++){
+    double *n=node(frame.roots[i]);
+    if(n[NODE_LENGTH]==0){
+     leaf=0;double uncertainty=plane_enabled?(n[0]-n[18])*plane_weights[0]+(n[6]-n[19])*plane_weights[6]:0;
+-    if(uncertainty>primary_uncertainty||(uncertainty==primary_uncertainty&&n[NODE_COUNT]>split_count)){
+-     primary_uncertainty=uncertainty;split=i;split_count=(int)n[NODE_COUNT];
++    double impact=(TEN_BOUND_MODE&16)?maximum((n[5]-n[29])*pressure[0],maximum((n[2]-n[10])*pressure[1],(n[22]-n[23])*pressure[2])):0;
++    if(uncertainty>primary_uncertainty||(uncertainty==primary_uncertainty&&(impact>constraint_uncertainty||(impact==constraint_uncertainty&&n[NODE_COUNT]>split_count)))){
++     primary_uncertainty=uncertainty;constraint_uncertainty=impact;split=i;split_count=(int)n[NODE_COUNT];
+     }
+    }
+   }
+--- a/src/optimizerWasm.ts
++++ b/src/optimizerWasm.ts
+@@ -22,7 +22,7 @@
+     result: number, count: number, capacity: number) => number;
+ }
+ 
+-/** ABI 7: node = 25 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
++/** ABI 9: node = 32 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
+  * Vectors: attack-main, INT, CRT, DET, DHT, TEN, PDMG, MDMG, TEN-present.
+  * Node tail: secondary-total max, CRT min, left, right, points, length, count.
+  * Node tail (16–21): two support caches/generations, minimum main/weapon stats.
+@@ -39,7 +39,7 @@
+     env: { memory, log: Math.log, exp: Math.exp },
+   });
+   const core = instance.exports as SearchExports;
+-  if (core.search_abi() !== 7) throw new Error('Unsupported optimizer WASM ABI.');
++  if (core.search_abi() !== 9) throw new Error('Unsupported optimizer WASM ABI.');
+   const heapBase = Number(core.__heap_base.value);
+   let nextAddress = heapBase;
+   let rootAddress = 0;
+@@ -66,7 +66,8 @@
+   const packTree = (tree: AttributeTreeNode<GearOption>): number => {
+     const cached = treePointers.get(tree);
+     if (cached !== undefined) return cached;
+-    const pointer = allocate(25 * 8);
++    const pointer = allocate(32 * 8);
++    new Float64Array(memory.buffer, pointer + 25 * 8, 4).fill(0);
+     treePointers.set(tree, pointer);
+     let left = 0;
+     let right = 0;
+@@ -95,6 +96,11 @@
+       tree.items === undefined ? Math.max(new Float64Array(memory.buffer, left, 25)[24], new Float64Array(memory.buffer, right, 25)[24]) :
+         tree.items.reduce((value, item) => Math.max(value, (item.stats.CRT ?? 0) + (item.stats.DET ?? 0) + (item.stats.DHT ?? 0) + (item.stats.TEN ?? 0) + (item.stats[currentInput!.speedStat] ?? 0)), -Infinity),
+     ]);
++    for (const [offset, stat] of [[29, 'TEN'], [30, 'DET'], [31, 'DHT']] as const) {
++      new Float64Array(memory.buffer, pointer, 32)[offset] = tree.items === undefined
++        ? Math.min(new Float64Array(memory.buffer, left, 32)[offset], new Float64Array(memory.buffer, right, 32)[offset])
++        : tree.items.reduce((minimum, item) => Math.min(minimum, item.stats[stat] ?? 0), Infinity);
++    }
+     return pointer;
+   };
+   const configure = (task: OptimizerSearchTask) => {
