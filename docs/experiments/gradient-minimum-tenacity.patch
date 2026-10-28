@@ -1,0 +1,20 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -214,6 +214,9 @@
+    plane_speed_weight=(target-speed)*0.00001;
+    offset-=plane_speed_weight*(plane_speed_weight>=0?context[58]:context[59]);
+   }
++  double tenacity_lambda=maximum(0,minimum_tenacity_raw-x[5])*0.00001;
++  plane_weights[5]+=tenacity_lambda;
++  offset-=tenacity_lambda*minimum_tenacity_raw;
+   plane_constant+=offset;plane_secondary_constant+=offset;
+   double bound=plane_bound(original_roots,&high,&low);
+   if(bound<best_bound){
+@@ -243,6 +246,7 @@
+    double c=context[50],sp=speed+t*(vspeed-speed);
+    derivative+=(minimum(plane_high,maximum(plane_low,c))-c)*0.00001*(v[2]-x[2]);
+    if(context[57])derivative+=(minimum(context[59],maximum(context[58],sp))-sp)*0.00001*(vspeed-speed);
++   derivative+=maximum(0,minimum_tenacity_raw-context[53])*0.00001*(v[5]-x[5]);
+    if(derivative>0)left=t;else right=t;
+   }
+   double step=(left+right)*0.5;
