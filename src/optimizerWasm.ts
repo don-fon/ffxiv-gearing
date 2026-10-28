@@ -9,7 +9,7 @@ interface SearchExports extends WebAssembly.Exports {
   search_cache_bytes: () => number;
   search_frame_bytes: () => number;
   configure_search: (pointer: number) => void;
-  start_search: (pointers: number, count: number, threshold: number) => void;
+  start_search: (pointers: number, count: number, threshold: number, completeSearch: number) => void;
   step_search: (limit: number) => number;
   search_damage: () => number;
   search_visited: () => number;
@@ -22,7 +22,7 @@ interface SearchExports extends WebAssembly.Exports {
     result: number, count: number, capacity: number) => number;
 }
 
-/** ABI 7: node = 25 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
+/** ABI 11: node = 26 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
  * Vectors: attack-main, INT, CRT, DET, DHT, TEN, PDMG, MDMG, TEN-present.
  * Node tail: secondary-total max, CRT min, left, right, points, length, count.
  * Node tail (16–21): two support caches/generations, minimum main/weapon stats.
@@ -30,6 +30,7 @@ interface SearchExports extends WebAssembly.Exports {
  * Context (44–63): CRT limits/flag, plane threshold, raw reference, neutral
  * tenacity, speed interval/food/GCD. Node tail (22–24): speed max/min and
  * maximum secondary total including speed. Point tail (9): raw speed.
+ * Node tail (25): minimum raw TEN for hard-constraint search ordering.
  * Pointer caches are reset for each fixed-food input; linear memory is reused.
  */
 export async function createWasmSearchBackend(bytes: BufferSource,
@@ -39,7 +40,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     env: { memory, log: Math.log, exp: Math.exp },
   });
   const core = instance.exports as SearchExports;
-  if (core.search_abi() !== 7) throw new Error('Unsupported optimizer WASM ABI.');
+  if (core.search_abi() !== 11) throw new Error('Unsupported optimizer WASM ABI.');
   const heapBase = Number(core.__heap_base.value);
   let nextAddress = heapBase;
   let rootAddress = 0;
@@ -67,7 +68,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
   const packTree = (tree: AttributeTreeNode<GearOption>): number => {
     const cached = treePointers.get(tree);
     if (cached !== undefined) return cached;
-    const pointer = allocate(25 * 8);
+    const pointer = allocate(26 * 8);
     treePointers.set(tree, pointer);
     let left = 0;
     let right = 0;
@@ -96,6 +97,9 @@ export async function createWasmSearchBackend(bytes: BufferSource,
       tree.items === undefined ? Math.max(new Float64Array(memory.buffer, left, 25)[24], new Float64Array(memory.buffer, right, 25)[24]) :
         tree.items.reduce((value, item) => Math.max(value, (item.stats.CRT ?? 0) + (item.stats.DET ?? 0) + (item.stats.DHT ?? 0) + (item.stats.TEN ?? 0) + (item.stats[currentInput!.speedStat] ?? 0)), -Infinity),
     ]);
+    new Float64Array(memory.buffer, pointer, 26)[25] = tree.items === undefined
+      ? Math.min(new Float64Array(memory.buffer, left, 26)[25], new Float64Array(memory.buffer, right, 26)[25])
+      : tree.items.reduce((minimum, item) => Math.min(minimum, item.stats.TEN ?? 0), Infinity);
     return pointer;
   };
   const configure = (task: OptimizerSearchTask) => {
@@ -169,7 +173,9 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     }
     // Packing may grow memory and invalidate views. Construct the view afterwards.
     new Uint32Array(memory.buffer, rootAddress, 16).set(rootPointers);
-    core.start_search(rootAddress, rootCount, task.minimumDamage);
+    // A bounded warm-up needs a strong incumbent, while the full search must
+    // prove it optimal. Preserve the incumbent-producing order during warm-up.
+    core.start_search(rootAddress, rootCount, task.minimumDamage, Number(task.branchLimit === undefined));
     let lastReport = Date.now();
     let complete = false;
     while (!(complete = core.step_search(50_000) !== 0)) {

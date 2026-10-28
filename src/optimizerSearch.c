@@ -17,7 +17,7 @@ static double *factors;
 static double budget_weights[4], budget_constant, minimum_tenacity_raw;
 static double best, visited, evaluated, covered;
 static address selected[ROOTS];
-static int root_count, top, failure;
+static int root_count, top, failure, constraint_ordering;
 typedef struct { address roots[ROOTS]; double bound, work; } Frame;
 static Frame *frames;
 static double minimum(double a,double b){return a<b?a:b;}
@@ -201,7 +201,7 @@ static double upper(const address *roots){
  value=budget_bound(v,critical_minimum,budget,value);
  return plane_enabled&&value>best?minimum(value,wasm_exp(linear)):value;
 }
-__attribute__((visibility("default"))) int search_abi(void){return 7;}
+__attribute__((visibility("default"))) int search_abi(void){return 11;}
 __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
 __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
 __attribute__((visibility("default"))) void configure_search(address pointer){
@@ -243,7 +243,8 @@ static int next_plane(void){
  for(int i=0;i<root_count;i++)frames[0].roots[i]=original_roots[i];
  frames[0].work=1;frames[0].bound=upper(frames[0].roots);top=1;plane_active=1;return 1;
 }
-__attribute__((visibility("default"))) void start_search(address pointers,int count,double threshold){
+__attribute__((visibility("default"))) void start_search(address pointers,int count,double threshold,int complete_search){
+ constraint_ordering=complete_search;
  plane_main_raw=-__builtin_inf();plane_weapon_raw=-__builtin_inf();
  root_count=count;best=threshold;visited=0;evaluated=0;covered=0;top=0;failure=0;
  if(count<1||count>ROOTS){failure=1;return;}
@@ -263,6 +264,23 @@ __attribute__((visibility("default"))) void start_search(address pointers,int co
  plane_best_log=best>0?wasm_log(best):-__builtin_inf();plane_finished=0;plane_active=0;
  next_plane();
 }
+/* Prefer the group with greatest range relative to the remaining slack
+ * of an active hard constraint; keep existing primary-stat priority first. */
+static void constraint_pressure(const address *roots,double *pressure){
+ double low[3]={0},high[3]={0};
+ for(int i=0;i<root_count;i++){double *n=node(roots[i]);low[0]+=n[25];high[0]+=n[5];low[1]+=n[10];high[1]+=n[2];low[2]+=n[23];high[2]+=n[22];}
+ pressure[0]=context[14]>0&&low[0]<minimum_tenacity_raw?1/maximum(1,high[0]-minimum_tenacity_raw+1):0;
+ pressure[1]=0;
+ if(plane_enabled){
+  if(low[1]<plane_low)pressure[1]=1/maximum(1,high[1]-plane_low+1);
+  if(high[1]>plane_high)pressure[1]=maximum(pressure[1],1/maximum(1,plane_high-low[1]+1));
+ }
+ pressure[2]=0;
+ if(context[57]){
+  if(low[2]<context[58])pressure[2]=1/maximum(1,high[2]-context[58]+1);
+  if(high[2]>context[59])pressure[2]=maximum(pressure[2],1/maximum(1,context[59]-low[2]+1));
+ }
+}
 __attribute__((visibility("default"))) int step_search(int limit){
  if(failure)return 1;
  for(int processed=0;processed<limit;processed++){
@@ -271,14 +289,16 @@ __attribute__((visibility("default"))) int step_search(int limit){
   for(int i=0;i<root_count;i++)frame.roots[i]=frames[top].roots[i];
   if(frame.bound<=best){covered+=frame.work;continue;}
   visited++;
-  int split=-1,split_count=0,leaf=1;double primary_uncertainty=-1;
+  int split=-1,split_count=0,leaf=1;double primary_uncertainty=-1,constraint_uncertainty=-1,pressure[3]={0};
+  if(constraint_ordering)constraint_pressure(frame.roots,pressure);
   int weapon_stat=context[9]?7:6;
   for(int i=0;i<root_count;i++){
    double *n=node(frame.roots[i]);
    if(n[NODE_LENGTH]==0){
     leaf=0;double uncertainty=plane_enabled?(n[0]-n[18])*plane_weights[0]+(n[weapon_stat]-n[19])*plane_weights[weapon_stat]:0;
-    if(uncertainty>primary_uncertainty||(uncertainty==primary_uncertainty&&n[NODE_COUNT]>split_count)){
-     primary_uncertainty=uncertainty;split=i;split_count=(int)n[NODE_COUNT];
+    double impact=maximum((n[5]-n[25])*pressure[0],maximum((n[2]-n[10])*pressure[1],(n[22]-n[23])*pressure[2]));
+    if(uncertainty>primary_uncertainty||(uncertainty==primary_uncertainty&&(impact>constraint_uncertainty||(impact==constraint_uncertainty&&n[NODE_COUNT]>split_count)))){
+     primary_uncertainty=uncertainty;constraint_uncertainty=impact;split=i;split_count=(int)n[NODE_COUNT];
     }
    }
   }
