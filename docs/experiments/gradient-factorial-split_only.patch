@@ -1,0 +1,57 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -2,6 +2,7 @@
+  * Keep IEEE-754 operation order: compile without fast-math or FP contraction. */
+ __attribute__((import_module("env"), import_name("log"))) extern double wasm_log(double);
+ __attribute__((import_module("env"), import_name("exp"))) extern double wasm_exp(double);
++__attribute__((import_module("env"), import_name("profile"))) extern void profile(int);
+ typedef unsigned int address;
+ #define ROOTS 16
+ #define FRAMES 1024
+@@ -93,6 +94,7 @@
+  * to avoid unnecessary floor-relaxation gaps after those stats are fixed.
+  * Cache both supports per node/interval. Epsilon terms cover game's truncation.
+  */
++static double original_weights[8],split_weights[8],original_constant,original_secondary;
+ static double plane_speed_weight;
+ static double plane_weights[8],plane_constant,plane_low,plane_high,plane_best_log;
+ static double plane_first,plane_last,plane_width;
+@@ -196,6 +198,7 @@
+ }
+ static void refine_plane(void){
+  if(!RELAX_MODE||root_count<=3)return;
++ profile(1);
+  double saved[8],x[8],winner[8],winner_constant=plane_constant;
+  double winner_secondary=plane_secondary_constant,winner_speed=0,low,high;
+  double best_bound=plane_bound(original_roots,&high,&low),speed=0;
+@@ -260,6 +263,7 @@
+   plane_constant=winner_constant;plane_secondary_constant=winner_secondary;plane_speed_weight=winner_speed;
+   plane_generation++;
+  }
++ profile(0);
+ }
+ static double upper(const address *roots){
+  if(plane_enabled&&context[46]&&(effective(plane_high,2,0)+1e-7<context[44]||effective(plane_low,2,1)>context[45]))return -__builtin_inf();
+@@ -331,7 +335,13 @@
+   int index=plane_finished;
+   plane_low=plane_first+index*plane_width;plane_high=minimum(plane_last,plane_first+(index+1)*plane_width);
+   configure_plane();
++  for(int k=0;k<8;k++)original_weights[k]=plane_weights[k];
++  original_constant=plane_constant;original_secondary=plane_secondary_constant;
+   refine_plane();
++  for(int k=0;k<8;k++)split_weights[k]=plane_weights[k];
++  for(int k=0;k<8;k++)plane_weights[k]=original_weights[k];
++  plane_constant=original_constant;plane_secondary_constant=original_secondary;
++  plane_speed_weight=0;plane_generation++;
+  }
+  for(int i=0;i<root_count;i++)frames[0].roots[i]=original_roots[i];
+  frames[0].work=1;frames[0].bound=upper(frames[0].roots);top=1;plane_active=1;return 1;
+@@ -368,7 +378,7 @@
+   for(int i=0;i<root_count;i++){
+    double *n=node(frame.roots[i]);
+    if(n[NODE_LENGTH]==0){
+-    leaf=0;double uncertainty=plane_enabled?(n[0]-n[18])*plane_weights[0]+(n[6]-n[19])*plane_weights[6]:0;
++    leaf=0;double uncertainty=plane_enabled?(n[0]-n[18])*split_weights[0]+(n[6]-n[19])*split_weights[6]:0;
+     if(uncertainty>primary_uncertainty||(uncertainty==primary_uncertainty&&n[NODE_COUNT]>split_count)){
+      primary_uncertainty=uncertainty;split=i;split_count=(int)n[NODE_COUNT];
+     }

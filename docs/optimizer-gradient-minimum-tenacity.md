@@ -37,3 +37,5 @@
 
 [完整数据](benchmarks/gradient-minimum-tenacity-ablation.json)；
 [只补该约束的实验补丁](experiments/gradient-minimum-tenacity.patch)，需先应用当前统一版本梯度补丁。
+
+后续直接计时和上界/分裂规则消融见[剩余回退归因](optimizer-gradient-minimum-factorial.md)。
