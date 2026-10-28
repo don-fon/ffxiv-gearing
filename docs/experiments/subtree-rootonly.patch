@@ -1,0 +1,11 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -279,7 +279,7 @@
+  return best_bound;
+ }
+ static double local_upper(const address *roots,double inherited,int *plane_id){
+- if(LOCAL_MODE!=2||local_plane_used>=128||!plane_enabled||root_count<=3||visited<local_next||local_calls>=128||local_plane_calls>=16)return inherited;
++ if(LOCAL_MODE!=2||local_plane_used>=128||!plane_enabled||root_count<=3||visited<local_next||local_calls>=128||local_plane_calls>=1)return inherited;
+  if(context[19]&&!plane_score_integrated)return inherited;
+  double points=0,product=1;
+  for(int i=0;i<root_count;i++){double count=node(roots[i])[NODE_COUNT];points+=count;product*=count;}

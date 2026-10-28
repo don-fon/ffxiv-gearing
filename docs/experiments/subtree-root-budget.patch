@@ -1,0 +1,29 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -283,7 +283,7 @@
+  if(context[19]&&!plane_score_integrated)return inherited;
+  double points=0,product=1;
+  for(int i=0;i<root_count;i++){double count=node(roots[i])[NODE_COUNT];points+=count;product*=count;}
+- if(points>20000||product<LOCAL_PRODUCT||points*24>local_budget)return inherited;
++ if(points>100000||product<LOCAL_PRODUCT||points*24>local_budget)return inherited;
+  local_next=visited+LOCAL_TRIGGER;local_calls++;local_plane_calls++;local_budget-=points*24;
+  double weights[8],constant=plane_constant,secondary=plane_secondary_constant,speed=plane_speed_weight;
+  unsigned int generation=plane_generation;int integrated=plane_score_integrated;
+@@ -382,7 +382,7 @@
+ static int next_plane(void){
+  if(plane_active){plane_finished++;plane_active=0;}
+  if(plane_finished>=plane_count)return 0;
+- covered=0;local_plane_used=0;local_plane_calls=0;local_next=visited+LOCAL_TRIGGER;
++ covered=0;local_plane_used=0;local_plane_calls=0;local_next=visited;
+  if(plane_enabled){
+   int index=plane_finished;
+   plane_low=plane_first+index*plane_width;plane_high=minimum(plane_last,plane_first+(index+1)*plane_width);
+@@ -393,7 +393,7 @@
+ }
+ __attribute__((visibility("default"))) void start_search(address pointers,int count,double threshold){
+  plane_main_raw=-__builtin_inf();plane_weapon_raw=-__builtin_inf();
+- local_calls=0;local_budget=2000000;
++ local_calls=0;local_budget=64000000;
+  root_count=count;best=threshold;visited=0;evaluated=0;covered=0;top=0;failure=0;
+  if(count<1||count>ROOTS){failure=1;return;}
+  double work=1;plane_first=0;plane_last=0;
