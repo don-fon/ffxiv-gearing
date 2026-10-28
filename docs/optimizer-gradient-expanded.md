@@ -113,3 +113,5 @@ node scripts/benchmark-optimizer.mjs --skip-build --dist /tmp/bound-dist \
 本轮补跑新增了一个超过 50% 门槛的慢场景；首轮其他已完成案例的回退仍存在，当前原型继续不作为通用优化启用。
 
 [完整补跑数据和配装](benchmarks/gradient-193-complete.json)保留两版结果、分片诊断、输入哈希和验证结果。
+
+后续按绝对等待时间评估的[全局/按需对照](optimizer-gradient-policy.md)，以及[函数直接计时归因](optimizer-gradient-causal-analysis.md)。
