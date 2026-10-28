@@ -420,3 +420,35 @@ test('whole-GCD worker partitions preserve JS optima and shared CRT ranges', asy
     assert.ok(intervalJobs.has('WAR'), 'tank inputs must use the same interval backend');
     assert.deepEqual([...warmModes].sort(), ['high', 'low', 'none']);
 });
+
+test('equivalent physical and magical weapon trees have identical native search work', async () => {
+    const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
+    const physical = fixture(1);
+    physical.food = undefined;
+    physical.targetGcd = 2.50;
+    physical.objective = { type: 'damage' };
+    physical.damage.traitDamageMultiplier = 1;
+    const groups = [
+        Array.from({ length: 4 }, (_, i) => ({ stats: { PDMG: i * 5 }, choices: [] })),
+        Array.from({ length: 32 }, (_, i) => ({ stats: { CRT: i * 7, DET: 220 - i * 7, DHT: i % 3 * 3 }, choices: [] })),
+        Array.from({ length: 8 }, (_, i) => ({ stats: { DET: i * 11, DHT: (7 - i) * 13 }, choices: [] })),
+    ];
+    const rename = stats => Object.fromEntries(Object.entries(stats).map(([stat, value]) =>
+        [{ STR: 'MND', PDMG: 'MDMG', SKS: 'SPS' }[stat] ?? stat, value]));
+    const magical = { ...physical, speedStat: 'SPS', fixedStats: rename(physical.fixedStats),
+        gears: physical.gears.map(gear => ({ ...gear, stats: rename(gear.stats) })),
+        damage: { ...physical.damage, job: 'WHM', mainStat: 'MND',
+            statModifiers: { ...physical.damage.statModifiers, MND: physical.damage.statModifiers.STR },
+            baseStats: rename(physical.damage.baseStats) } };
+    const run = (input, options) => native({ input,
+        prefix: solver.testAttributeTree([{ stats: input.fixedStats, choices: [] }], 1, input.speedStat),
+        options: options.map(group => solver.testAttributeTree(group, 1, input.speedStat)),
+        reference: input.fixedStats, minimumDamage: 0,
+        speedBounds: { minimum: input.fixedStats[input.speedStat], maximum: input.fixedStats[input.speedStat] } }, () => {});
+    const left = run(physical, groups);
+    const right = run(magical, groups.map(group => group.map(option => ({ ...option, stats: rename(option.stats) }))));
+    assert.ok(left.complete && right.complete);
+    assert.ok(Math.abs(left.damage - right.damage) < 1e-12);
+    assert.equal(right.visitedBranches, left.visitedBranches);
+    assert.equal(right.states, left.states);
+});

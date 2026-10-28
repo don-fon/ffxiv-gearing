@@ -48,6 +48,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
   const rootPointers: number[] = [];
   let currentInput: GearOptimizationInput | undefined;
   let attackStat: OptimizerStat = 'STR';
+  let weaponStat: 'PDMG' | 'MDMG' = 'PDMG';
   let treePointers = new WeakMap<AttributeTreeNode<GearOption>, number>();
   const points = new Map<number, GearOption>();
   const allocate = (size: number): number => {
@@ -88,7 +89,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
       tree.items === undefined ? Math.min(new Float64Array(memory.buffer, left, 25)[18], new Float64Array(memory.buffer, right, 25)[18]) :
         tree.items.reduce((value, item) => Math.min(value, item.stats[attackStat] ?? 0), Infinity),
       tree.items === undefined ? Math.min(new Float64Array(memory.buffer, left, 25)[19], new Float64Array(memory.buffer, right, 25)[19]) :
-        tree.items.reduce((value, item) => Math.min(value, item.stats.PDMG ?? 0), Infinity), 0, 0,
+        tree.items.reduce((value, item) => Math.min(value, item.stats[weaponStat] ?? 0), Infinity), 0, 0,
       tree.maxima[currentInput!.speedStat] ?? 0,
       tree.items === undefined ? Math.min(new Float64Array(memory.buffer, left, 25)[23], new Float64Array(memory.buffer, right, 25)[23]) :
         tree.items.reduce((value, item) => Math.min(value, item.stats[currentInput!.speedStat] ?? 0), Infinity),
@@ -102,6 +103,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     currentMinimumSpeed = task.speedBounds?.minimum;
     currentMaximumSpeed = task.speedBounds?.maximum;
     attackStat = currentInput.damage.mainStat === 'VIT' ? 'STR' : currentInput.damage.mainStat;
+    weaponStat = currentInput.damage.mainStat === 'INT' || currentInput.damage.mainStat === 'MND' ? 'MDMG' : 'PDMG';
     nextAddress = heapBase;
     treePointers = new WeakMap();
     points.clear();

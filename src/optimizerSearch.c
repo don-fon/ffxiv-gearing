@@ -272,10 +272,11 @@ __attribute__((visibility("default"))) int step_search(int limit){
   if(frame.bound<=best){covered+=frame.work;continue;}
   visited++;
   int split=-1,split_count=0,leaf=1;double primary_uncertainty=-1;
+  int weapon_stat=context[9]?7:6;
   for(int i=0;i<root_count;i++){
    double *n=node(frame.roots[i]);
    if(n[NODE_LENGTH]==0){
-    leaf=0;double uncertainty=plane_enabled?(n[0]-n[18])*plane_weights[0]+(n[6]-n[19])*plane_weights[6]:0;
+    leaf=0;double uncertainty=plane_enabled?(n[0]-n[18])*plane_weights[0]+(n[weapon_stat]-n[19])*plane_weights[weapon_stat]:0;
     if(uncertainty>primary_uncertainty||(uncertainty==primary_uncertainty&&n[NODE_COUNT]>split_count)){
      primary_uncertainty=uncertainty;split=i;split_count=(int)n[NODE_COUNT];
     }
