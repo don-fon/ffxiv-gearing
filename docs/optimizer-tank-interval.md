@@ -54,3 +54,5 @@
 
 此前[梯度归因](optimizer-gradient-causal-analysis.md)和[全局/按需比较](optimizer-gradient-policy.md)
 基于尚未统一的旧坦克路径，仍作为历史实验保留；不能直接用其中的坦克耗时推断新路径的梯度策略。
+
+统一后重新验证梯度的结果见[当前内核全局梯度复测](optimizer-gradient-current-unified.md)。
