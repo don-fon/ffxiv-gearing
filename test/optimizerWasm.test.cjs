@@ -19,7 +19,7 @@ function loadTypeScript(file, dependencies = {}, transform = source => source) {
 const formulas = loadTypeScript('../src/statFormulas.ts');
 const solver = loadTypeScript('../src/optimizer.ts', { './statFormulas': formulas }, source => source
   .replace('const maximumStateExpansion = 1_000_000;', 'const maximumStateExpansion = 4;')
-  .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;') + '\nexport const testPareto = paretoFrontier; export const testAttributeTree = buildAttributeTree;');
+  .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;') + '\nexport const testPareto = paretoFrontier; export const testAttributeTree = buildAttributeTree; export const testSearchAttributeTree = buildSearchAttributeTree;');
 const adapter = loadTypeScript('../src/optimizerWasm.ts');
 const bytes = fs.readFileSync(require.resolve('../src/optimizerSearch.wasm'));
 
@@ -451,4 +451,19 @@ test('equivalent physical and magical weapon trees have identical native search 
     assert.ok(Math.abs(left.damage - right.damage) < 1e-12);
     assert.equal(right.visitedBranches, left.visitedBranches);
     assert.equal(right.states, left.states);
+});
+
+
+test('active minimum mitigation prioritizes TEN in the shared index without dropping options', () => {
+    const options = [0, 1, 2, 3].map(index => ({ stats: { CRT: (index + 1) * 10, TEN: index % 2 * 100 }, choices: [{ id: index }] }));
+    const input = fixture(0);
+    input.objective = { type: 'minimumTenacity', minimumTenacityMitigation: 0.1 };
+    const tree = solver.testSearchAttributeTree(options.slice(), 1, input);
+    const leaves = node => node.items ?? [...leaves(node.left), ...leaves(node.right)];
+    assert.ok(leaves(tree.left).every(option => option.stats.TEN === 100));
+    assert.ok(leaves(tree.right).every(option => option.stats.TEN === 0));
+    assert.deepEqual(leaves(tree).map(option => option.choices[0].id).sort(), [0, 1, 2, 3]);
+    input.objective = { type: 'minimumTenacity', minimumTenacityMitigation: 0 };
+    const ordinary = solver.testSearchAttributeTree(options.slice(), 1, input);
+    assert.equal(new Set(leaves(ordinary.left).map(option => option.stats.TEN)).size, 2);
 });
