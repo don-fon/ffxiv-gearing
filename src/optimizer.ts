@@ -1533,7 +1533,7 @@ function improveSpeedIntervalSeed(input: GearOptimizationInput, plan: SpeedSearc
 
 function canSearchSpeedInterval(input: GearOptimizationInput, plan: SpeedSearchPlan,
   backend?: OptimizerSearchBackend): boolean {
-  return backend?.speedRangeMinimumWork !== undefined && input.damage.mainStat !== 'VIT' &&
+  return backend?.speedRangeMinimumWork !== undefined &&
     input.damage.job !== 'BLU' && plan.optionsBySpeed.length < 16 &&
     estimatePartitionWork(plan) >= backend.speedRangeMinimumWork &&
     (input.food?.statRates[input.speedStat] ?? 0) >= 0;

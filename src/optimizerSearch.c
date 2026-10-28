@@ -14,7 +14,7 @@ typedef unsigned int address;
 #define POINT_BYTES 80
 static double *context;
 static double *factors;
-static double budget_weights[4], budget_constant;
+static double budget_weights[4], budget_constant, minimum_tenacity_raw;
 static double best, visited, evaluated, covered;
 static address selected[ROOTS];
 static int root_count, top, failure;
@@ -76,7 +76,9 @@ static double budget_bound(const double *v,double critical_minimum,double budget
   order[j]=value;
  }
  for(int i=0;i<4&&deficit>0;i++){
-  int stat=order[i];double reduction=minimum(deficit,maximum(0,v[stat+2]-context[36+stat]));
+  int stat=order[i];double lower=context[36+stat];
+  if(stat==3)lower=maximum(lower,minimum_tenacity_raw);
+  double reduction=minimum(deficit,maximum(0,v[stat+2]-lower));
   log_bound-=reduction*weights[stat];deficit-=reduction;
  }
  double independent_factors=factor(1,v[2])*factor(2,v[3])*factor(3,v[4])*factor(4,v[5]);
@@ -118,6 +120,7 @@ static void plane_factor(int dimension,double a,double b,double reference){
  plane_weights[dimension]=weight;plane_constant+=wasm_log(value)-weight*reference;
 }
 static double plane_secondary_constant;
+static int plane_score_integrated;
 static void configure_plane(void){
  for(int i=0;i<8;i++)plane_weights[i]=0;
  plane_constant=wasm_log(0.01*context[8])+1e-10;
@@ -127,6 +130,16 @@ static void configure_plane(void){
  plane_factor(3,1-0.14/context[3]*context[0]+1e-10*context[4],0.14/context[3],context[51]);
  plane_factor(4,1-0.1375/context[2]*context[1]+2.5e-11,0.1375/context[2],context[52]);
  if(!context[56])plane_factor(5,1-0.112/context[2]*context[1]+1e-10,0.112/context[2],context[53]);
+ /* The score's extra mitigation reward is an affine upper relaxation on
+  * TEN >= sub. Add its log tangent to the same TEN axis, retaining correlations
+  * with the ordinary damage factors instead of taking an independent TEN max. */
+ plane_score_integrated=context[19]>0&&context[39]>=context[1];
+ if(plane_score_integrated){
+  double reference=context[53],slope=0.2*context[19]/context[2];
+  double value=1+slope*(effective(reference,5,0)+1e-7-context[1])+context[19]*1e-10;
+  double weight=slope*(reference*context[33]<context[25]?1+context[33]:1)/value;
+  plane_weights[5]+=weight;plane_constant+=wasm_log(value)-weight*reference;
+ }
  plane_secondary_constant=plane_constant;
  double main_slope=context[6]*context[7]/(100*context[0]);
  plane_factor(0,1-context[6]/100+context[6]/context[0]*1e-9+1e-9,main_slope,context[48]);
@@ -167,7 +180,7 @@ static double upper(const address *roots){
  }
  double linear=__builtin_inf();
  if(plane_enabled){double high,low;linear=plane_bound(roots,&high,&low);
-  if(context[19]){double v[8]={0};int present=0;for(int i=0;i<root_count;i++){double *n=node(roots[i]);v[5]+=n[5];present|=(int)n[8];}linear+=wasm_log(1+context[19]*maximum(0,mitigation(v,present)));}
+  if(context[19]&&!plane_score_integrated){double v[8]={0};int present=0;for(int i=0;i<root_count;i++){double *n=node(roots[i]);v[5]+=n[5];present|=(int)n[8];}linear+=wasm_log(1+context[19]*maximum(0,mitigation(v,present)));}
   if(linear<=plane_best_log)return -__builtin_inf();}
  double v[8]={0},budget=0,critical_minimum=0;int has_tenacity=0;
  for(int i=0;i<root_count;i++){
@@ -194,6 +207,16 @@ __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAME
 __attribute__((visibility("default"))) void configure_search(address pointer){
  context=(double*)pointer;factors=(double*)(address)context[17];frames=(Frame*)(address)context[18];
  for(int dim=0;dim<6;dim++)for(int i=0;i<CACHE;i++)factors[dim*CACHE+i]=0;
+ /* A mitigation floor consumes a minimum raw TEN budget. Invert the
+  * continuous food upper envelope, so fractional stats and game truncation
+  * cannot make this lower bound exclude a feasible point. */
+ minimum_tenacity_raw=0;
+ if(context[14]>0){
+  double target=context[1]+context[2]/200*(__builtin_ceil(context[14]*1000-1e-9)-1e-7);
+  double low=0,high=1000000;
+  for(int i=0;i<60;i++){double middle=(low+high)*0.5;if(effective(middle,5,0)>=target)high=middle;else low=middle;}
+  minimum_tenacity_raw=maximum(0,low-1e-6);
+ }
  budget_constant=0;
  if(context[15]){
   double slopes[4]={0,0.14/context[3],0.1375/context[2],0.112/context[2]};

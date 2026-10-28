@@ -309,10 +309,14 @@ test('native GCD intervals match 900 independent exhaustive searches', async () 
         const input = fixture(seed);
         const main = input.damage.mainStat === 'VIT' ? 'STR' : input.damage.mainStat;
         input.objective = input.damage.mainStat === 'VIT'
-          ? { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: [0.1, 0.5, 2][seed % 3] }
+          ? seed % 8 === 0 ? { type: 'minimumTenacity', minimumTenacityMitigation: 0 } : { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: [0.01, 0.1, 0.5, 2, 10][seed % 5] }
           : { type: 'damage' };
         input.targetSpeedContribution = undefined;
-        input.food = seed % 4 ? { id: 1, name: 'speed food', stats: { CRT: 100, DET: 100, [input.speedStat]: 80 }, statRates: { CRT: 10, DET: 10, ...(seed % 3 ? { [input.speedStat]: 10 } : {}) } } : undefined;
+        input.food = seed % 7 ? { id: 1, name: 'speed food', stats: { CRT: 100, DET: 100, [input.speedStat]: 80 }, statRates: { CRT: 10, DET: 10, ...(seed % 3 ? { [input.speedStat]: 10 } : {}) } } : undefined;
+        if (input.damage.mainStat === 'VIT' && input.food) {
+            input.food.stats.TEN = 50;
+            input.food.statRates.TEN = seed % 16 ? 10 : 100;
+        }
         if (seed % 5 === 0) {
             input.damage.jobLevel = 100;
             input.damage.statModifiers.gcd = 80;
@@ -324,7 +328,13 @@ test('native GCD intervals match 900 independent exhaustive searches', async () 
             all = all.flatMap(p => group.map(o => add(p, o.stats)));
         const finished = all.map(p => food(p, input.food));
         input.targetGcd = gcd(finished[seed % finished.length][input.speedStat], input) / 100;
-        const viable = finished.filter(p => gcd(p[input.speedStat], input) === Math.round(input.targetGcd * 100));
+        let viable = finished.filter(p => gcd(p[input.speedStat], input) === Math.round(input.targetGcd * 100));
+        if (input.objective.type === 'minimumTenacity') {
+            const mitigation = p => floor(200 * ((p.TEN ?? input.damage.level.sub) - input.damage.level.sub) / input.damage.level.div) / 1000;
+            const levels = viable.map(mitigation).sort((a, b) => a - b);
+            input.objective.minimumTenacityMitigation = levels[Math.floor(levels.length / 2)];
+            viable = viable.filter(p => mitigation(p) + 1e-12 >= input.objective.minimumTenacityMitigation);
+        }
         assert.ok(viable.length);
         if (seed % 3) {
             const minimum = Math.min(...viable.map(p => p.CRT)); const maximum = Math.max(...viable.map(p => p.CRT));
@@ -372,9 +382,12 @@ test('whole-GCD worker partitions preserve JS optima and shared CRT ranges', asy
     const native = await adapter.createWasmSearchBackend(bytes, 0, 0);
     let intervalCalls = 0;
     const warmModes = new Set();
+    const intervalJobs = new Set();
     const backend = (task, report) => {
-        if (task.speedBounds !== undefined)
+        if (task.speedBounds !== undefined) {
             intervalCalls++;
+            intervalJobs.add(task.input.damage.job);
+        }
         if (task.speedBounds !== undefined && task.branchLimit !== undefined)
             warmModes.add(task.input.criticalPreference ?? 'none');
         return native(task, report);
@@ -382,9 +395,10 @@ test('whole-GCD worker partitions preserve JS optima and shared CRT ranges', asy
     Object.assign(backend, native);
     backend.speedRangeMinimumWork = 0;
     backend.warmStartMinimumWork = 0;
-    for (const seed of [1, 2, 5, 6, 9, 10]) {
+    for (const seed of [0, 1, 2, 4, 5, 6, 8, 9, 10, 12]) {
         for (const criticalPreference of ['none', 'high', 'low']) {
             const input = { ...fixture(seed), criticalPreference };
+            if (input.damage.mainStat === 'VIT' && seed % 8 === 4) input.objective = { type: 'tenacityTradeoff', mitigationPointsPerDamagePercent: seed === 4 ? 0.5 : 10 };
             let expected;
             try {
                 expected = solver.optimizeGearset(input);
@@ -398,9 +412,11 @@ test('whole-GCD worker partitions preserve JS optima and shared CRT ranges', asy
             assert.ok(plan.partitions.every(task => task.contribution === undefined));
             const actual = solver.optimizeGearset(input, undefined, backend);
             assert.ok(Math.abs(actual.damage - expected.damage) < 1e-12);
+            assert.ok(Math.abs((actual.score ?? actual.damage) - (expected.score ?? expected.damage)) < 1e-12);
             assert.deepEqual(actual.criticalRange, expected.criticalRange);
         }
     }
     assert.ok(intervalCalls >= 10);
+    assert.ok(intervalJobs.has('WAR'), 'tank inputs must use the same interval backend');
     assert.deepEqual([...warmModes].sort(), ['high', 'low', 'none']);
 });
