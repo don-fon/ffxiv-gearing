@@ -110,3 +110,5 @@ node scripts/benchmark-optimizer.mjs --skip-build --chromium /usr/bin/chromium \
   --engine auto --workers 4 --critical none --timeout 300000 \
   --input /tmp/mixed-input.json --output /tmp/mixed-result.json
 ```
+
+两例超时任务后续做了生产指令一致的CPU采样、实际子树枚举及门槛消融，见[超时性能剖析](optimizer-timeout-profile.md)。

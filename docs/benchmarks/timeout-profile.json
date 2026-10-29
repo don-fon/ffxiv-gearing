@@ -1,0 +1,1866 @@
+{
+  "codeVerification": {
+    "noncustomSectionsIdentical": true,
+    "codeSectionIdentical": true,
+    "productionSha256": "492e1946fc281e2d8d695f8de8e32a340e09d53ffd5f8a749a6298ab9cfe80f2",
+    "namedSha256": "923bc4f27943443cd5fd6469ad4a291c5923e3951bb6a845ab095db88188ec4b",
+    "difference": "custom name/producers sections only"
+  },
+  "cases": [
+    {
+      "job": "PLD",
+      "food": 49248,
+      "targetGcd": 2.45,
+      "objective": {
+        "type": "minimumTenacity",
+        "minimumTenacityMitigation": 0.1
+      },
+      "rootSizes": [
+        1,
+        242,
+        5000,
+        9196,
+        16703,
+        17361,
+        17521
+      ],
+      "initialMinimumDamage": 21.101907903044474,
+      "diagnosticWindow": {
+        "seconds": 120.00916096499999,
+        "visited": 264375031,
+        "evaluated": 10,
+        "best": 21.165158132308274,
+        "notCompleted": true
+      },
+      "counters": [
+        528750060,
+        528750060,
+        63878548,
+        0,
+        464871512,
+        158599819,
+        306271703,
+        17113267,
+        283471712,
+        280336811,
+        19096620,
+        0,
+        264375092,
+        2973315021,
+        2973312700,
+        0,
+        6512954392,
+        6508200916,
+        2376864,
+        10,
+        10,
+        52477043,
+        0,
+        0,
+        264374969,
+        1851242,
+        262523779,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        68243733,
+        40263934,
+        40567958,
+        48649514,
+        36281735,
+        30368147,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upperCalls": 528750060,
+      "supportCalls": 6512954392,
+      "supportCacheHitPercent": 99.92701505777718,
+      "factorCalls": 2973315021,
+      "factorCacheHitPercent": 99.99992193898112,
+      "pruneCounts": {
+        "speed": 63878548,
+        "planeIncludingCrtDisjoint": 158599819,
+        "crtDisjointWithinPlane": 52477043,
+        "maximumTenacity": 17113267,
+        "budgetAdditional": 19096620
+      },
+      "plainReplay": {
+        "index": 0,
+        "job": "PLD",
+        "food": 49248,
+        "seconds": 43.430347282,
+        "sameVisitedEvaluatedAndBest": true,
+        "referenceInstrumentedSeconds": 50.041523673,
+        "actual": [
+          21.165158132308274,
+          108650030,
+          10
+        ],
+        "bestVectors": [
+          [
+            392,
+            0,
+            400,
+            390,
+            400,
+            400,
+            0,
+            0,
+            1,
+            400
+          ],
+          [
+            293,
+            0,
+            259,
+            181,
+            36,
+            0,
+            0,
+            0,
+            0,
+            36
+          ],
+          [
+            284,
+            0,
+            127,
+            89,
+            108,
+            163,
+            0,
+            0,
+            1,
+            89
+          ],
+          [
+            427,
+            0,
+            89,
+            293,
+            108,
+            307,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            402,
+            0,
+            192,
+            297,
+            180,
+            114,
+            120,
+            0,
+            1,
+            0
+          ],
+          [
+            371,
+            0,
+            77,
+            270,
+            72,
+            163,
+            0,
+            0,
+            1,
+            125
+          ],
+          [
+            365,
+            0,
+            114,
+            325,
+            144,
+            113,
+            0,
+            0,
+            1,
+            0
+          ]
+        ]
+      },
+      "plainCpuSelfPercent": {
+        "upper": 48.86389569371694,
+        "step_search": 25.376135035468064,
+        "plane_support_kind": 19.540595740410048,
+        "damage": 5.600351190685775,
+        "(program)": 0.16540027065582463,
+        "(idle)": 0.11635215301963987,
+        "post": 0.11617046777121025,
+        "": 0.06401300259228053,
+        "processImmediate": 0.04084468369759654,
+        "now": 0.02999186487051557,
+        "js-to-wasm::": 0.012492585689490113,
+        "toggleImmediateRef": 0.010137576899718781
+      },
+      "focusedBand": {
+        "index": 16,
+        "interval": [
+          1604,
+          1668
+        ],
+        "initialIncumbent": 21.165158132308274,
+        "visited": 45775026,
+        "seconds": 20.008065885,
+        "notCompleted": true,
+        "residualCombinationsHistogram": {
+          "thresholds": [
+            16,
+            64,
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            "infinity"
+          ],
+          "counts": [
+            14533274,
+            10516556,
+            8668126,
+            5922603,
+            3290566,
+            1620741,
+            705024,
+            518136
+          ],
+          "percentAtMost256": 73.66015695982347,
+          "percentAbove65536": 1.1319185269277618
+        }
+      }
+    },
+    {
+      "job": "WAR",
+      "food": 49240,
+      "targetGcd": 2.48,
+      "objective": {
+        "type": "minimumTenacity",
+        "minimumTenacityMitigation": 0.15
+      },
+      "rootSizes": [
+        1,
+        253,
+        3347,
+        3855,
+        3878,
+        7856,
+        10243
+      ],
+      "initialMinimumDamage": 7.828975633382506,
+      "diagnosticWindow": {
+        "seconds": 120.003356763,
+        "visited": 261425032,
+        "evaluated": 12,
+        "best": 7.8401191455588854,
+        "notCompleted": true
+      },
+      "counters": [
+        522850048,
+        522850048,
+        10994419,
+        0,
+        511855629,
+        130315108,
+        381540533,
+        21861656,
+        269755668,
+        229397494,
+        8330596,
+        0,
+        261425072,
+        3373729945,
+        3373728651,
+        0,
+        7166920438,
+        7165978694,
+        470928,
+        12,
+        12,
+        39936618,
+        0,
+        0,
+        261424968,
+        7137285,
+        254287735,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        22378786,
+        39595323,
+        52257409,
+        43237688,
+        54533578,
+        49422236,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upperCalls": 522850048,
+      "supportCalls": 7166920438,
+      "supportCacheHitPercent": 99.98685985133856,
+      "factorCalls": 3373729945,
+      "factorCacheHitPercent": 99.99996164482572,
+      "pruneCounts": {
+        "speed": 10994419,
+        "planeIncludingCrtDisjoint": 130315108,
+        "crtDisjointWithinPlane": 39936618,
+        "maximumTenacity": 21861656,
+        "budgetAdditional": 8330596
+      },
+      "plainReplay": {
+        "index": 1,
+        "job": "WAR",
+        "food": 49240,
+        "seconds": 42.500808791000004,
+        "sameVisitedEvaluatedAndBest": true,
+        "referenceInstrumentedSeconds": 50.032613249,
+        "actual": [
+          7.838086018587697,
+          103500029,
+          9
+        ],
+        "bestVectors": [
+          [
+            308,
+            0,
+            364,
+            292,
+            364,
+            364,
+            0,
+            0,
+            1,
+            364
+          ],
+          [
+            79,
+            0,
+            0,
+            71,
+            64,
+            78,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            144,
+            0,
+            123,
+            135,
+            0,
+            80,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            124,
+            0,
+            124,
+            70,
+            0,
+            116,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            124,
+            0,
+            6,
+            124,
+            50,
+            87,
+            0,
+            0,
+            1,
+            43
+          ],
+          [
+            259,
+            0,
+            131,
+            151,
+            48,
+            216,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            223,
+            0,
+            152,
+            200,
+            0,
+            98,
+            90,
+            0,
+            1,
+            0
+          ]
+        ]
+      },
+      "plainCpuSelfPercent": {
+        "upper": 48.577668420943006,
+        "step_search": 24.605826175950753,
+        "plane_support_kind": 20.512644015715374,
+        "damage": 5.7433848839784885,
+        "(program)": 0.20064556203255324,
+        "post": 0.08076695601811854,
+        "(idle)": 0.07476750114100134,
+        "": 0.06989882126227497,
+        "now": 0.02297988692155981,
+        "js-to-wasm::": 0.015565200133774678,
+        "processImmediate": 0.015412392701559703,
+        "setImmediate": 0.01308031619760192
+      },
+      "focusedBand": {
+        "index": 6,
+        "interval": [
+          842,
+          906
+        ],
+        "initialIncumbent": 7.828975633382506,
+        "visited": 40775019,
+        "seconds": 20.005844369,
+        "notCompleted": true,
+        "residualCombinationsHistogram": {
+          "thresholds": [
+            16,
+            64,
+            256,
+            1024,
+            4096,
+            16384,
+            65536,
+            "infinity"
+          ],
+          "counts": [
+            322316,
+            842520,
+            1728753,
+            2908126,
+            4252179,
+            5392673,
+            5655832,
+            19672620
+          ],
+          "percentAtMost256": 7.096474927454969,
+          "percentAbove65536": 48.246746371841056
+        }
+      }
+    }
+  ],
+  "baselineCommit": "be3fada",
+  "scope": "Diagnostics of two previously timed-out inputs; no solver changes adopted",
+  "counterLegend": {
+    "0": "upper calls",
+    "1": "speed checks",
+    "2": "speed rejection",
+    "3": "critical-preference rejection",
+    "4": "plane calls",
+    "5": "plane rejection, including CRT-disjoint",
+    "6": "damage calls, both bounds and leaves",
+    "7": "maximum-TEN rejection",
+    "8": "budget calls",
+    "9": "budget tightens",
+    "10": "budget additional prune",
+    "11": "independent bound already below incumbent",
+    "12": "upper survives",
+    "13": "factor calls",
+    "14": "factor cache hits",
+    "16": "support calls",
+    "17": "support cache hits",
+    "18": "support leaf points scored",
+    "19": "leaf frames",
+    "20": "best updates",
+    "21": "CRT-disjoint within plane",
+    "22": "leaf GCD rejection",
+    "23": "leaf CRT rejection",
+    "24": "stored frame-bound rejection",
+    "25": "split with primary uncertainty",
+    "26": "split without primary uncertainty"
+  },
+  "subtreeAnalysis": [
+    {
+      "elapsedSeconds": 10.010798834000001,
+      "interval": [
+        1412,
+        1476
+      ],
+      "incumbent": 21.165158132308274,
+      "nativeUpper": 21.173693439772748,
+      "job": "PLD",
+      "food": 49248,
+      "subtreeSizes": [
+        1,
+        2,
+        2,
+        2,
+        3,
+        4,
+        2
+      ],
+      "conditionalLP": {
+        "status": 0,
+        "points": 16,
+        "combinations": 192,
+        "upperCertificate": 21.128030339480482,
+        "logCertificate": 3.0506006109782984,
+        "prices": [
+          0.0,
+          3.9743052353833144e-06,
+          8.289207595948284e-05
+        ],
+        "lpLogUpper": 3.0506006068088802
+      },
+      "exact": {
+        "enumerated": true,
+        "combinations": 192,
+        "feasible": 16,
+        "exactMaximumDamage": 21.099020392800185,
+        "integerLinearUpper": 21.125691249715768
+      },
+      "rootLP": {
+        "status": 0,
+        "points": 66024,
+        "combinations": 56534354877866591880000,
+        "upperCertificate": 21.235984403800828,
+        "logCertificate": 3.055697120298516,
+        "lpLogUpper": 3.0556971161406654
+      },
+      "rootPriceAppliedToSubtree": {
+        "upperCertificate": 21.20629651165074,
+        "logCertificate": 3.0542981428471783
+      }
+    },
+    {
+      "elapsedSeconds": 20.020874717999998,
+      "interval": [
+        1540,
+        1604
+      ],
+      "incumbent": 21.165158132308274,
+      "nativeUpper": 21.180421531336755,
+      "job": "PLD",
+      "food": 49248,
+      "subtreeSizes": [
+        1,
+        2,
+        2,
+        1,
+        1,
+        2,
+        3
+      ],
+      "conditionalLP": {
+        "status": 0,
+        "points": 12,
+        "combinations": 24,
+        "upperCertificate": 21.170768955425196,
+        "logCertificate": 3.05262140736974,
+        "prices": [
+          0.0,
+          0.0,
+          6.929919612718534e-05
+        ],
+        "lpLogUpper": 3.0526214032271675
+      },
+      "exact": {
+        "enumerated": true,
+        "combinations": 24,
+        "feasible": 12,
+        "exactMaximumDamage": 21.09145685726227,
+        "integerLinearUpper": 21.13265816256027
+      },
+      "rootLP": {
+        "status": 0,
+        "points": 66024,
+        "combinations": 56534354877866591880000,
+        "upperCertificate": 21.239092161629504,
+        "logCertificate": 3.0558434535407613,
+        "lpLogUpper": 3.0558434493829276
+      },
+      "rootPriceAppliedToSubtree": {
+        "upperCertificate": 21.18878400255899,
+        "logCertificate": 3.0534719851951384
+      }
+    },
+    {
+      "elapsedSeconds": 30.023843278999998,
+      "interval": [
+        1540,
+        1604
+      ],
+      "incumbent": 21.165158132308274,
+      "nativeUpper": 21.204925130143057,
+      "job": "PLD",
+      "food": 49248,
+      "subtreeSizes": [
+        1,
+        2,
+        4,
+        3,
+        8,
+        4,
+        4
+      ],
+      "conditionalLP": {
+        "status": 0,
+        "points": 26,
+        "combinations": 3072,
+        "upperCertificate": 21.1920241982922,
+        "logCertificate": 3.0536248938288844,
+        "prices": [
+          0.0,
+          0.0,
+          6.929919612718654e-05
+        ],
+        "lpLogUpper": 3.053624889685309
+      },
+      "exact": {
+        "enumerated": true,
+        "combinations": 3072,
+        "feasible": 621,
+        "exactMaximumDamage": 21.131180704219975,
+        "integerLinearUpper": 21.15387514254655
+      },
+      "rootLP": {
+        "status": 0,
+        "points": 66024,
+        "combinations": 56534354877866591880000,
+        "upperCertificate": 21.239092161629504,
+        "logCertificate": 3.0558434535407613,
+        "lpLogUpper": 3.0558434493829276
+      },
+      "rootPriceAppliedToSubtree": {
+        "upperCertificate": 21.215261708598135,
+        "logCertificate": 3.0547208145950813
+      }
+    },
+    {
+      "elapsedSeconds": 10.004569257000002,
+      "interval": [
+        842,
+        906
+      ],
+      "incumbent": 7.828975633382506,
+      "nativeUpper": 7.835431109288127,
+      "job": "WAR",
+      "food": 49240,
+      "subtreeSizes": [
+        1,
+        63,
+        6,
+        120,
+        242,
+        61,
+        41
+      ],
+      "conditionalLP": {
+        "status": 0,
+        "points": 534,
+        "combinations": 27453777120,
+        "upperCertificate": 7.804595387671885,
+        "logCertificate": 2.054712712479111,
+        "prices": [
+          3.7572651360342405e-05,
+          -7.029302825247927e-06,
+          0.0
+        ],
+        "lpLogUpper": 2.054712708951575
+      },
+      "exact": {
+        "enumerated": false
+      },
+      "rootLP": {
+        "status": 0,
+        "points": 29433,
+        "combinations": 1018678331178410068320,
+        "upperCertificate": 7.86079441168492,
+        "logCertificate": 2.061887671522789,
+        "lpLogUpper": 2.061887667941564
+      },
+      "rootPriceAppliedToSubtree": {
+        "upperCertificate": 7.815974408007015,
+        "logCertificate": 2.056169640426909
+      }
+    },
+    {
+      "elapsedSeconds": 20.011023756,
+      "interval": [
+        842,
+        906
+      ],
+      "incumbent": 7.828975633382506,
+      "nativeUpper": 7.845171261211396,
+      "job": "WAR",
+      "food": 49240,
+      "subtreeSizes": [
+        1,
+        8,
+        6,
+        4,
+        121,
+        15,
+        41
+      ],
+      "conditionalLP": {
+        "status": 0,
+        "points": 196,
+        "combinations": 14287680,
+        "upperCertificate": 7.824365500868012,
+        "logCertificate": 2.0572426469875045,
+        "prices": [
+          4.1574636142283766e-05,
+          -0.00010972657327137925,
+          0.0
+        ],
+        "lpLogUpper": 2.0572426433246607
+      },
+      "exact": {
+        "enumerated": false
+      },
+      "rootLP": {
+        "status": 0,
+        "points": 29433,
+        "combinations": 1018678331178410068320,
+        "upperCertificate": 7.86079441168492,
+        "logCertificate": 2.061887671522789,
+        "lpLogUpper": 2.061887667941564
+      },
+      "rootPriceAppliedToSubtree": {
+        "upperCertificate": 7.8303463178159465,
+        "logCertificate": 2.058006738630735
+      }
+    },
+    {
+      "elapsedSeconds": 30.021394157,
+      "interval": [
+        842,
+        906
+      ],
+      "incumbent": 7.830437239843039,
+      "nativeUpper": 7.837165378223653,
+      "job": "WAR",
+      "food": 49240,
+      "subtreeSizes": [
+        1,
+        2,
+        2,
+        31,
+        4,
+        1,
+        3
+      ],
+      "conditionalLP": {
+        "status": 0,
+        "points": 44,
+        "combinations": 1488,
+        "upperCertificate": 7.825180858973242,
+        "logCertificate": 2.057346849126943,
+        "prices": [
+          0.0,
+          -0.0011464731150777534,
+          0.0
+        ],
+        "lpLogUpper": 2.057346843549848
+      },
+      "exact": {
+        "enumerated": true,
+        "combinations": 1488,
+        "feasible": 93,
+        "exactMaximumDamage": 7.8075307144759964,
+        "integerLinearUpper": 7.825180815331467
+      },
+      "rootLP": {
+        "status": 0,
+        "points": 29433,
+        "combinations": 1018678331178410068320,
+        "upperCertificate": 7.86079441168492,
+        "logCertificate": 2.061887671522789,
+        "lpLogUpper": 2.061887667941564
+      },
+      "rootPriceAppliedToSubtree": {
+        "upperCertificate": 7.843245109299888,
+        "logCertificate": 2.0596526657248417
+      }
+    }
+  ],
+  "offlinePrimalSeedScreens": [
+    {
+      "job": "PLD",
+      "food": 49248,
+      "interval": [
+        1412,
+        1476
+      ],
+      "initialIncumbent": 21.101907903044474,
+      "supportSizes": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        2
+      ],
+      "candidateCombinations": 8,
+      "exact": {
+        "enumerated": true,
+        "combinations": 8,
+        "feasible": 0,
+        "exactMaximumDamage": null,
+        "integerLinearUpper": null
+      },
+      "optimalityProved": false,
+      "scope": "Offline root LP support rounding experiment; not the web solver"
+    },
+    {
+      "job": "WAR",
+      "food": 49240,
+      "interval": [
+        842,
+        906
+      ],
+      "initialIncumbent": 7.828975633382506,
+      "supportSizes": [
+        1,
+        1,
+        1,
+        1,
+        3,
+        2,
+        1
+      ],
+      "candidateCombinations": 6,
+      "exact": {
+        "enumerated": true,
+        "combinations": 6,
+        "feasible": 2,
+        "exactMaximumDamage": 7.822978662079504,
+        "integerLinearUpper": 7.851173743673137
+      },
+      "optimalityProved": false,
+      "scope": "Offline root LP support rounding experiment; not the web solver"
+    }
+  ],
+  "validatedIntermediateCandidates": [
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49245,
+      "elapsedNativeQuerySeconds": 1.004,
+      "visited": 2225026,
+      "evaluated": 2,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.110498660899797
+      },
+      "result": {
+        "damage": 21.110498660899797,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1131,
+          "DET": 1847,
+          "DHT": 1271,
+          "SKS": 667,
+          "TEN": 1351,
+          "VIT": 2940
+        },
+        "food": {
+          "id": 49245,
+          "name": "炖剑山芋",
+          "stats": {
+            "DHT": 151,
+            "VIT": 297,
+            "DET": 91
+          },
+          "statRates": {
+            "DHT": 10,
+            "VIT": 10,
+            "DET": 10
+          }
+        },
+        "tenacityMitigation": 0.1
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49248,
+      "elapsedNativeQuerySeconds": 1,
+      "visited": 2375024,
+      "evaluated": 1,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.101,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.105727154501828
+      },
+      "result": {
+        "damage": 21.105727154501828,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2530,
+          "CRT": 1000,
+          "DET": 2237,
+          "DHT": 1012,
+          "SKS": 650,
+          "TEN": 1368,
+          "VIT": 2934
+        },
+        "food": {
+          "id": 49248,
+          "name": "圆蛤羹",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "TEN": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "TEN": 10
+          }
+        },
+        "tenacityMitigation": 0.101
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49247,
+      "elapsedNativeQuerySeconds": 2.004,
+      "visited": 4875022,
+      "evaluated": 1,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.114,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.107365719393822
+      },
+      "result": {
+        "damage": 21.107365719393822,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1131,
+          "DET": 1883,
+          "DHT": 1120,
+          "SKS": 667,
+          "TEN": 1486,
+          "VIT": 2940
+        },
+        "food": {
+          "id": 49247,
+          "name": "蛤蜊糕",
+          "stats": {
+            "TEN": 151,
+            "VIT": 297,
+            "DET": 91
+          },
+          "statRates": {
+            "TEN": 10,
+            "VIT": 10,
+            "DET": 10
+          }
+        },
+        "tenacityMitigation": 0.114
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49240,
+      "elapsedNativeQuerySeconds": 2.013,
+      "visited": 5200024,
+      "evaluated": 1,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.101,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.10210402170403
+      },
+      "result": {
+        "damage": 21.10210402170403,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2524,
+          "CRT": 1066,
+          "DET": 2130,
+          "DHT": 1084,
+          "SKS": 650,
+          "TEN": 1368,
+          "VIT": 2927
+        },
+        "food": {
+          "id": 49240,
+          "name": "焦糖爆米花",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "CRT": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "CRT": 10
+          }
+        },
+        "tenacityMitigation": 0.101
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49248,
+      "elapsedNativeQuerySeconds": 2.002,
+      "visited": 4975033,
+      "evaluated": 10,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.165158132308274
+      },
+      "result": {
+        "damage": 21.165158132308274,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1258,
+          "DET": 1996,
+          "DHT": 1048,
+          "SKS": 650,
+          "TEN": 1351,
+          "VIT": 2940
+        },
+        "food": {
+          "id": 49248,
+          "name": "圆蛤羹",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "TEN": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "TEN": 10
+          }
+        },
+        "tenacityMitigation": 0.1
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49247,
+      "elapsedNativeQuerySeconds": 3.005,
+      "visited": 7275029,
+      "evaluated": 2,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.103,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.1095199232113
+      },
+      "result": {
+        "damage": 21.1095199232113,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1220,
+          "DET": 1885,
+          "DHT": 1120,
+          "SKS": 667,
+          "TEN": 1386,
+          "VIT": 2940
+        },
+        "food": {
+          "id": 49247,
+          "name": "蛤蜊糕",
+          "stats": {
+            "TEN": 151,
+            "VIT": 297,
+            "DET": 91
+          },
+          "statRates": {
+            "TEN": 10,
+            "VIT": 10,
+            "DET": 10
+          }
+        },
+        "tenacityMitigation": 0.103
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49247,
+      "elapsedNativeQuerySeconds": 4.008,
+      "visited": 9750029,
+      "evaluated": 4,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.114,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.115678680665415
+      },
+      "result": {
+        "damage": 21.115678680665415,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1258,
+          "DET": 1845,
+          "DHT": 1048,
+          "SKS": 650,
+          "TEN": 1486,
+          "VIT": 2940
+        },
+        "food": {
+          "id": 49247,
+          "name": "蛤蜊糕",
+          "stats": {
+            "TEN": 151,
+            "VIT": 297,
+            "DET": 91
+          },
+          "statRates": {
+            "TEN": 10,
+            "VIT": 10,
+            "DET": 10
+          }
+        },
+        "tenacityMitigation": 0.114
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49247,
+      "elapsedNativeQuerySeconds": 5.013,
+      "visited": 12300031,
+      "evaluated": 6,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.103,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.127834965488777
+      },
+      "result": {
+        "damage": 21.127834965488777,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1258,
+          "DET": 1900,
+          "DHT": 1084,
+          "SKS": 650,
+          "TEN": 1386,
+          "VIT": 2940
+        },
+        "food": {
+          "id": 49247,
+          "name": "蛤蜊糕",
+          "stats": {
+            "TEN": 151,
+            "VIT": 297,
+            "DET": 91
+          },
+          "statRates": {
+            "TEN": 10,
+            "VIT": 10,
+            "DET": 10
+          }
+        },
+        "tenacityMitigation": 0.103
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49240,
+      "elapsedNativeQuerySeconds": 5.024,
+      "visited": 13050026,
+      "evaluated": 8,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.156247245436905
+      },
+      "result": {
+        "damage": 21.156247245436905,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1349,
+          "DET": 1833,
+          "DHT": 1120,
+          "SKS": 650,
+          "TEN": 1351,
+          "VIT": 2940
+        },
+        "food": {
+          "id": 49240,
+          "name": "焦糖爆米花",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "CRT": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "CRT": 10
+          }
+        },
+        "tenacityMitigation": 0.1
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "job": "PLD",
+      "food": 49240,
+      "elapsedNativeQuerySeconds": 7.031,
+      "visited": 18525028,
+      "evaluated": 9,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 21.157205991419257
+      },
+      "result": {
+        "damage": 21.157205991419257,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1385,
+          "DET": 1833,
+          "DHT": 1084,
+          "SKS": 650,
+          "TEN": 1351,
+          "VIT": 2940
+        },
+        "food": {
+          "id": 49240,
+          "name": "焦糖爆米花",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "CRT": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "CRT": 10
+          }
+        },
+        "tenacityMitigation": 0.1
+      }
+    },
+    {
+      "case": "war248-min15",
+      "job": "WAR",
+      "food": 49239,
+      "elapsedNativeQuerySeconds": 0.346,
+      "visited": 686983,
+      "evaluated": 6,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.48,
+        "mitigation": 0.15,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 7.839795522490837
+      },
+      "result": {
+        "damage": 7.839795522490837,
+        "stats": {
+          "PDMG": 90,
+          "MDMG": 0,
+          "DLY": 3360,
+          "STR": 1270,
+          "CRT": 1417,
+          "DET": 679,
+          "DHT": 472,
+          "SKS": 400,
+          "TEN": 1041,
+          "VIT": 1437
+        },
+        "food": {
+          "id": 49239,
+          "name": "烤干酪辣味玉米片",
+          "stats": {
+            "CRT": 151,
+            "VIT": 297,
+            "SKS": 91
+          },
+          "statRates": {
+            "CRT": 10,
+            "VIT": 10,
+            "SKS": 10
+          }
+        },
+        "tenacityMitigation": 0.15
+      }
+    },
+    {
+      "case": "war248-min15",
+      "job": "WAR",
+      "food": 49248,
+      "elapsedNativeQuerySeconds": 3.013,
+      "visited": 8250024,
+      "evaluated": 1,
+      "status": "intermediateCandidate",
+      "optimalityProved": false,
+      "validation": {
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.48,
+        "mitigation": 0.15,
+        "criticalThresholdCheck": "none",
+        "independentTypeScriptDamage": 7.829242079854298
+      },
+      "result": {
+        "damage": 7.829242079854298,
+        "stats": {
+          "PDMG": 90,
+          "MDMG": 0,
+          "DLY": 3360,
+          "STR": 1264,
+          "CRT": 828,
+          "DET": 1250,
+          "DHT": 564,
+          "SKS": 407,
+          "TEN": 1040,
+          "VIT": 1431
+        },
+        "food": {
+          "id": 49248,
+          "name": "圆蛤羹",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "TEN": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "TEN": 10
+          }
+        },
+        "tenacityMitigation": 0.15
+      }
+    }
+  ],
+  "shardingScreen": {
+    "workers": 4,
+    "shardsArgument": 16,
+    "actualPartitions": 18,
+    "timeoutMs": 150000,
+    "status": "Both screens timed out; no exact optimum or end-to-end speedup established",
+    "runs": [
+      {
+        "status": "timeout",
+        "bestDamage": 21.165158132308274,
+        "milliseconds": 150000.5,
+        "completed": 3,
+        "partitions": 18,
+        "exploredStates": 21,
+        "workers": 4,
+        "shards": 16,
+        "criticalPreference": "none",
+        "browser": "154.0.8037.57"
+      },
+      {
+        "status": "timeout",
+        "bestDamage": 7.859572391399585,
+        "milliseconds": 150000.5,
+        "completed": 16,
+        "partitions": 18,
+        "exploredStates": 53,
+        "workers": 4,
+        "shards": 16,
+        "criticalPreference": "none",
+        "browser": "154.0.8037.57"
+      }
+    ],
+    "rawFile": "timeout-profile-shards.json.gz"
+  },
+  "incumbentAblation": {
+    "scope": "WAR food49240, raw CRT842..906 only, same trees/reference/formula",
+    "notEndToEnd": true,
+    "initial": {
+      "index": 1,
+      "job": "WAR",
+      "food": 49240,
+      "focusedBand": 6,
+      "incumbent": 7.828975633382506,
+      "seconds": 20.005844369,
+      "complete": false,
+      "state": [
+        7.828975633382506,
+        40775019,
+        0,
+        842,
+        906,
+        458,
+        1322,
+        64,
+        14,
+        6,
+        39,
+        7,
+        1038.9999985499996,
+        -0.1961881883788319
+      ],
+      "histogram": [
+        322316,
+        842520,
+        1728753,
+        2908126,
+        4252179,
+        5392673,
+        5655832,
+        19672620
+      ],
+      "counters": [
+        81550039,
+        81550039,
+        3482782,
+        0,
+        78067257,
+        23936760,
+        54130497,
+        8182315,
+        45798748,
+        45694593,
+        5023699,
+        0,
+        40775049,
+        508821836,
+        508820783,
+        0,
+        1093059302,
+        1092941584,
+        58866,
+        0,
+        0,
+        9321015,
+        0,
+        0,
+        40774981,
+        1034527,
+        39740492,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5222163,
+        10603046,
+        6523001,
+        5477095,
+        5743169,
+        7206545,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "earlyFeasibleBound": {
+      "index": 1,
+      "job": "WAR",
+      "food": 49240,
+      "focusedBand": 6,
+      "incumbent": 7.839795522490837,
+      "seconds": 20.000624748000003,
+      "complete": false,
+      "state": [
+        7.839795522490837,
+        44925021,
+        0,
+        842,
+        906,
+        458,
+        1322,
+        64,
+        7,
+        6,
+        43,
+        7,
+        1038.9999985499996,
+        -0.1961881883788319
+      ],
+      "histogram": [
+        12498225,
+        3503160,
+        3199016,
+        3287018,
+        3308121,
+        3432253,
+        3418099,
+        12279129
+      ],
+      "counters": [
+        89850043,
+        89850043,
+        1803085,
+        0,
+        88046958,
+        27177812,
+        60869146,
+        4957990,
+        46213141,
+        39713452,
+        1288092,
+        0,
+        44925049,
+        550640726,
+        550639688,
+        0,
+        1232775116,
+        1232657398,
+        58866,
+        0,
+        0,
+        10976459,
+        0,
+        0,
+        44924979,
+        671176,
+        44253845,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        4933525,
+        8718503,
+        7496934,
+        6919910,
+        8460585,
+        8395564,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "strongerFeasibleBound": {
+      "index": 1,
+      "job": "WAR",
+      "food": 49240,
+      "focusedBand": 6,
+      "incumbent": 7.859572391399585,
+      "seconds": 1.118150041,
+      "complete": true,
+      "state": [
+        7.859572391399585,
+        2251146,
+        0,
+        842,
+        906,
+        458,
+        1322,
+        64,
+        7,
+        7,
+        0,
+        7,
+        1038.9999985499996,
+        -0.1961881883788319
+      ],
+      "histogram": [
+        0,
+        1,
+        40,
+        600,
+        4714,
+        21429,
+        59841,
+        2164521
+      ],
+      "counters": [
+        4502293,
+        4502293,
+        250032,
+        0,
+        4252261,
+        1209951,
+        3042310,
+        335860,
+        2706450,
+        2706450,
+        455304,
+        0,
+        2251146,
+        29693372,
+        29692403,
+        0,
+        59649358,
+        59531640,
+        58866,
+        0,
+        0,
+        564162,
+        0,
+        0,
+        2251147,
+        595374,
+        1655772,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        328240,
+        380369,
+        240984,
+        499426,
+        521647,
+        280480,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "strongerBoundSource": "Completed candidate-shard result reported by shards16-war; not an optimality claim"
+  },
+  "sourceHash": "3fc74fcf27de5d92b8c88c96d8abd5ce8a165c2dae4da45906e04ef76b292b10",
+  "replayControls": [
+    [
+      {
+        "file": "/workspace/ffxiv-gearing/src/optimizerSearch.wasm",
+        "visited": 2500022,
+        "evaluated": 1,
+        "best": 21.105727154501828,
+        "complete": 0
+      },
+      {
+        "file": "/workspace/.cloud-setup/timeout-profile/kernel.wasm",
+        "visited": 2500022,
+        "evaluated": 1,
+        "best": 21.105727154501828,
+        "complete": 0
+      }
+    ],
+    [
+      {
+        "file": "/workspace/ffxiv-gearing/src/optimizerSearch.wasm",
+        "visited": 2500013,
+        "evaluated": 0,
+        "best": 7.828975633382506,
+        "complete": 0
+      },
+      {
+        "file": "/workspace/.cloud-setup/timeout-profile/kernel.wasm",
+        "visited": 2500013,
+        "evaluated": 0,
+        "best": 7.828975633382506,
+        "complete": 0
+      }
+    ]
+  ],
+  "rawSnapshotsFile": "timeout-profile-counters.json.gz",
+  "rawCandidatesFile": "timeout-profile-candidates.json.gz"
+}
