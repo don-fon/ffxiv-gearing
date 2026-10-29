@@ -1,0 +1,76 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -229,6 +229,60 @@
+  }
+  for(int j=0;j<3;j++)price_trial[j]=price_best_q[j];
+ }
++/* Kelley cutting planes on the three-dimensional convex price objective.
++ * The tiny LP only proposes prices: pruning always rechecks actual supports. */
++#define PRICE_LP_M 140
++#define PRICE_LP_N 6
++static double price_cuts[PRICE_LP_M][PRICE_LP_N+1];
++static double price_table[PRICE_LP_M+1][PRICE_LP_N+1];
++static int price_basic[PRICE_LP_M],price_nonbasic[PRICE_LP_N];
++static int price_lp(int m,double *solution){
++ const int n=PRICE_LP_N;
++ for(int i=0;i<m;i++){price_basic[i]=n+i;for(int j=0;j<=n;j++)price_table[i][j]=price_cuts[i][j];}
++ for(int j=0;j<n;j++){price_nonbasic[j]=j;price_table[m][j]=j==5?-1:0;solution[j]=0;}
++ price_table[m][n]=0;
++ for(int iteration=0;iteration<400;iteration++){
++  int s=-1;for(int j=0;j<n;j++)if(price_table[m][j]<-1e-11&&(s<0||price_nonbasic[j]<price_nonbasic[s]))s=j;
++  if(s<0){for(int i=0;i<m;i++)if(price_basic[i]<n)solution[price_basic[i]]=price_table[i][n];return 1;}
++  int r=-1;
++  for(int i=0;i<m;i++)if(price_table[i][s]>1e-12){
++   double ratio=price_table[i][n]/price_table[i][s];
++   if(r<0||ratio<price_table[r][n]/price_table[r][s]-1e-11||(__builtin_fabs(ratio-price_table[r][n]/price_table[r][s])<=1e-11&&price_basic[i]<price_basic[r]))r=i;
++  }
++  if(r<0)return 0;
++  double inverse=1/price_table[r][s];
++  for(int i=0;i<=m;i++)if(i!=r)for(int j=0;j<=n;j++)if(j!=s)price_table[i][j]-=price_table[r][j]*price_table[i][s]*inverse;
++  for(int j=0;j<=n;j++)if(j!=s)price_table[r][j]*=inverse;
++  for(int i=0;i<=m;i++)if(i!=r)price_table[i][s]*=-inverse;
++  price_table[r][s]=inverse;int t=price_basic[r];price_basic[r]=price_nonbasic[s];price_nonbasic[s]=t;
++ }
++ return 0;
++}
++static void price_bundle(void){
++ double zero[3]={0},resources[3],f0=price_evaluate(zero,resources),q[3]={0};int cuts=5;
++ for(int i=0;i<5;i++){for(int j=0;j<6;j++)price_cuts[i][j]=i==j?1:0;price_cuts[i][6]=(i==0&&context[14]<=0)||(i>=3&&!context[57])?0:.5;}
++ for(int iteration=0;iteration<28;iteration++){
++  double value=price_evaluate(q,resources);
++  if(value<price_best_value){price_best_value=value;for(int j=0;j<3;j++)price_best_q[j]=q[j];}
++  /* At zero, both interval endpoints give legitimate supporting planes. */
++  for(int mask=0;mask<4;mask++){
++   double gradients[3];
++   for(int j=0;j<3;j++){
++    double target=price_lower[j];
++    if(j>0&&(q[j]<0||(q[j]==0&&(mask&(1<<(j-1))))))target=price_upper[j];
++    gradients[j]=resources[j]-target;
++   }
++   double intercept=value;for(int j=0;j<3;j++)intercept-=gradients[j]*q[j];
++   double *cut=price_cuts[cuts++];
++   cut[0]=gradients[0]/price_range[0];cut[1]=gradients[1]/price_range[1];cut[2]=-cut[1];cut[3]=gradients[2]/price_range[2];cut[4]=-cut[3];cut[5]=1;cut[6]=maximum(0,f0-intercept);
++   if(q[1]!=0&&q[2]!=0)break;
++  }
++  double solution[6];if(!price_lp(cuts,solution))break;
++  if(price_best_value-(f0-solution[5])<1e-8)break;
++  q[0]=solution[0]/price_range[0];q[1]=(solution[1]-solution[2])/price_range[1];q[2]=(solution[3]-solution[4])/price_range[2];
++ }
++}
++
+ static void configure_prices(void){
+  price_ready=0;
+  if(!constraint_ordering||!plane_enabled||price_count==0)return;
+@@ -245,11 +299,7 @@
+   double *p=(double*)price_points[i].point,value=0;for(int j=0;j<8;j++)value+=plane_weights[j]*p[j];price_points[i].base=value;
+  }
+  double resources[3];price_best_value=price_evaluate(price_trial,resources);
+- for(int pass=0;pass<3;pass++){
+-  double before=price_best_value;
+-  price_coordinate(0);price_coordinate(2);price_coordinate(1);
+-  if(before-price_best_value<1e-10)break;
+- }
++ price_bundle();
+  for(int j=0;j<3;j++)price_q[j]=price_best_q[j];
+  if(price_q[0]==0&&price_q[1]==0&&price_q[2]==0)return;
+  price_constant=price_shift(price_q);

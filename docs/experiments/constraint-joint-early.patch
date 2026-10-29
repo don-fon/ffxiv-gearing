@@ -1,0 +1,21 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -288,7 +288,7 @@
+  double linear=__builtin_inf();
+  if(plane_enabled){double high,low;linear=plane_bound(roots,&high,&low);
+   if(context[19]&&!plane_score_integrated){double v[8]={0};int present=0;for(int i=0;i<root_count;i++){double *n=node(roots[i]);v[5]+=n[5];present|=(int)n[8];}linear+=wasm_log(1+context[19]*maximum(0,mitigation(v,present)));}
+-  if(linear<=plane_best_log)return -__builtin_inf();}
++  if(linear<=plane_best_log)return -__builtin_inf();if(price_ready){linear=minimum(linear,priced_bound(roots));if(linear<=plane_best_log)return -__builtin_inf();}}
+  double v[8]={0},budget=0,critical_minimum=0;int has_tenacity=0;
+  for(int i=0;i<root_count;i++){
+   double *n=node(roots[i]);for(int stat=0;stat<8;stat++)v[stat]+=n[stat];
+@@ -306,8 +306,7 @@
+  budget=minimum(budget,speed_budget);
+  if(context[56]){v[5]=context[1];budget+=context[1];}
+  value=budget_bound(v,critical_minimum,budget,value);
+- if(plane_enabled&&value>best){value=minimum(value,wasm_exp(linear));if(price_ready&&value>best)value=minimum(value,wasm_exp(priced_bound(roots)));}
+- return value;
++ return plane_enabled&&value>best?minimum(value,wasm_exp(linear)):value;
+ }
+ __attribute__((visibility("default"))) int search_abi(void){return 13;}
+ __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}

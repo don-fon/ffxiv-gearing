@@ -1,0 +1,247 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -164,6 +164,113 @@
+  if(*minimum_critical>plane_high||*maximum_critical<plane_low)return -__builtin_inf();
+  return minimum(log_bound,secondary+plane_primary_logs(main,weapon));
+ }
++/* Root-only Lagrangian pricing. Every tested price is a valid upper
++ * certificate; coordinate optimization need not find the dual optimum. */
++typedef struct { address point; double base; } PricePoint;
++_Static_assert(sizeof(PricePoint)==16,"pricing scratch layout");
++static PricePoint *price_points;
++static int price_ends[ROOTS+1],price_count,price_ready;
++static double price_q[3],price_constant,price_error,price_lower[3],price_upper[3],price_range[3];
++static double price_trial[3],price_best_q[3],price_best_value;
++static int price_resource[3]={5,2,9};
++static void price_collect(address ptr){
++ double *n=node(ptr);
++ if(n[NODE_LENGTH]>0){for(int i=0;i<(int)n[NODE_LENGTH];i++){price_points[price_count].point=(address)n[NODE_POINTS]+i*POINT_BYTES;price_count++;}}
++ else {price_collect((address)n[NODE_LEFT]);price_collect((address)n[NODE_RIGHT]);}
++}
++static double price_shift(const double *q){
++ double value=plane_constant-q[0]*price_lower[0];
++ for(int j=1;j<3;j++)value-=q[j]*(q[j]>=0?price_lower[j]:price_upper[j]);
++ return value;
++}
++static double price_evaluate(const double *q,double *resource_sum){
++ double result=price_shift(q);for(int j=0;j<3;j++)resource_sum[j]=0;
++ for(int group=0;group<root_count;group++){
++  double highest=-__builtin_inf();int selected=-1;
++  for(int i=price_ends[group];i<price_ends[group+1];i++){
++   double *p=(double*)price_points[i].point;
++   double value=price_points[i].base+q[0]*p[5]+q[1]*p[2]+q[2]*p[9];
++   if(value>highest){highest=value;selected=i;}
++  }
++  result+=highest;
++  if(selected>=0){double *p=(double*)price_points[selected].point;for(int j=0;j<3;j++)resource_sum[j]+=p[price_resource[j]];}
++ }
++ return result;
++}
++static double price_sample(double *q,int dim,double x,double direction,double target,double *gradient){
++ q[dim]=direction*x;double resources[3],value=price_evaluate(q,resources);
++ *gradient=direction*(resources[dim]-target);
++ if(value<price_best_value){price_best_value=value;for(int j=0;j<3;j++)price_best_q[j]=q[j];}
++ return value;
++}
++static void price_coordinate(int dim){
++ if(price_range[dim]<=1e-9||(dim==0&&context[14]<=0)||(dim==2&&!context[57]))return;
++ double q[3];for(int j=0;j<3;j++)q[j]=price_trial[j];q[dim]=0;
++ double resources[3],f0=price_evaluate(q,resources);
++ if(f0<price_best_value){price_best_value=f0;for(int j=0;j<3;j++)price_best_q[j]=q[j];}
++ double direction=resources[dim]<price_lower[dim]?1:resources[dim]>price_upper[dim]?-1:0;
++ if(dim==0&&direction<0)direction=0;
++ if(direction==0){for(int j=0;j<3;j++)price_trial[j]=price_best_q[j];return;}
++ double target=direction>0?price_lower[dim]:price_upper[dim];
++ double low=0,fl=f0,gl=direction*(resources[dim]-target),high=maximum(.02/price_range[dim],__builtin_fabs(price_trial[dim])),fh=0,gh=0;
++ int bracketed=0;
++ for(int i=0;i<5;i++){
++  fh=price_sample(q,dim,high,direction,target,&gh);
++  if(gh>=0){bracketed=1;break;}
++  low=high;fl=fh;gl=gh;high*=2;
++ }
++ if(bracketed)for(int i=0;i<5;i++){
++  double width=high-low;if(width<=1e-12)break;
++  double x=(fh-fl+gl*low-gh*high)/(gl-gh);
++  if(!__builtin_isfinite(x)||x<=low+.02*width||x>=high-.02*width)x=(low+high)*.5;
++  double gx,fx=price_sample(q,dim,x,direction,target,&gx);
++  if(gx>=0){high=x;fh=fx;gh=gx;}else {low=x;fl=fx;gl=gx;}
++  if(__builtin_fabs(gx)<1e-9)break;
++ }
++ for(int j=0;j<3;j++)price_trial[j]=price_best_q[j];
++}
++static void configure_prices(void){
++ price_ready=0;
++ if(!constraint_ordering||!plane_enabled||price_count==0)return;
++ double low[3]={0},high[3]={0},magnitude=1+__builtin_fabs(plane_constant);
++ for(int group=0;group<root_count;group++){
++  double *n=node(original_roots[group]);low[0]+=n[25];high[0]+=n[5];low[1]+=n[10];high[1]+=n[2];low[2]+=n[23];high[2]+=n[22];
++  for(int j=0;j<8;j++)magnitude+=__builtin_fabs(plane_weights[j])*__builtin_fabs(n[j]);
++ }
++ price_lower[0]=minimum_tenacity_raw;price_upper[0]=__builtin_inf();
++ price_lower[1]=plane_low;price_upper[1]=plane_high;
++ price_lower[2]=context[58];price_upper[2]=context[59];
++ for(int j=0;j<3;j++){price_range[j]=maximum(1,high[j]-low[j]);price_trial[j]=0;price_best_q[j]=0;}
++ for(int i=0;i<price_count;i++){
++  double *p=(double*)price_points[i].point,value=0;for(int j=0;j<8;j++)value+=plane_weights[j]*p[j];price_points[i].base=value;
++ }
++ double resources[3];price_best_value=price_evaluate(price_trial,resources);
++ for(int pass=0;pass<3;pass++){
++  double before=price_best_value;
++  price_coordinate(0);price_coordinate(2);price_coordinate(1);
++  if(before-price_best_value<1e-10)break;
++ }
++ for(int j=0;j<3;j++)price_q[j]=price_best_q[j];
++ if(price_q[0]==0&&price_q[1]==0&&price_q[2]==0)return;
++ price_constant=price_shift(price_q);
++ for(int j=0;j<3;j++)magnitude+=__builtin_fabs(price_q[j])*(maximum(__builtin_fabs(low[j]),__builtin_fabs(high[j]))+__builtin_fabs(price_q[j]>=0?price_lower[j]:price_upper[j]));
++ price_error=1e-9*magnitude;
++ price_ready=__builtin_isfinite(price_constant)&&__builtin_isfinite(price_error);
++}
++static double price_support(address ptr){
++ double *n=node(ptr);if(n[27]==plane_generation)return n[26];
++ double value=-__builtin_inf();
++ if(n[NODE_LENGTH]>0){for(int i=0;i<(int)n[NODE_LENGTH];i++){
++  double *p=(double*)((address)n[NODE_POINTS]+i*POINT_BYTES),sum=0;
++  for(int j=0;j<8;j++)sum+=plane_weights[j]*p[j];
++  sum+=price_q[0]*p[5]+price_q[1]*p[2]+price_q[2]*p[9];value=maximum(value,sum);
++ }}else value=maximum(price_support((address)n[NODE_LEFT]),price_support((address)n[NODE_RIGHT]));
++ n[26]=value;n[27]=plane_generation;return value;
++}
++static double priced_bound(const address *roots){
++ double value=price_constant+price_error;for(int i=0;i<root_count;i++)value+=price_support(roots[i]);return value;
++}
++
+ static double speed_gcd(double raw){
+  double cap=context[60],rate=context[61];
+  double speed=raw+(rate<0?cap:minimum(cap,floor_game(raw*rate)));
+@@ -199,9 +306,10 @@
+  budget=minimum(budget,speed_budget);
+  if(context[56]){v[5]=context[1];budget+=context[1];}
+  value=budget_bound(v,critical_minimum,budget,value);
+- return plane_enabled&&value>best?minimum(value,wasm_exp(linear)):value;
+-}
+-__attribute__((visibility("default"))) int search_abi(void){return 11;}
++ if(plane_enabled&&value>best){value=minimum(value,wasm_exp(linear));if(price_ready&&value>best)value=minimum(value,wasm_exp(priced_bound(roots)));}
++ return value;
++}
++__attribute__((visibility("default"))) int search_abi(void){return 13;}
+ __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
+ __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
+ __attribute__((visibility("default"))) void configure_search(address pointer){
+@@ -234,17 +342,19 @@
+ static int next_plane(void){
+  if(plane_active){plane_finished++;plane_active=0;}
+  if(plane_finished>=plane_count)return 0;
+- covered=0;
++ covered=0;price_ready=0;
+  if(plane_enabled){
+   int index=plane_finished;
+   plane_low=plane_first+index*plane_width;plane_high=minimum(plane_last,plane_first+(index+1)*plane_width);
+   configure_plane();
+  }
+  for(int i=0;i<root_count;i++)frames[0].roots[i]=original_roots[i];
+- frames[0].work=1;frames[0].bound=upper(frames[0].roots);top=1;plane_active=1;return 1;
+-}
+-__attribute__((visibility("default"))) void start_search(address pointers,int count,double threshold,int complete_search){
+- constraint_ordering=complete_search;
++ frames[0].work=1;frames[0].bound=upper(frames[0].roots);
++ if(frames[0].bound>best){configure_prices();if(price_ready)frames[0].bound=minimum(frames[0].bound,wasm_exp(priced_bound(frames[0].roots)));}
++ top=1;plane_active=1;return 1;
++}
++__attribute__((visibility("default"))) void start_search(address pointers,int count,double threshold,int complete_search,address scratch){
++ constraint_ordering=complete_search;price_points=(PricePoint*)scratch;price_count=0;price_ready=0;
+  plane_main_raw=-__builtin_inf();plane_weapon_raw=-__builtin_inf();
+  root_count=count;best=threshold;visited=0;evaluated=0;covered=0;top=0;failure=0;
+  if(count<1||count>ROOTS){failure=1;return;}
+@@ -259,6 +369,7 @@
+   for(int stat=2;stat<=5;stat++)if(context[20+stat]<0||context[28+stat]<0)plane_enabled=0;
+   if(factor(0,context[48])<=0||factor(5,context[48+(context[9]?7:6)])<=0)plane_enabled=0;
+  }
++ if(plane_enabled&&constraint_ordering){for(int i=0;i<root_count;i++){price_ends[i]=price_count;price_collect(original_roots[i]);}price_ends[root_count]=price_count;}
+  plane_width=maximum(64,__builtin_ceil((plane_last-plane_first+1)/256));
+  plane_count=plane_enabled?(int)maximum(1,__builtin_ceil((plane_last-plane_first)/plane_width)):1;
+  plane_best_log=best>0?wasm_log(best):-__builtin_inf();plane_finished=0;plane_active=0;
+--- a/src/optimizerWasm.ts
++++ b/src/optimizerWasm.ts
+@@ -9,7 +9,7 @@
+   search_cache_bytes: () => number;
+   search_frame_bytes: () => number;
+   configure_search: (pointer: number) => void;
+-  start_search: (pointers: number, count: number, threshold: number, completeSearch: number) => void;
++  start_search: (pointers: number, count: number, threshold: number, completeSearch: number, scratch: number) => void;
+   step_search: (limit: number) => number;
+   search_damage: () => number;
+   search_visited: () => number;
+@@ -22,7 +22,7 @@
+     result: number, count: number, capacity: number) => number;
+ }
+ 
+-/** ABI 11: node = 26 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
++/** ABI 13: node = 28 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
+  * Vectors: attack-main, INT, CRT, DET, DHT, TEN, PDMG, MDMG, TEN-present.
+  * Node tail: secondary-total max, CRT min, left, right, points, length, count.
+  * Node tail (16–21): two support caches/generations, minimum main/weapon stats.
+@@ -40,9 +40,11 @@
+     env: { memory, log: Math.log, exp: Math.exp },
+   });
+   const core = instance.exports as SearchExports;
+-  if (core.search_abi() !== 11) throw new Error('Unsupported optimizer WASM ABI.');
++  if (core.search_abi() !== 13) throw new Error('Unsupported optimizer WASM ABI.');
+   const heapBase = Number(core.__heap_base.value);
+   let nextAddress = heapBase;
++  let pricingScratch = 0;
++  let pricingCapacity = 0;
+   let rootAddress = 0;
+   let currentMinimumSpeed: number | undefined;
+   let currentMaximumSpeed: number | undefined;
+@@ -68,7 +70,7 @@
+   const packTree = (tree: AttributeTreeNode<GearOption>): number => {
+     const cached = treePointers.get(tree);
+     if (cached !== undefined) return cached;
+-    const pointer = allocate(26 * 8);
++    const pointer = allocate(28 * 8);
+     treePointers.set(tree, pointer);
+     let left = 0;
+     let right = 0;
+@@ -100,6 +102,7 @@
+     new Float64Array(memory.buffer, pointer, 26)[25] = tree.items === undefined
+       ? Math.min(new Float64Array(memory.buffer, left, 26)[25], new Float64Array(memory.buffer, right, 26)[25])
+       : tree.items.reduce((minimum, item) => Math.min(minimum, item.stats.TEN ?? 0), Infinity);
++    new Float64Array(memory.buffer, pointer, 28).fill(0, 26, 28);
+     return pointer;
+   };
+   const configure = (task: OptimizerSearchTask) => {
+@@ -109,6 +112,8 @@
+     attackStat = currentInput.damage.mainStat === 'VIT' ? 'STR' : currentInput.damage.mainStat;
+     weaponStat = currentInput.damage.mainStat === 'INT' || currentInput.damage.mainStat === 'MND' ? 'MDMG' : 'PDMG';
+     nextAddress = heapBase;
++    pricingScratch = 0;
++    pricingCapacity = 0;
+     treePointers = new WeakMap();
+     points.clear();
+     const { damage, fixedStats, food } = currentInput;
+@@ -175,7 +180,14 @@
+     new Uint32Array(memory.buffer, rootAddress, 16).set(rootPointers);
+     // A bounded warm-up needs a strong incumbent, while the full search must
+     // prove it optimal. Preserve the incumbent-producing order during warm-up.
+-    core.start_search(rootAddress, rootCount, task.minimumDamage, Number(task.branchLimit === undefined));
++    const scratchSize = task.branchLimit === undefined ? rootPointers.reduce((sum, pointer) =>
++      sum + new Float64Array(memory.buffer, pointer, 28)[15], 0) * 16 : 0;
++    if (scratchSize > pricingCapacity) {
++      pricingScratch = allocate(scratchSize);
++      pricingCapacity = scratchSize;
++    }
++    const scratch = pricingScratch;
++    core.start_search(rootAddress, rootCount, task.minimumDamage, Number(task.branchLimit === undefined), scratch);
+     let lastReport = Date.now();
+     let complete = false;
+     while (!(complete = core.step_search(50_000) !== 0)) {
+@@ -200,6 +212,8 @@
+     // Preprocessing occurs before final search, so scratch storage can reuse the arena.
+     currentInput = undefined;
+     nextAddress = heapBase;
++    pricingScratch = 0;
++    pricingCapacity = 0;
+     treePointers = new WeakMap();
+     points.clear();
+     const values = allocate(options.length * dimensions.length * 8);

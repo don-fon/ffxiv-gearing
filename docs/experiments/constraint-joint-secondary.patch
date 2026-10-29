@@ -1,0 +1,85 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -232,7 +232,7 @@
+ static void configure_prices(void){
+  price_ready=0;
+  if(!constraint_ordering||!plane_enabled||price_count==0)return;
+- double low[3]={0},high[3]={0},magnitude=1+__builtin_fabs(plane_constant);
++ double low[3]={0},high[3]={0},magnitude=1+__builtin_fabs(plane_constant)+__builtin_fabs(plane_secondary_constant);
+  for(int group=0;group<root_count;group++){
+   double *n=node(original_roots[group]);low[0]+=n[25];high[0]+=n[5];low[1]+=n[10];high[1]+=n[2];low[2]+=n[23];high[2]+=n[22];
+   for(int j=0;j<8;j++)magnitude+=__builtin_fabs(plane_weights[j])*__builtin_fabs(n[j]);
+@@ -257,18 +257,20 @@
+  price_error=1e-9*magnitude;
+  price_ready=__builtin_isfinite(price_constant)&&__builtin_isfinite(price_error);
+ }
+-static double price_support(address ptr){
+- double *n=node(ptr);if(n[27]==plane_generation)return n[26];
++static double price_support(address ptr,int kind){
++ double *n=node(ptr);int cache=kind?28:26;if(n[cache+1]==plane_generation)return n[cache];
+  double value=-__builtin_inf();
+  if(n[NODE_LENGTH]>0){for(int i=0;i<(int)n[NODE_LENGTH];i++){
+   double *p=(double*)((address)n[NODE_POINTS]+i*POINT_BYTES),sum=0;
+-  for(int j=0;j<8;j++)sum+=plane_weights[j]*p[j];
++  for(int j=kind?2:0;j<(kind?6:8);j++)sum+=plane_weights[j]*p[j];
+   sum+=price_q[0]*p[5]+price_q[1]*p[2]+price_q[2]*p[9];value=maximum(value,sum);
+- }}else value=maximum(price_support((address)n[NODE_LEFT]),price_support((address)n[NODE_RIGHT]));
+- n[26]=value;n[27]=plane_generation;return value;
++ }}else value=maximum(price_support((address)n[NODE_LEFT],kind),price_support((address)n[NODE_RIGHT],kind));
++ n[cache]=value;n[cache+1]=plane_generation;return value;
+ }
+ static double priced_bound(const address *roots){
+- double value=price_constant+price_error;for(int i=0;i<root_count;i++)value+=price_support(roots[i]);return value;
++ double value=price_constant+price_error,secondary=price_constant-plane_constant+plane_secondary_constant+price_error,main=0,weapon=0;int weapon_stat=context[9]?7:6;
++ for(int i=0;i<root_count;i++){double *n=node(roots[i]);value+=price_support(roots[i],0);secondary+=price_support(roots[i],1);main+=n[0];weapon+=n[weapon_stat];}
++ return minimum(value,secondary+plane_primary_logs(main,weapon));
+ }
+ 
+ static double speed_gcd(double raw){
+@@ -309,7 +311,7 @@
+  if(plane_enabled&&value>best){value=minimum(value,wasm_exp(linear));if(price_ready&&value>best)value=minimum(value,wasm_exp(priced_bound(roots)));}
+  return value;
+ }
+-__attribute__((visibility("default"))) int search_abi(void){return 13;}
++__attribute__((visibility("default"))) int search_abi(void){return 14;}
+ __attribute__((visibility("default"))) int search_cache_bytes(void){return 6*CACHE*8;}
+ __attribute__((visibility("default"))) int search_frame_bytes(void){return FRAMES*sizeof(Frame);}
+ __attribute__((visibility("default"))) void configure_search(address pointer){
+--- a/src/optimizerWasm.ts
++++ b/src/optimizerWasm.ts
+@@ -22,7 +22,7 @@
+     result: number, count: number, capacity: number) => number;
+ }
+ 
+-/** ABI 13: node = 28 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
++/** ABI 14: node = 30 f64, point = 10 f64, context = 64 f64. Addresses are wasm32 bytes.
+  * Vectors: attack-main, INT, CRT, DET, DHT, TEN, PDMG, MDMG, TEN-present.
+  * Node tail: secondary-total max, CRT min, left, right, points, length, count.
+  * Node tail (16–21): two support caches/generations, minimum main/weapon stats.
+@@ -40,7 +40,7 @@
+     env: { memory, log: Math.log, exp: Math.exp },
+   });
+   const core = instance.exports as SearchExports;
+-  if (core.search_abi() !== 13) throw new Error('Unsupported optimizer WASM ABI.');
++  if (core.search_abi() !== 14) throw new Error('Unsupported optimizer WASM ABI.');
+   const heapBase = Number(core.__heap_base.value);
+   let nextAddress = heapBase;
+   let pricingScratch = 0;
+@@ -70,7 +70,7 @@
+   const packTree = (tree: AttributeTreeNode<GearOption>): number => {
+     const cached = treePointers.get(tree);
+     if (cached !== undefined) return cached;
+-    const pointer = allocate(28 * 8);
++    const pointer = allocate(30 * 8);
+     treePointers.set(tree, pointer);
+     let left = 0;
+     let right = 0;
+@@ -102,7 +102,7 @@
+     new Float64Array(memory.buffer, pointer, 26)[25] = tree.items === undefined
+       ? Math.min(new Float64Array(memory.buffer, left, 26)[25], new Float64Array(memory.buffer, right, 26)[25])
+       : tree.items.reduce((minimum, item) => Math.min(minimum, item.stats.TEN ?? 0), Infinity);
+-    new Float64Array(memory.buffer, pointer, 28).fill(0, 26, 28);
++    new Float64Array(memory.buffer, pointer, 30).fill(0, 26, 30);
+     return pointer;
+   };
+   const configure = (task: OptimizerSearchTask) => {

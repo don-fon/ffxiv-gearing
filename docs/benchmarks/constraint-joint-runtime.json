@@ -1,0 +1,3887 @@
+{
+  "baselineCommit": "c4520de",
+  "serial": true,
+  "workers": 4,
+  "coldChromium": true,
+  "timeoutMs": 300000,
+  "baselineHistorical": true,
+  "source": "real production worker pipeline",
+  "runs": [
+    {
+      "case": "war248-min10",
+      "targetGcd": 2.48,
+      "minimumMitigation": 0.1,
+      "variants": {
+        "current": {
+          "status": "completed",
+          "seconds": 88.28639999999106,
+          "damage": 7.927973014548788,
+          "score": null,
+          "branches": 232652715,
+          "peakWasmMemoryMiB": 18.1,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.48,
+            "mitigation": 0.1,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 7.927973014548788,
+            "tenacityMitigation": 0.1,
+            "stats": {
+              "PDMG": 90,
+              "MDMG": 0,
+              "DLY": 3360,
+              "STR": 1270,
+              "CRT": 1354,
+              "DET": 1013,
+              "DHT": 474,
+              "SKS": 407,
+              "TEN": 816,
+              "VIT": 1437
+            },
+            "gears": [
+              {
+                "id": 22245,
+                "name": "残暴锁甲靴·常风",
+                "level": 350,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 22243,
+                "name": "残暴手铠·常风",
+                "level": 350,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24415,
+                "name": "联盟御敌项链",
+                "level": 375,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21753,
+                "name": "清银御敌耳坠",
+                "level": 350,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21763,
+                "name": "黑柳御敌腕环",
+                "level": 350,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24369,
+                "name": "联盟御敌外套",
+                "level": 375,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 24371,
+                "name": "联盟御敌软甲裤",
+                "level": 375,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 22870,
+                "name": "勇悍斧·究极",
+                "level": 375,
+                "slot": 13,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 21509,
+                "name": "钻石御敌头冠",
+                "level": 370,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49240,
+              "name": "焦糖爆米花",
+              "stats": {
+                "DET": 151,
+                "VIT": 297,
+                "CRT": 91
+              },
+              "statRates": {
+                "DET": 10,
+                "VIT": 10,
+                "CRT": 10
+              }
+            },
+            "exploredStates": 30
+          }
+        },
+        "coordinate": {
+          "status": "completed",
+          "seconds": 76.31420000000298,
+          "damage": 7.927973014548788,
+          "score": null,
+          "branches": 190984750,
+          "peakWasmMemoryMiB": 19.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.48,
+            "mitigation": 0.1,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 7.927973014548788,
+            "tenacityMitigation": 0.1,
+            "stats": {
+              "PDMG": 90,
+              "MDMG": 0,
+              "DLY": 3360,
+              "STR": 1270,
+              "CRT": 1354,
+              "DET": 1013,
+              "DHT": 474,
+              "SKS": 407,
+              "TEN": 816,
+              "VIT": 1437
+            },
+            "gears": [
+              {
+                "id": 22245,
+                "name": "残暴锁甲靴·常风",
+                "level": 350,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 22243,
+                "name": "残暴手铠·常风",
+                "level": 350,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24415,
+                "name": "联盟御敌项链",
+                "level": 375,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21753,
+                "name": "清银御敌耳坠",
+                "level": 350,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21763,
+                "name": "黑柳御敌腕环",
+                "level": 350,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24369,
+                "name": "联盟御敌外套",
+                "level": 375,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 24371,
+                "name": "联盟御敌软甲裤",
+                "level": 375,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 22870,
+                "name": "勇悍斧·究极",
+                "level": 375,
+                "slot": 13,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 21509,
+                "name": "钻石御敌头冠",
+                "level": 370,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49240,
+              "name": "焦糖爆米花",
+              "stats": {
+                "DET": 151,
+                "VIT": 297,
+                "CRT": 91
+              },
+              "statRates": {
+                "DET": 10,
+                "VIT": 10,
+                "CRT": 10
+              }
+            },
+            "exploredStates": 34
+          },
+          "sameOptimum": true,
+          "reductionPercent": 13.5606390112059
+        },
+        "early": {
+          "status": "completed",
+          "seconds": 74.99389999999106,
+          "damage": 7.927973014548788,
+          "score": null,
+          "branches": 190984750,
+          "peakWasmMemoryMiB": 19.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.48,
+            "mitigation": 0.1,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 7.927973014548788,
+            "tenacityMitigation": 0.1,
+            "stats": {
+              "PDMG": 90,
+              "MDMG": 0,
+              "DLY": 3360,
+              "STR": 1270,
+              "CRT": 1354,
+              "DET": 1013,
+              "DHT": 474,
+              "SKS": 407,
+              "TEN": 816,
+              "VIT": 1437
+            },
+            "gears": [
+              {
+                "id": 22245,
+                "name": "残暴锁甲靴·常风",
+                "level": 350,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 22243,
+                "name": "残暴手铠·常风",
+                "level": 350,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24415,
+                "name": "联盟御敌项链",
+                "level": 375,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21753,
+                "name": "清银御敌耳坠",
+                "level": 350,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21763,
+                "name": "黑柳御敌腕环",
+                "level": 350,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24369,
+                "name": "联盟御敌外套",
+                "level": 375,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 24371,
+                "name": "联盟御敌软甲裤",
+                "level": 375,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 22870,
+                "name": "勇悍斧·究极",
+                "level": 375,
+                "slot": 13,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 21509,
+                "name": "钻石御敌头冠",
+                "level": 370,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49240,
+              "name": "焦糖爆米花",
+              "stats": {
+                "DET": 151,
+                "VIT": 297,
+                "CRT": 91
+              },
+              "statRates": {
+                "DET": 10,
+                "VIT": 10,
+                "CRT": 10
+              }
+            },
+            "exploredStates": 34
+          },
+          "sameOptimum": true,
+          "reductionPercent": 15.05611283278212
+        },
+        "secondary": {
+          "status": "completed",
+          "seconds": 79.62990000000596,
+          "damage": 7.927973014548788,
+          "score": null,
+          "branches": 181277621,
+          "peakWasmMemoryMiB": 20.3,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.48,
+            "mitigation": 0.1,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 7.927973014548788,
+            "tenacityMitigation": 0.1,
+            "stats": {
+              "PDMG": 90,
+              "MDMG": 0,
+              "DLY": 3360,
+              "STR": 1270,
+              "CRT": 1354,
+              "DET": 1013,
+              "DHT": 474,
+              "SKS": 407,
+              "TEN": 816,
+              "VIT": 1437
+            },
+            "gears": [
+              {
+                "id": 22245,
+                "name": "残暴锁甲靴·常风",
+                "level": 350,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 22243,
+                "name": "残暴手铠·常风",
+                "level": 350,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24415,
+                "name": "联盟御敌项链",
+                "level": 375,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21753,
+                "name": "清银御敌耳坠",
+                "level": 350,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21763,
+                "name": "黑柳御敌腕环",
+                "level": 350,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24369,
+                "name": "联盟御敌外套",
+                "level": 375,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 24371,
+                "name": "联盟御敌软甲裤",
+                "level": 375,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 22870,
+                "name": "勇悍斧·究极",
+                "level": 375,
+                "slot": 13,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 21509,
+                "name": "钻石御敌头冠",
+                "level": 370,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49240,
+              "name": "焦糖爆米花",
+              "stats": {
+                "DET": 151,
+                "VIT": 297,
+                "CRT": 91
+              },
+              "statRates": {
+                "DET": 10,
+                "VIT": 10,
+                "CRT": 10
+              }
+            },
+            "exploredStates": 34
+          },
+          "sameOptimum": true,
+          "reductionPercent": 9.805020931860376
+        },
+        "bundle": {
+          "status": "completed",
+          "seconds": 79.685,
+          "damage": 7.927973014548788,
+          "score": null,
+          "branches": 207515604,
+          "peakWasmMemoryMiB": 19.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.48,
+            "mitigation": 0.1,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 7.927973014548788,
+            "tenacityMitigation": 0.1,
+            "stats": {
+              "PDMG": 90,
+              "MDMG": 0,
+              "DLY": 3360,
+              "STR": 1270,
+              "CRT": 1354,
+              "DET": 1013,
+              "DHT": 474,
+              "SKS": 407,
+              "TEN": 816,
+              "VIT": 1437
+            },
+            "gears": [
+              {
+                "id": 22245,
+                "name": "残暴锁甲靴·常风",
+                "level": 350,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 22243,
+                "name": "残暴手铠·常风",
+                "level": 350,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24415,
+                "name": "联盟御敌项链",
+                "level": 375,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21768,
+                "name": "清银御敌戒指",
+                "level": 350,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21753,
+                "name": "清银御敌耳坠",
+                "level": 350,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 21763,
+                "name": "黑柳御敌腕环",
+                "level": 350,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 2
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 3
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 5,
+                    "value": 6,
+                    "slot": 4
+                  }
+                ]
+              },
+              {
+                "id": 24369,
+                "name": "联盟御敌外套",
+                "level": 375,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 24371,
+                "name": "联盟御敌软甲裤",
+                "level": 375,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 22870,
+                "name": "勇悍斧·究极",
+                "level": 375,
+                "slot": 13,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 21509,
+                "name": "钻石御敌头冠",
+                "level": 370,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "CRT",
+                    "grade": 6,
+                    "value": 16,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49240,
+              "name": "焦糖爆米花",
+              "stats": {
+                "DET": 151,
+                "VIT": 297,
+                "CRT": 91
+              },
+              "statRates": {
+                "DET": 10,
+                "VIT": 10,
+                "CRT": 10
+              }
+            },
+            "exploredStates": 35
+          },
+          "sameOptimum": true,
+          "reductionPercent": 9.742610413372766
+        }
+      }
+    },
+    {
+      "case": "pld245-min15",
+      "targetGcd": 2.45,
+      "minimumMitigation": 0.15,
+      "variants": {
+        "current": {
+          "status": "completed",
+          "seconds": 42.69640000000596,
+          "damage": 21.02962278483717,
+          "score": null,
+          "branches": 157339591,
+          "peakWasmMemoryMiB": 35.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.45,
+            "mitigation": 0.15,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 21.02962278483717,
+            "tenacityMitigation": 0.15,
+            "stats": {
+              "PDMG": 120,
+              "MDMG": 0,
+              "DLY": 2240,
+              "STR": 2534,
+              "CRT": 1258,
+              "DET": 1845,
+              "DHT": 724,
+              "SKS": 650,
+              "TEN": 1826,
+              "VIT": 2940
+            },
+            "gears": [
+              {
+                "id": 38960,
+                "name": "冥魂御敌打底裤",
+                "level": 605,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35191,
+                "name": "改良型星战士御敌鳞铠",
+                "level": 600,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35230,
+                "name": "改良型星战士御敌项环",
+                "level": 600,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 36943,
+                "name": "绝境苍穹之剑",
+                "level": 605,
+                "slot": 1,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 38959,
+                "name": "冥魂御敌手铠",
+                "level": 605,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35264,
+                "name": "日影兰之盾",
+                "level": 605,
+                "slot": 2,
+                "unique": false,
+                "synced": false,
+                "melds": []
+              },
+              {
+                "id": 35300,
+                "name": "日影兰御敌耳坠",
+                "level": 600,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35310,
+                "name": "日影兰御敌手镯",
+                "level": 600,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35265,
+                "name": "日影兰御敌头冠",
+                "level": 600,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 38961,
+                "name": "冥魂御敌铠靴",
+                "level": 605,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49247,
+              "name": "蛤蜊糕",
+              "stats": {
+                "TEN": 151,
+                "VIT": 297,
+                "DET": 91
+              },
+              "statRates": {
+                "TEN": 10,
+                "VIT": 10,
+                "DET": 10
+              }
+            },
+            "exploredStates": 6
+          }
+        },
+        "coordinate": {
+          "status": "completed",
+          "seconds": 23.15509999999404,
+          "damage": 21.02962278483717,
+          "score": null,
+          "branches": 35993925,
+          "peakWasmMemoryMiB": 38.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.45,
+            "mitigation": 0.15,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 21.02962278483717,
+            "tenacityMitigation": 0.15,
+            "stats": {
+              "PDMG": 120,
+              "MDMG": 0,
+              "DLY": 2240,
+              "STR": 2534,
+              "CRT": 1258,
+              "DET": 1845,
+              "DHT": 724,
+              "SKS": 650,
+              "TEN": 1826,
+              "VIT": 2940
+            },
+            "gears": [
+              {
+                "id": 38960,
+                "name": "冥魂御敌打底裤",
+                "level": 605,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35191,
+                "name": "改良型星战士御敌鳞铠",
+                "level": 600,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35230,
+                "name": "改良型星战士御敌项环",
+                "level": 600,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 36943,
+                "name": "绝境苍穹之剑",
+                "level": 605,
+                "slot": 1,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 38959,
+                "name": "冥魂御敌手铠",
+                "level": 605,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35264,
+                "name": "日影兰之盾",
+                "level": 605,
+                "slot": 2,
+                "unique": false,
+                "synced": false,
+                "melds": []
+              },
+              {
+                "id": 35300,
+                "name": "日影兰御敌耳坠",
+                "level": 600,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35310,
+                "name": "日影兰御敌手镯",
+                "level": 600,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35265,
+                "name": "日影兰御敌头冠",
+                "level": 600,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 38961,
+                "name": "冥魂御敌铠靴",
+                "level": 605,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49247,
+              "name": "蛤蜊糕",
+              "stats": {
+                "TEN": 151,
+                "VIT": 297,
+                "DET": 91
+              },
+              "statRates": {
+                "TEN": 10,
+                "VIT": 10,
+                "DET": 10
+              }
+            },
+            "exploredStates": 7
+          },
+          "sameOptimum": true,
+          "reductionPercent": 45.76802728101009
+        },
+        "early": {
+          "status": "completed",
+          "seconds": 22.741,
+          "damage": 21.02962278483717,
+          "score": null,
+          "branches": 35993925,
+          "peakWasmMemoryMiB": 38.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.45,
+            "mitigation": 0.15,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 21.02962278483717,
+            "tenacityMitigation": 0.15,
+            "stats": {
+              "PDMG": 120,
+              "MDMG": 0,
+              "DLY": 2240,
+              "STR": 2534,
+              "CRT": 1258,
+              "DET": 1845,
+              "DHT": 724,
+              "SKS": 650,
+              "TEN": 1826,
+              "VIT": 2940
+            },
+            "gears": [
+              {
+                "id": 38960,
+                "name": "冥魂御敌打底裤",
+                "level": 605,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35191,
+                "name": "改良型星战士御敌鳞铠",
+                "level": 600,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35230,
+                "name": "改良型星战士御敌项环",
+                "level": 600,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 36943,
+                "name": "绝境苍穹之剑",
+                "level": 605,
+                "slot": 1,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 38959,
+                "name": "冥魂御敌手铠",
+                "level": 605,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35264,
+                "name": "日影兰之盾",
+                "level": 605,
+                "slot": 2,
+                "unique": false,
+                "synced": false,
+                "melds": []
+              },
+              {
+                "id": 35300,
+                "name": "日影兰御敌耳坠",
+                "level": 600,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35310,
+                "name": "日影兰御敌手镯",
+                "level": 600,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35265,
+                "name": "日影兰御敌头冠",
+                "level": 600,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 38961,
+                "name": "冥魂御敌铠靴",
+                "level": 605,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49247,
+              "name": "蛤蜊糕",
+              "stats": {
+                "TEN": 151,
+                "VIT": 297,
+                "DET": 91
+              },
+              "statRates": {
+                "TEN": 10,
+                "VIT": 10,
+                "DET": 10
+              }
+            },
+            "exploredStates": 7
+          },
+          "sameOptimum": true,
+          "reductionPercent": 46.737898277145554
+        },
+        "secondary": {
+          "status": "completed",
+          "seconds": 21.69690000000596,
+          "damage": 21.02962278483717,
+          "score": null,
+          "branches": 25572474,
+          "peakWasmMemoryMiB": 40.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.45,
+            "mitigation": 0.15,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 21.02962278483717,
+            "tenacityMitigation": 0.15,
+            "stats": {
+              "PDMG": 120,
+              "MDMG": 0,
+              "DLY": 2240,
+              "STR": 2534,
+              "CRT": 1258,
+              "DET": 1845,
+              "DHT": 724,
+              "SKS": 650,
+              "TEN": 1826,
+              "VIT": 2940
+            },
+            "gears": [
+              {
+                "id": 38960,
+                "name": "冥魂御敌打底裤",
+                "level": 605,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35191,
+                "name": "改良型星战士御敌鳞铠",
+                "level": 600,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35230,
+                "name": "改良型星战士御敌项环",
+                "level": 600,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 36943,
+                "name": "绝境苍穹之剑",
+                "level": 605,
+                "slot": 1,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 38959,
+                "name": "冥魂御敌手铠",
+                "level": 605,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35264,
+                "name": "日影兰之盾",
+                "level": 605,
+                "slot": 2,
+                "unique": false,
+                "synced": false,
+                "melds": []
+              },
+              {
+                "id": 35300,
+                "name": "日影兰御敌耳坠",
+                "level": 600,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35310,
+                "name": "日影兰御敌手镯",
+                "level": 600,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35265,
+                "name": "日影兰御敌头冠",
+                "level": 600,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 38961,
+                "name": "冥魂御敌铠靴",
+                "level": 605,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49247,
+              "name": "蛤蜊糕",
+              "stats": {
+                "TEN": 151,
+                "VIT": 297,
+                "DET": 91
+              },
+              "statRates": {
+                "TEN": 10,
+                "VIT": 10,
+                "DET": 10
+              }
+            },
+            "exploredStates": 7
+          },
+          "sameOptimum": true,
+          "reductionPercent": 49.183303510359345
+        },
+        "bundle": {
+          "status": "completed",
+          "seconds": 23.13340000000596,
+          "damage": 21.02962278483717,
+          "score": null,
+          "branches": 36782454,
+          "peakWasmMemoryMiB": 38.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.45,
+            "mitigation": 0.15,
+            "criticalThresholdCheck": "none"
+          },
+          "completedPartitions": 6,
+          "partitions": 6,
+          "bestDamageAtTimeout": null,
+          "result": {
+            "damage": 21.02962278483717,
+            "tenacityMitigation": 0.15,
+            "stats": {
+              "PDMG": 120,
+              "MDMG": 0,
+              "DLY": 2240,
+              "STR": 2534,
+              "CRT": 1258,
+              "DET": 1845,
+              "DHT": 724,
+              "SKS": 650,
+              "TEN": 1826,
+              "VIT": 2940
+            },
+            "gears": [
+              {
+                "id": 38960,
+                "name": "冥魂御敌打底裤",
+                "level": 605,
+                "slot": 7,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DET",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35240,
+                "name": "改良型星战士御敌戒指",
+                "level": 600,
+                "slot": 12,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35191,
+                "name": "改良型星战士御敌鳞铠",
+                "level": 600,
+                "slot": 4,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35230,
+                "name": "改良型星战士御敌项环",
+                "level": 600,
+                "slot": 10,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 36943,
+                "name": "绝境苍穹之剑",
+                "level": 605,
+                "slot": 1,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 2
+                  }
+                ]
+              },
+              {
+                "id": 38959,
+                "name": "冥魂御敌手铠",
+                "level": 605,
+                "slot": 5,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35264,
+                "name": "日影兰之盾",
+                "level": 605,
+                "slot": 2,
+                "unique": false,
+                "synced": false,
+                "melds": []
+              },
+              {
+                "id": 35300,
+                "name": "日影兰御敌耳坠",
+                "level": 600,
+                "slot": 9,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35310,
+                "name": "日影兰御敌手镯",
+                "level": 600,
+                "slot": 11,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "DHT",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 35265,
+                "name": "日影兰御敌头冠",
+                "level": 600,
+                "slot": 3,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "SKS",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              },
+              {
+                "id": 38961,
+                "name": "冥魂御敌铠靴",
+                "level": 605,
+                "slot": 8,
+                "unique": false,
+                "synced": false,
+                "melds": [
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 0
+                  },
+                  {
+                    "stat": "TEN",
+                    "grade": 10,
+                    "value": 36,
+                    "slot": 1
+                  }
+                ]
+              }
+            ],
+            "food": {
+              "id": 49247,
+              "name": "蛤蜊糕",
+              "stats": {
+                "TEN": 151,
+                "VIT": 297,
+                "DET": 91
+              },
+              "statRates": {
+                "TEN": 10,
+                "VIT": 10,
+                "DET": 10
+              }
+            },
+            "exploredStates": 6
+          },
+          "sameOptimum": true,
+          "reductionPercent": 45.8188512380371
+        }
+      }
+    },
+    {
+      "case": "pld245-min10",
+      "targetGcd": 2.45,
+      "minimumMitigation": 0.1,
+      "variants": {
+        "current": {
+          "status": "timeout",
+          "seconds": 300.0005,
+          "damage": null,
+          "score": null,
+          "branches": 1394839150,
+          "peakWasmMemoryMiB": 35.4,
+          "validation": {
+            "completed": false
+          },
+          "completedPartitions": 5,
+          "partitions": 6,
+          "bestDamageAtTimeout": 21.159923183329077,
+          "result": null
+        },
+        "coordinate": {
+          "status": "timeout",
+          "seconds": 300.00059999999405,
+          "damage": null,
+          "score": null,
+          "branches": 1232402069,
+          "peakWasmMemoryMiB": 38.4,
+          "validation": {
+            "completed": false
+          },
+          "completedPartitions": 5,
+          "partitions": 6,
+          "bestDamageAtTimeout": 21.159923183329077,
+          "result": null
+        },
+        "bundle": {
+          "status": "timeout",
+          "seconds": 300.00059999999405,
+          "damage": null,
+          "score": null,
+          "branches": 1241320384,
+          "peakWasmMemoryMiB": 38.4,
+          "validation": {
+            "completed": false
+          },
+          "completedPartitions": 5,
+          "partitions": 6,
+          "bestDamageAtTimeout": 21.159923183329077,
+          "result": null
+        }
+      }
+    },
+    {
+      "case": "war248-min15",
+      "targetGcd": 2.48,
+      "minimumMitigation": 0.15,
+      "variants": {
+        "current": {
+          "status": "timeout",
+          "seconds": 300.0005,
+          "damage": null,
+          "score": null,
+          "branches": 2687205,
+          "peakWasmMemoryMiB": 18.1,
+          "validation": {
+            "completed": false
+          },
+          "completedPartitions": 3,
+          "partitions": 6,
+          "bestDamageAtTimeout": 7.839795522490837,
+          "result": null
+        },
+        "coordinate": {
+          "status": "timeout",
+          "seconds": 300.00059999999405,
+          "damage": null,
+          "score": null,
+          "branches": 1218471,
+          "peakWasmMemoryMiB": 19.4,
+          "validation": {
+            "completed": false
+          },
+          "completedPartitions": 3,
+          "partitions": 6,
+          "bestDamageAtTimeout": 7.839795522490837,
+          "result": null
+        }
+      }
+    }
+  ],
+  "screeningNotes": {
+    "early": "Two completed screens; PLD10 cancelled, WAR15 not run. No runtime claim for these two cases.",
+    "secondary": "Two completed screens; PLD10 cancelled, WAR15 not run. No runtime claim for these two cases."
+  },
+  "correctness": {
+    "coordinate": {
+      "tests": 14,
+      "passed": 14,
+      "independentExhaustiveCases": 900
+    },
+    "early": {
+      "tests": 14,
+      "passed": 14,
+      "independentExhaustiveCases": 900
+    },
+    "bundle": {
+      "tests": 14,
+      "passed": 14,
+      "independentExhaustiveCases": 900
+    },
+    "secondary": {
+      "tests": 79,
+      "passed": 79,
+      "independentExhaustiveCases": 900
+    }
+  },
+  "branchMeasure": "Sum of completed planner/shard diagnostics; counts for timeout cases omit unfinished work.",
+  "memoryMeasure": "Maximum WASM memory observed in completed planner/shard diagnostics, not whole-browser resident memory.",
+  "incompleteScreens": [
+    {
+      "variant": "early",
+      "case": "pld245-min10",
+      "status": "interrupted",
+      "reason": "intentionally stopped screening",
+      "lastProgress": {
+        "elapsed": 75421.20000000298,
+        "completed": 3,
+        "partitions": 6,
+        "progress": {
+          "completedGroups": 0,
+          "totalGroups": 6,
+          "states": 5,
+          "visitedBranches": 136475026,
+          "searchProgress": 0.5925925926293746
+        }
+      },
+      "notACompletedOrTimeoutBenchmark": true
+    },
+    {
+      "variant": "secondary",
+      "case": "pld245-min10",
+      "status": "interrupted",
+      "reason": "intentionally stopped screening",
+      "lastProgress": {
+        "elapsed": 24090.40000000596,
+        "completed": 0,
+        "partitions": 6,
+        "progress": {
+          "completedGroups": 0,
+          "totalGroups": 6,
+          "states": 1,
+          "visitedBranches": 19975023,
+          "searchProgress": 0.6666666667034163
+        }
+      },
+      "notACompletedOrTimeoutBenchmark": true
+    },
+    {
+      "variant": "bundle",
+      "case": "war248-min15",
+      "status": "interrupted",
+      "reason": "execution interrupted",
+      "lastProgress": {
+        "elapsed": 251283.10000000894,
+        "completed": 3,
+        "partitions": 6,
+        "progress": {
+          "completedGroups": 0,
+          "totalGroups": 6,
+          "states": 11,
+          "visitedBranches": 651600034,
+          "searchProgress": 0.5001399707753555
+        }
+      },
+      "notACompletedOrTimeoutBenchmark": true
+    }
+  ],
+  "shortControl": {
+    "case": "WAR375/GCD2.50/min10",
+    "sameSessionBaseline": true,
+    "workers": 4,
+    "serial": true,
+    "runs": [
+      {
+        "variant": "current",
+        "status": "completed",
+        "seconds": 4.4902000000029805,
+        "damage": 7.946312273986066,
+        "score": null,
+        "branches": 7420374,
+        "peakWasmMemoryMiB": 10.2,
+        "validation": {
+          "completed": true,
+          "gearFoodStatsReconstructed": true,
+          "slotUniqueAndCandidateChecks": true,
+          "gcd": 2.5,
+          "mitigation": 0.1,
+          "criticalThresholdCheck": "none"
+        }
+      },
+      {
+        "variant": "coordinate",
+        "status": "completed",
+        "seconds": 5.28790000000596,
+        "damage": 7.946312273986066,
+        "score": null,
+        "branches": 6915413,
+        "peakWasmMemoryMiB": 10.8,
+        "validation": {
+          "completed": true,
+          "gearFoodStatsReconstructed": true,
+          "slotUniqueAndCandidateChecks": true,
+          "gcd": 2.5,
+          "mitigation": 0.1,
+          "criticalThresholdCheck": "none"
+        }
+      },
+      {
+        "variant": "early",
+        "status": "completed",
+        "seconds": 4.68309999999404,
+        "damage": 7.946312273986066,
+        "score": null,
+        "branches": 6915413,
+        "peakWasmMemoryMiB": 10.8,
+        "validation": {
+          "completed": true,
+          "gearFoodStatsReconstructed": true,
+          "slotUniqueAndCandidateChecks": true,
+          "gcd": 2.5,
+          "mitigation": 0.1,
+          "criticalThresholdCheck": "none"
+        }
+      },
+      {
+        "variant": "secondary",
+        "status": "completed",
+        "seconds": 4.69340000000596,
+        "damage": 7.946312273986066,
+        "score": null,
+        "branches": 6558254,
+        "peakWasmMemoryMiB": 11.1,
+        "validation": {
+          "completed": true,
+          "gearFoodStatsReconstructed": true,
+          "slotUniqueAndCandidateChecks": true,
+          "gcd": 2.5,
+          "mitigation": 0.1,
+          "criticalThresholdCheck": "none"
+        }
+      },
+      {
+        "variant": "bundle",
+        "status": "completed",
+        "seconds": 4.95520000000298,
+        "damage": 7.946312273986066,
+        "score": null,
+        "branches": 6915432,
+        "peakWasmMemoryMiB": 10.8,
+        "validation": {
+          "completed": true,
+          "gearFoodStatsReconstructed": true,
+          "slotUniqueAndCandidateChecks": true,
+          "gcd": 2.5,
+          "mitigation": 0.1,
+          "criticalThresholdCheck": "none"
+        }
+      }
+    ]
+  },
+  "sourceHashes": {
+    "coordinate": {
+      "prototype.c": "4aab02b9e0eea0bfc3551dca2ac332276e06d37bbb4e38786945d488617bed36",
+      "adapter.ts": "0aa3ab29201cb94436e9cd02c0e58025b3b5a91e463702a0c8733ebd44e96f59",
+      "prototype.wasm": "9a7671ed4198f24ef3720fcdc09db286997667da5e09bfd72a5cf70efa488673"
+    },
+    "early": {
+      "prototype.c": "5cfad78a254b28b0487ec020350561f9c7aa0db425910d7c32565a00c2ec35ce",
+      "adapter.ts": "0aa3ab29201cb94436e9cd02c0e58025b3b5a91e463702a0c8733ebd44e96f59",
+      "prototype.wasm": "2dbd380bcf0d49121f9f6beca4cb5a11c17d3cd4a41a8cffd385bb053f48ebdf"
+    },
+    "secondary": {
+      "prototype.c": "9214d8475be24e155164e157d0da4f7ef31df876f1a89f1341e57f01197530dc",
+      "adapter.ts": "4613a75adbacfa74d39072f2cd471a96aca5820048d8bf1da76f4139eda752ca",
+      "prototype.wasm": "9423238ca72c1f5d73117dc261737f2248c3672131d7127270efb4cdeaaf7986"
+    },
+    "bundle": {
+      "prototype.c": "97488d7be35bb5ad87bced5731571e69233f3f9c53ebc06a51a9e41d674e9853",
+      "adapter.ts": "0aa3ab29201cb94436e9cd02c0e58025b3b5a91e463702a0c8733ebd44e96f59",
+      "prototype.wasm": "c2ad004932c74ae90952e5604fbd98dbe6d9e7a74c045fd8caba568f034fbe82"
+    }
+  }
+}

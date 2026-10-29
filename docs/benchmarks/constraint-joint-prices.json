@@ -1,0 +1,248 @@
+{
+  "source": "Actual fixed-food candidate root traces from constraint-upper-traces.jsonl.gz",
+  "supportsReevaluatedOnActualOptions": true,
+  "rootOnly": true,
+  "notRuntimeMeasurements": true,
+  "rows": [
+    {
+      "job": "WAR",
+      "food": 49240,
+      "points": 29433,
+      "interval": [
+        1098,
+        1162
+      ],
+      "currentUpper": 7.98551753936095,
+      "lpJointUpper": 7.940179652951522,
+      "coordinateUpper": 7.941100361450998,
+      "coordinatePrices": [
+        2.7345679102534965e-05,
+        -6.281376676226907e-06,
+        3.7405862242455913e-05
+      ],
+      "bundleUpper": 7.940179655333516,
+      "bundlePrices": [
+        2.369842030264307e-05,
+        -1.1000589899808535e-05,
+        3.76344812095606e-05
+      ],
+      "bundleLpDifference": 2.3819941574743098e-09
+    },
+    {
+      "job": "WAR",
+      "food": 49240,
+      "points": 29433,
+      "interval": [
+        1162,
+        1226
+      ],
+      "currentUpper": 7.988842295952803,
+      "lpJointUpper": 7.946230948877514,
+      "coordinateUpper": 7.946230950934945,
+      "coordinatePrices": [
+        3.201619607016552e-05,
+        -1.5686817374425176e-06,
+        3.7445527069114236e-05
+      ],
+      "bundleUpper": 7.9462309509349485,
+      "bundlePrices": [
+        3.20161960701615e-05,
+        -1.5686817374404726e-06,
+        3.744552706910363e-05
+      ],
+      "bundleLpDifference": 2.0574342229906506e-09
+    },
+    {
+      "job": "WAR",
+      "food": 49240,
+      "points": 29433,
+      "interval": [
+        1226,
+        1290
+      ],
+      "currentUpper": 7.990120250471576,
+      "lpJointUpper": 7.948112339533625,
+      "coordinateUpper": 7.948112341518401,
+      "coordinatePrices": [
+        3.201619607016971e-05,
+        0,
+        3.273782312388869e-05
+      ],
+      "bundleUpper": 7.948112341518401,
+      "bundlePrices": [
+        3.201619607016674e-05,
+        -2.1175823681357512e-21,
+        3.2737823123902204e-05
+      ],
+      "bundleLpDifference": 1.984775899188662e-09
+    },
+    {
+      "job": "WAR",
+      "food": 49240,
+      "points": 29433,
+      "interval": [
+        1290,
+        1322
+      ],
+      "currentUpper": 7.989390387575118,
+      "lpJointUpper": 7.93958740152334,
+      "coordinateUpper": 7.946749253814624,
+      "coordinatePrices": [
+        3.201619607016426e-05,
+        4.385630910133556e-06,
+        3.379406949008415e-05
+      ],
+      "bundleUpper": 7.939587403666736,
+      "bundlePrices": [
+        3.2016196070162994e-05,
+        0.00015350251253898385,
+        7.540808296790678e-05
+      ],
+      "bundleLpDifference": 2.1433956831629075e-09
+    },
+    {
+      "job": "PLD",
+      "food": 49248,
+      "points": 66024,
+      "interval": [
+        1092,
+        1156
+      ],
+      "currentUpper": 21.51891885083725,
+      "lpJointUpper": 21.206862962128003,
+      "coordinateUpper": 21.210226053409272,
+      "coordinatePrices": [
+        1.0185338991290303e-05,
+        -3.4032908538590967e-06,
+        5.220373254578671e-05
+      ],
+      "bundleUpper": 21.206862969230503,
+      "bundlePrices": [
+        5.126205845769808e-06,
+        -1.0999649154657897e-05,
+        4.8583197773648524e-05
+      ],
+      "bundleLpDifference": 7.10249992152967e-09
+    },
+    {
+      "job": "PLD",
+      "food": 49248,
+      "points": 66024,
+      "interval": [
+        1156,
+        1220
+      ],
+      "currentUpper": 21.534750228918384,
+      "lpJointUpper": 21.21648363601673,
+      "coordinateUpper": 21.216496027814046,
+      "coordinatePrices": [
+        1.0185338991302102e-05,
+        -4.49962045357657e-06,
+        5.220581651631595e-05
+      ],
+      "bundleUpper": 21.21648364255666,
+      "bundlePrices": [
+        1.018533899130292e-05,
+        -4.49040052426741e-06,
+        5.221897304465619e-05
+      ],
+      "bundleLpDifference": 6.53993126320529e-09
+    },
+    {
+      "job": "PLD",
+      "food": 49248,
+      "points": 66024,
+      "interval": [
+        1220,
+        1284
+      ],
+      "currentUpper": 21.550178340465248,
+      "lpJointUpper": 21.2242530994056,
+      "coordinateUpper": 21.2264478087136,
+      "coordinatePrices": [
+        1.3592879832295952e-05,
+        -2.2835289372222048e-06,
+        5.220581651631764e-05
+      ],
+      "bundleUpper": 21.22425310614179,
+      "bundlePrices": [
+        1.0185338991267862e-05,
+        -5.681849848921964e-06,
+        5.221897304466319e-05
+      ],
+      "bundleLpDifference": 6.736190272249587e-09
+    },
+    {
+      "job": "PLD",
+      "food": 49248,
+      "points": 66024,
+      "interval": [
+        1284,
+        1348
+      ],
+      "currentUpper": 21.564186533154402,
+      "lpJointUpper": 21.231172403288152,
+      "coordinateUpper": 21.231172409840013,
+      "coordinatePrices": [
+        1.3592879832296482e-05,
+        -3.5009500577104883e-06,
+        5.2205816516315666e-05
+      ],
+      "bundleUpper": 21.231172409840013,
+      "bundlePrices": [
+        1.3592879832295107e-05,
+        -3.5009500577074284e-06,
+        5.2205816516316e-05
+      ],
+      "bundleLpDifference": 6.551861275738702e-09
+    },
+    {
+      "job": "PLD",
+      "food": 49248,
+      "points": 66024,
+      "interval": [
+        1348,
+        1412
+      ],
+      "currentUpper": 21.57482831639527,
+      "lpJointUpper": 21.234630410659364,
+      "coordinateUpper": 21.234630416768965,
+      "coordinatePrices": [
+        1.3592879832297231e-05,
+        -7.732397628608706e-08,
+        5.220581651631498e-05
+      ],
+      "bundleUpper": 21.234630416768955,
+      "bundlePrices": [
+        1.3592879832295635e-05,
+        -7.732397628480087e-08,
+        5.22058165163177e-05
+      ],
+      "bundleLpDifference": 6.109591055292185e-09
+    },
+    {
+      "job": "PLD",
+      "food": 49248,
+      "points": 66024,
+      "interval": [
+        1412,
+        1476
+      ],
+      "currentUpper": 21.583875060463395,
+      "lpJointUpper": 21.235984403726636,
+      "coordinateUpper": 21.235984410005674,
+      "coordinatePrices": [
+        1.3592879832296869e-05,
+        -1.128107752605924e-06,
+        5.2205816516314704e-05
+      ],
+      "bundleUpper": 21.235984410005674,
+      "bundlePrices": [
+        1.3592879832295972e-05,
+        -1.128107752609036e-06,
+        5.2205816516316995e-05
+      ],
+      "bundleLpDifference": 6.279037734202575e-09
+    }
+  ]
+}

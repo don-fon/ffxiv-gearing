@@ -120,3 +120,5 @@ node docs/experiments/constraint-upper-native.cjs "$audit_dir"
 
 构建需固定LLVM19，可通过`WASM_CC`、`WASM_LD`指定工具链。
 两个补丁分别为预算实验、原生诊断用途，勿叠加后当作生产版本。
+
+后续已实现四种根部联合约束原型并运行真实任务，见[运行验证](optimizer-joint-constraint-runtime.md)；尚未采用。
