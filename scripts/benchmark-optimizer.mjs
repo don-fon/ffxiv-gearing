@@ -159,8 +159,8 @@ try {
       if (result.status === 'completed' && values.critical !== 'none') {
         const range = result.result.criticalRange;
         const critical = result.result.stats.CRT;
-        if (!range || (values.critical === 'high' ? critical < range.midpoint : critical > range.midpoint)) {
-          throw new Error('Result violates the shared critical half-range.');
+        if (!range || (values.critical === 'high' ? critical < (range.threshold ?? range.midpoint) : critical > (range.threshold ?? range.midpoint))) {
+          throw new Error('Result violates the shared critical constraint.');
         }
       }
       if (result.status === 'completed' && values.critical === 'none' && !values.input &&
