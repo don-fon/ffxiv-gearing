@@ -204,7 +204,8 @@ test('large-search bounds preserve exhaustive optima across raw CRT bands, inclu
     }
     return stats;
   };
-  for (let seed = 0; seed < 360; seed++) {
+  // Keep 180 tank cases, then exercise 1200 fixed-speed, neutral-TEN cases.
+  for (let seed = 0; seed < 1380; seed++) {
     const input = fixture(seed * 4);
     input.damage.partyBonus = seed % 2 ? 1.05 : 1;
     if (seed % 7) input.food = { id: 81, name: 'food-cap crossings',
@@ -230,6 +231,27 @@ test('large-search bounds preserve exhaustive optima across raw CRT bands, inclu
       if (input.food) { delete input.food.stats.TEN; delete input.food.statRates.TEN; }
       input.objective.minimumTenacityMitigation = 0;
       for (const point of [...prefix, ...groups.flat()]) delete point.stats.TEN;
+      const [job, mainAxis, weaponAxis] = [
+        ['MNK', 'STR', 'PDMG'], ['WHM', 'MND', 'MDMG'],
+        ['PCT', 'INT', 'MDMG'], ['BRD', 'DEX', 'PDMG'],
+      ][seed % 4];
+      const remap = stats => {
+        if (!stats) return;
+        for (const [from, to] of [['STR', mainAxis], ['PDMG', weaponAxis]]) {
+          if (from !== to && stats[from] !== undefined) {
+            stats[to] = stats[from];
+            delete stats[from];
+          }
+        }
+      };
+      input.damage.job = job;
+      input.damage.mainStat = mainAxis;
+      input.damage.statModifiers = { [mainAxis]: 115 };
+      input.damage.traitDamageMultiplier = weaponAxis === 'MDMG' ? 1.3 : 1;
+      for (const stats of [input.fixedStats, input.damage.baseStats, input.food?.stats, input.food?.statRates,
+        ...input.gears.map(gear => gear.stats), ...prefix.map(point => point.stats), ...groups.flat().map(point => point.stats)]) {
+        remap(stats);
+      }
     }
     let combinations = prefix.map(point => point.stats);
     for (const group of groups) combinations = combinations.flatMap(point => group.map(option => add(point, option.stats)));
@@ -246,7 +268,8 @@ test('large-search bounds preserve exhaustive optima across raw CRT bands, inclu
       ? point.CRT >= input.criticalRange.midpoint : point.CRT <= input.criticalRange.midpoint));
     const expected = Math.max(...eligible.map(point => solver.calculateExpectedDamage(point, input.damage)));
     const result = backend({ input, prefix: solver.testAttributeTree(prefix, 16),
-      options: groups.map(group => solver.testAttributeTree(group, 1)), reference: combinations[0], minimumDamage: 0 }, () => {});
+      options: groups.map(group => solver.testAttributeTree(group, 1)), reference: combinations[0],
+      minimumDamage: seed % 2 ? expected * (1 - 1e-10) : 0 }, () => {});
     assert.ok(result.complete);
     assert.ok(Math.abs(result.damage - expected) <= 1e-11, `raw-band seed ${seed}: ${result.damage} != ${expected}`);
   }

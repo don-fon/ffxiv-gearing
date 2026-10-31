@@ -253,7 +253,8 @@ __attribute__((visibility("default"))) void start_search(address pointers,int co
   original_roots[i]=((address*)pointers)[i];selected[i]=0;double *n=node(original_roots[i]);
   work*=n[NODE_COUNT];plane_first+=n[10];plane_last+=n[2];
  }
- plane_enabled=context[15]&&(!context[56]||context[57])&&context[7]>0&&context[8]>0&&work>=context[47]&&count>1;
+ // The same bound applies to fixed-speed subsets and whole-GCD queries.
+ plane_enabled=context[15]&&context[7]>0&&context[8]>0&&work>=context[47]&&count>1;
  // The relaxation needs nonnegative secondary food and a positive reference.
  if(plane_enabled){
   for(int stat=2;stat<=5;stat++)if(context[20+stat]<0||context[28+stat]<0)plane_enabled=0;
