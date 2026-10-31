@@ -1,0 +1,12 @@
+--- a/src/optimizerSearch.c
++++ b/src/optimizerSearch.c
+@@ -476,9 +476,7 @@
+   double left_order=upper(left.roots),right_order=upper(right.roots);
+   left.bound=left_order;right.bound=right_order;
+   if(LOCAL_MODE){
+-   left.bound=minimum(left.bound,frame.bound);
+    if(left.bound>best)left.bound=minimum(left.bound,inherited_plane_upper(left.roots,frame.plane_id));
+-   right.bound=minimum(right.bound,frame.bound);
+    if(right.bound>best)right.bound=minimum(right.bound,inherited_plane_upper(right.roots,frame.plane_id));
+   }
+   Frame *first=left_order>=right_order?&right:&left,*second=left_order>=right_order?&left:&right;

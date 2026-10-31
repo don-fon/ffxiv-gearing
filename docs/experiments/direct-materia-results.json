@@ -1,0 +1,4690 @@
+{
+  "experimentalOnly": true,
+  "solver": "HiGHS 1.15.4 WASM, direct equipment and materia count model",
+  "workers": 4,
+  "timing": "cold Chromium, complete planning and all partitions, sequential runs without concurrent CPU tests",
+  "runs": [
+    {
+      "run": "pld245-min10-direct",
+      "case": "pld245-min10",
+      "inputFixture": "test/fixtures/paladin-605-minimum-10-gcd-245.json",
+      "inputOverrides": {},
+      "inputSha256": "7d5c77749e4a24cdf85626f6bb9daeab87426fd68edee997f17c89a99835767f",
+      "status": "completed",
+      "milliseconds": 99720.09999999404,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 5,
+      "engine": "auto",
+      "integerModel": null,
+      "source": "production worker pipeline",
+      "result": {
+        "damage": 21.165158132308274,
+        "tenacityMitigation": 0.1,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1258,
+          "DET": 1996,
+          "DHT": 1048,
+          "SKS": 650,
+          "TEN": 1351,
+          "VIT": 2940
+        },
+        "gears": [
+          {
+            "id": 36943,
+            "name": "绝境苍穹之剑",
+            "level": 605,
+            "slot": 1,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 2
+              }
+            ]
+          },
+          {
+            "id": 35264,
+            "name": "日影兰之盾",
+            "level": 605,
+            "slot": 2,
+            "unique": false,
+            "synced": false,
+            "melds": []
+          },
+          {
+            "id": 35265,
+            "name": "日影兰御敌头冠",
+            "level": 600,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35191,
+            "name": "改良型星战士御敌鳞铠",
+            "level": 600,
+            "slot": 4,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38959,
+            "name": "冥魂御敌手铠",
+            "level": 605,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38960,
+            "name": "冥魂御敌打底裤",
+            "level": 605,
+            "slot": 7,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38961,
+            "name": "冥魂御敌铠靴",
+            "level": 605,
+            "slot": 8,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35225,
+            "name": "改良型星战士御敌耳坠",
+            "level": 600,
+            "slot": 9,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35230,
+            "name": "改良型星战士御敌项环",
+            "level": 600,
+            "slot": 10,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35310,
+            "name": "日影兰御敌手镯",
+            "level": 600,
+            "slot": 11,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35240,
+            "name": "改良型星战士御敌戒指",
+            "level": 600,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35315,
+            "name": "日影兰御敌指环",
+            "level": 600,
+            "slot": 12,
+            "unique": true,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          }
+        ],
+        "food": {
+          "id": 49248,
+          "name": "圆蛤羹",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "TEN": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "TEN": 10
+          }
+        },
+        "exploredStates": 28540
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 9,
+          "initializationMs": 8,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "计算中",
+          "engine": "WASM",
+          "activePhase": "候选去重",
+          "elapsedMs": 5325,
+          "initializationMs": 8,
+          "wasmSearchCalls": 45,
+          "wasmSearchMs": 1037,
+          "wasmVisitedBranches": 409405,
+          "wasmEvaluatedCombinations": 61,
+          "wasmParetoCalls": 903,
+          "wasmParetoMs": 268,
+          "wasmParetoInputOptions": 307635,
+          "wasmParetoOutputOptions": 249842,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 10533,
+          "initializationMs": 8,
+          "otherMs": 7969,
+          "wasmSearchCalls": 90,
+          "wasmSearchMs": 2007,
+          "wasmVisitedBranches": 647981,
+          "wasmEvaluatedCombinations": 145,
+          "wasmParetoCalls": 1806,
+          "wasmParetoMs": 549,
+          "wasmParetoInputOptions": 615270,
+          "wasmParetoOutputOptions": 499684,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1497,
+          "rows": 368,
+          "elapsedMs": 266.09999999403954
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1496,
+          "rows": 368,
+          "elapsedMs": 390.80000001192093
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1520,
+          "rows": 368,
+          "elapsedMs": 214.09999999403954
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49240,
+          "columns": 1493,
+          "rows": 368,
+          "elapsedMs": 243.80000001192093
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.101907903044474,
+          "minimumDamage": 21.12402842436015,
+          "restarts": 1
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.101907903044474,
+          "minimumDamage": 21.12402842436015,
+          "restarts": 1
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.101907903044474,
+          "minimumDamage": 21.12402842436015,
+          "restarts": 1
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1497,
+          "rows": 368,
+          "elapsedMs": 284.5
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1496,
+          "rows": 368,
+          "elapsedMs": 598.1999999880791
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1520,
+          "rows": 368,
+          "elapsedMs": 535.6999999880791
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 93,
+          "mipMs": 14197.299999982119,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49239,
+          "columns": 1493,
+          "rows": 368,
+          "elapsedMs": 68.19999998807907
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.12402842436015,
+          "minimumDamage": 21.15269129212272,
+          "restarts": 2
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.12402842436015,
+          "minimumDamage": 21.15269129212272,
+          "restarts": 2
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1497,
+          "rows": 368,
+          "elapsedMs": 425.2000000178814
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1496,
+          "rows": 368,
+          "elapsedMs": 439.40000000596046
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 115,
+          "mipMs": 13081.199999988079,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49246,
+          "columns": 1500,
+          "rows": 368,
+          "elapsedMs": 50.5
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 529,
+          "mipMs": 14742.5,
+          "damage": 21.15302051593257,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 288.10000002384186,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 15797,
+          "mipMs": 59222.80000001192,
+          "damage": 21.159923183329077,
+          "status": 7
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 12005,
+          "mipMs": 67781.30000001192,
+          "damage": 21.165158132308274,
+          "status": 7
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none"
+      }
+    },
+    {
+      "run": "pld245-min10-direct-repeat",
+      "case": "pld245-min10",
+      "inputFixture": "test/fixtures/paladin-605-minimum-10-gcd-245.json",
+      "inputOverrides": {},
+      "inputSha256": "7d5c77749e4a24cdf85626f6bb9daeab87426fd68edee997f17c89a99835767f",
+      "status": "completed",
+      "milliseconds": 100218.19999998808,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 5,
+      "engine": "auto",
+      "integerModel": null,
+      "source": "production worker pipeline",
+      "result": {
+        "damage": 21.165158132308274,
+        "tenacityMitigation": 0.1,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1258,
+          "DET": 1996,
+          "DHT": 1048,
+          "SKS": 650,
+          "TEN": 1351,
+          "VIT": 2940
+        },
+        "gears": [
+          {
+            "id": 36943,
+            "name": "绝境苍穹之剑",
+            "level": 605,
+            "slot": 1,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 2
+              }
+            ]
+          },
+          {
+            "id": 35264,
+            "name": "日影兰之盾",
+            "level": 605,
+            "slot": 2,
+            "unique": false,
+            "synced": false,
+            "melds": []
+          },
+          {
+            "id": 35265,
+            "name": "日影兰御敌头冠",
+            "level": 600,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35191,
+            "name": "改良型星战士御敌鳞铠",
+            "level": 600,
+            "slot": 4,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38959,
+            "name": "冥魂御敌手铠",
+            "level": 605,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38960,
+            "name": "冥魂御敌打底裤",
+            "level": 605,
+            "slot": 7,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38961,
+            "name": "冥魂御敌铠靴",
+            "level": 605,
+            "slot": 8,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35225,
+            "name": "改良型星战士御敌耳坠",
+            "level": 600,
+            "slot": 9,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35230,
+            "name": "改良型星战士御敌项环",
+            "level": 600,
+            "slot": 10,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35310,
+            "name": "日影兰御敌手镯",
+            "level": 600,
+            "slot": 11,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35240,
+            "name": "改良型星战士御敌戒指",
+            "level": 600,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35315,
+            "name": "日影兰御敌指环",
+            "level": 600,
+            "slot": 12,
+            "unique": true,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          }
+        ],
+        "food": {
+          "id": 49248,
+          "name": "圆蛤羹",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "TEN": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "TEN": 10
+          }
+        },
+        "exploredStates": 28456
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 9,
+          "initializationMs": 7,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "计算中",
+          "engine": "WASM",
+          "activePhase": "候选去重",
+          "elapsedMs": 5805,
+          "initializationMs": 7,
+          "wasmSearchCalls": 45,
+          "wasmSearchMs": 1094,
+          "wasmVisitedBranches": 409405,
+          "wasmEvaluatedCombinations": 61,
+          "wasmParetoCalls": 903,
+          "wasmParetoMs": 293,
+          "wasmParetoInputOptions": 307635,
+          "wasmParetoOutputOptions": 249842,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 11303,
+          "initializationMs": 7,
+          "otherMs": 8609,
+          "wasmSearchCalls": 90,
+          "wasmSearchMs": 2123,
+          "wasmVisitedBranches": 647981,
+          "wasmEvaluatedCombinations": 145,
+          "wasmParetoCalls": 1806,
+          "wasmParetoMs": 564,
+          "wasmParetoInputOptions": 615270,
+          "wasmParetoOutputOptions": 499684,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1520,
+          "rows": 368,
+          "elapsedMs": 266.5
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49240,
+          "columns": 1493,
+          "rows": 368,
+          "elapsedMs": 171.7000000178814
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1497,
+          "rows": 368,
+          "elapsedMs": 386.5
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1496,
+          "rows": 368,
+          "elapsedMs": 226.2999999821186
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.101907903044474,
+          "minimumDamage": 21.13002644051495,
+          "restarts": 1
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.101907903044474,
+          "minimumDamage": 21.13002644051495,
+          "restarts": 1
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1496,
+          "rows": 368,
+          "elapsedMs": 406.5
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1497,
+          "rows": 368,
+          "elapsedMs": 406.5
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.110498660899797,
+          "minimumDamage": 21.137671970345778,
+          "restarts": 1
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1520,
+          "rows": 368,
+          "elapsedMs": 287.09999999403954
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 9,
+          "mipMs": 9706.699999988079,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49239,
+          "columns": 1493,
+          "rows": 368,
+          "elapsedMs": 50.29999998211861
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.13002644051495,
+          "minimumDamage": 21.15269129212272,
+          "restarts": 2
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "stage": "重启分片",
+          "previousMinimumDamage": 21.13002644051495,
+          "minimumDamage": 21.15269129212272,
+          "restarts": 2
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1496,
+          "rows": 368,
+          "elapsedMs": 478.40000000596046
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1497,
+          "rows": 368,
+          "elapsedMs": 455.30000001192093
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 529,
+          "mipMs": 14708.899999976158,
+          "damage": 21.15302051593257,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49246,
+          "columns": 1500,
+          "rows": 368,
+          "elapsedMs": 48.400000005960464
+        },
+        {
+          "worker": 3,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 259,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 115,
+          "mipMs": 12232.200000017881,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 15797,
+          "mipMs": 58228.90000000596,
+          "damage": 21.159923183329077,
+          "status": 7
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 12005,
+          "mipMs": 69755.40000000596,
+          "damage": 21.165158132308274,
+          "status": 7
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none"
+      }
+    },
+    {
+      "run": "pld245-min10-direct-no-share",
+      "case": "pld245-min10",
+      "inputFixture": "test/fixtures/paladin-605-minimum-10-gcd-245.json",
+      "inputOverrides": {},
+      "inputSha256": "7d5c77749e4a24cdf85626f6bb9daeab87426fd68edee997f17c89a99835767f",
+      "status": "completed",
+      "milliseconds": 65426.39999997616,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 0,
+      "engine": "auto",
+      "integerModel": null,
+      "source": "production worker pipeline",
+      "result": {
+        "damage": 21.165158132308274,
+        "tenacityMitigation": 0.1,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1258,
+          "DET": 1996,
+          "DHT": 1048,
+          "SKS": 650,
+          "TEN": 1351,
+          "VIT": 2940
+        },
+        "gears": [
+          {
+            "id": 36943,
+            "name": "绝境苍穹之剑",
+            "level": 605,
+            "slot": 1,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 2
+              }
+            ]
+          },
+          {
+            "id": 35264,
+            "name": "日影兰之盾",
+            "level": 605,
+            "slot": 2,
+            "unique": false,
+            "synced": false,
+            "melds": []
+          },
+          {
+            "id": 35265,
+            "name": "日影兰御敌头冠",
+            "level": 600,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35191,
+            "name": "改良型星战士御敌鳞铠",
+            "level": 600,
+            "slot": 4,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38959,
+            "name": "冥魂御敌手铠",
+            "level": 605,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38960,
+            "name": "冥魂御敌打底裤",
+            "level": 605,
+            "slot": 7,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38961,
+            "name": "冥魂御敌铠靴",
+            "level": 605,
+            "slot": 8,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35225,
+            "name": "改良型星战士御敌耳坠",
+            "level": 600,
+            "slot": 9,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35230,
+            "name": "改良型星战士御敌项环",
+            "level": 600,
+            "slot": 10,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35310,
+            "name": "日影兰御敌手镯",
+            "level": 600,
+            "slot": 11,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35240,
+            "name": "改良型星战士御敌戒指",
+            "level": 600,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35315,
+            "name": "日影兰御敌指环",
+            "level": 600,
+            "slot": 12,
+            "unique": true,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          }
+        ],
+        "food": {
+          "id": 49248,
+          "name": "圆蛤羹",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "TEN": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "TEN": 10
+          }
+        },
+        "exploredStates": 29372
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 9,
+          "initializationMs": 6,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "计算中",
+          "engine": "WASM",
+          "activePhase": "候选去重",
+          "elapsedMs": 5184,
+          "initializationMs": 6,
+          "wasmSearchCalls": 45,
+          "wasmSearchMs": 990,
+          "wasmVisitedBranches": 409405,
+          "wasmEvaluatedCombinations": 61,
+          "wasmParetoCalls": 903,
+          "wasmParetoMs": 264,
+          "wasmParetoInputOptions": 307635,
+          "wasmParetoOutputOptions": 249842,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 10323,
+          "initializationMs": 6,
+          "otherMs": 7832,
+          "wasmSearchCalls": 90,
+          "wasmSearchMs": 1943,
+          "wasmVisitedBranches": 647981,
+          "wasmEvaluatedCombinations": 145,
+          "wasmParetoCalls": 1806,
+          "wasmParetoMs": 542,
+          "wasmParetoInputOptions": 615270,
+          "wasmParetoOutputOptions": 499684,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49240,
+          "columns": 1493,
+          "rows": 368,
+          "elapsedMs": 271.59999999403954
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1496,
+          "rows": 368,
+          "elapsedMs": 486.30000001192093
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1520,
+          "rows": 368,
+          "elapsedMs": 200.80000001192093
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1497,
+          "rows": 368,
+          "elapsedMs": 266.59999999403954
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 732,
+          "mipMs": 21126.80000001192,
+          "damage": 21.110498660899797,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49239,
+          "columns": 1493,
+          "rows": 368,
+          "elapsedMs": 66.2000000178814
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 584,
+          "mipMs": 13363.40000000596,
+          "damage": 21.15302051593257,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49246,
+          "columns": 1500,
+          "rows": 368,
+          "elapsedMs": 40.900000005960464
+        },
+        {
+          "worker": 3,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 296.5,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 6253,
+          "mipMs": 36895.30000001192,
+          "damage": 21.127834965488777,
+          "status": 7
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 6005,
+          "mipMs": 41037.5,
+          "damage": 21.165158132308274,
+          "status": 7
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 15797,
+          "mipMs": 54659.69999998808,
+          "damage": 21.159923183329077,
+          "status": 7
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none"
+      }
+    },
+    {
+      "run": "pld245-min10-direct-official",
+      "case": "pld245-min10",
+      "inputFixture": "test/fixtures/paladin-605-minimum-10-gcd-245.json",
+      "inputOverrides": {},
+      "inputSha256": "7d5c77749e4a24cdf85626f6bb9daeab87426fd68edee997f17c89a99835767f",
+      "status": "completed",
+      "milliseconds": 68101.09999999404,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 0,
+      "engine": "auto",
+      "integerModel": true,
+      "source": "production planner + experimental direct integer workers",
+      "result": {
+        "damage": 21.165158132308274,
+        "tenacityMitigation": 0.1,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1258,
+          "DET": 1996,
+          "DHT": 1048,
+          "SKS": 650,
+          "TEN": 1351,
+          "VIT": 2940
+        },
+        "gears": [
+          {
+            "id": 36943,
+            "name": "绝境苍穹之剑",
+            "level": 605,
+            "slot": 1,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 2
+              }
+            ]
+          },
+          {
+            "id": 35264,
+            "name": "日影兰之盾",
+            "level": 605,
+            "slot": 2,
+            "unique": false,
+            "synced": false,
+            "melds": []
+          },
+          {
+            "id": 35265,
+            "name": "日影兰御敌头冠",
+            "level": 600,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35191,
+            "name": "改良型星战士御敌鳞铠",
+            "level": 600,
+            "slot": 4,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38959,
+            "name": "冥魂御敌手铠",
+            "level": 605,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38960,
+            "name": "冥魂御敌打底裤",
+            "level": 605,
+            "slot": 7,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38961,
+            "name": "冥魂御敌铠靴",
+            "level": 605,
+            "slot": 8,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35225,
+            "name": "改良型星战士御敌耳坠",
+            "level": 600,
+            "slot": 9,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35230,
+            "name": "改良型星战士御敌项环",
+            "level": 600,
+            "slot": 10,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35310,
+            "name": "日影兰御敌手镯",
+            "level": 600,
+            "slot": 11,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35240,
+            "name": "改良型星战士御敌戒指",
+            "level": 600,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35315,
+            "name": "日影兰御敌指环",
+            "level": 600,
+            "slot": 12,
+            "unique": true,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          }
+        ],
+        "food": {
+          "id": 49248,
+          "name": "圆蛤羹",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "TEN": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "TEN": 10
+          }
+        },
+        "exploredStates": 29372
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 8,
+          "initializationMs": 6,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "计算中",
+          "engine": "WASM",
+          "activePhase": "候选去重",
+          "elapsedMs": 5180,
+          "initializationMs": 6,
+          "wasmSearchCalls": 45,
+          "wasmSearchMs": 1019,
+          "wasmVisitedBranches": 409405,
+          "wasmEvaluatedCombinations": 61,
+          "wasmParetoCalls": 903,
+          "wasmParetoMs": 262,
+          "wasmParetoInputOptions": 307635,
+          "wasmParetoOutputOptions": 249842,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 10048,
+          "initializationMs": 6,
+          "otherMs": 7559,
+          "wasmSearchCalls": 90,
+          "wasmSearchMs": 1973,
+          "wasmVisitedBranches": 647981,
+          "wasmEvaluatedCombinations": 145,
+          "wasmParetoCalls": 1806,
+          "wasmParetoMs": 510,
+          "wasmParetoInputOptions": 615270,
+          "wasmParetoOutputOptions": 499684,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1496,
+          "rows": 368,
+          "elapsedMs": 177.40000000596046
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49240,
+          "columns": 1493,
+          "rows": 368,
+          "elapsedMs": 174.59999999403954
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1497,
+          "rows": 368,
+          "elapsedMs": 185.30000001192093
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1520,
+          "rows": 368,
+          "elapsedMs": 222.7000000178814
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 732,
+          "mipMs": 21496.90000000596,
+          "damage": 21.110498660899797,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49239,
+          "columns": 1493,
+          "rows": 368,
+          "elapsedMs": 70
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 584,
+          "mipMs": 13781.59999999404,
+          "damage": 21.15302051593257,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49246,
+          "columns": 1500,
+          "rows": 368,
+          "elapsedMs": 45.400000005960464
+        },
+        {
+          "worker": 3,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 324.90000000596046,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 6253,
+          "mipMs": 38770.30000001192,
+          "damage": 21.127834965488777,
+          "status": 7
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 6005,
+          "mipMs": 43976.90000000596,
+          "damage": 21.165158132308274,
+          "status": 7
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 15797,
+          "mipMs": 57958,
+          "damage": 21.159923183329077,
+          "status": 7
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none"
+      }
+    },
+    {
+      "run": "war248-min15-direct",
+      "case": "war248-min15",
+      "inputFixture": "test/fixtures/warrior-375-minimum-15-gcd-248.json",
+      "inputOverrides": {},
+      "inputSha256": "30fa98e9909ed518c8d05ac351b198083a665b494f76fe1e77589050680960ba",
+      "status": "completed",
+      "milliseconds": 31895.19999998808,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 0,
+      "engine": "auto",
+      "integerModel": null,
+      "source": "production worker pipeline",
+      "result": {
+        "damage": 7.859572391399585,
+        "tenacityMitigation": 0.15,
+        "stats": {
+          "PDMG": 90,
+          "MDMG": 0,
+          "DLY": 3360,
+          "STR": 1270,
+          "CRT": 1318,
+          "DET": 903,
+          "DHT": 386,
+          "SKS": 407,
+          "TEN": 1040,
+          "VIT": 1437
+        },
+        "gears": [
+          {
+            "id": 22870,
+            "name": "勇悍斧·究极",
+            "level": 375,
+            "slot": 13,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 2
+              }
+            ]
+          },
+          {
+            "id": 21509,
+            "name": "钻石御敌头冠",
+            "level": 370,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 24369,
+            "name": "联盟御敌外套",
+            "level": 375,
+            "slot": 4,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 22243,
+            "name": "残暴手铠·常风",
+            "level": 350,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 2
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 3
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 24371,
+            "name": "联盟御敌软甲裤",
+            "level": 375,
+            "slot": 7,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 22245,
+            "name": "残暴锁甲靴·常风",
+            "level": 350,
+            "slot": 8,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 2
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 3
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 21753,
+            "name": "清银御敌耳坠",
+            "level": 350,
+            "slot": 9,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 24415,
+            "name": "联盟御敌项链",
+            "level": 375,
+            "slot": 10,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              }
+            ]
+          },
+          {
+            "id": 21763,
+            "name": "黑柳御敌腕环",
+            "level": 350,
+            "slot": 11,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 21768,
+            "name": "清银御敌戒指",
+            "level": 350,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DET",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "DET",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 21768,
+            "name": "清银御敌戒指",
+            "level": 350,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          }
+        ],
+        "food": {
+          "id": 49240,
+          "name": "焦糖爆米花",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "CRT": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "CRT": 10
+          }
+        },
+        "exploredStates": 16663
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "WAR",
+          "syncLevel": 375,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 9,
+          "initializationMs": 8,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "WAR",
+          "syncLevel": 375,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 4437,
+          "initializationMs": 8,
+          "otherMs": 3463,
+          "wasmSearchCalls": 80,
+          "wasmSearchMs": 666,
+          "wasmVisitedBranches": 488428,
+          "wasmEvaluatedCombinations": 301,
+          "wasmParetoCalls": 902,
+          "wasmParetoMs": 300,
+          "wasmParetoInputOptions": 329690,
+          "wasmParetoOutputOptions": 241632,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 18.1
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49240,
+          "columns": 1582,
+          "rows": 394,
+          "elapsedMs": 473.5
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1582,
+          "rows": 394,
+          "elapsedMs": 201.7999999821186
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49239,
+          "columns": 1576,
+          "rows": 394,
+          "elapsedMs": 298.5
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1582,
+          "rows": 394,
+          "elapsedMs": 222.30000001192093
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 1448,
+          "mipMs": 16427.5,
+          "damage": 7.859572391399585,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1593,
+          "rows": 394,
+          "elapsedMs": 95.90000000596046
+        },
+        {
+          "worker": 0,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1,
+          "mipMs": 433.09999999403954,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49246,
+          "columns": 1577,
+          "rows": 394,
+          "elapsedMs": 55.79999998211861
+        },
+        {
+          "worker": 0,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 196,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 3732,
+          "mipMs": 20276.59999999404,
+          "damage": 7.839795522490837,
+          "status": 7
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 5408,
+          "mipMs": 25270.20000001788,
+          "damage": 7.857471887384171,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 6073,
+          "mipMs": 26993.69999998808,
+          "damage": 7.853986276024632,
+          "status": 7
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.48,
+        "mitigation": 0.15,
+        "criticalThresholdCheck": "none"
+      }
+    },
+    {
+      "run": "pld245-min15-direct-control",
+      "case": "pld245-min15",
+      "inputFixture": "test/fixtures/paladin-605-minimum-10-gcd-245.json",
+      "inputOverrides": {
+        "objective": {
+          "type": "minimumTenacity",
+          "minimumTenacityMitigation": 0.15
+        }
+      },
+      "inputSha256": "529934826e6eaf4c47f77cb1fd7b7effb6474f51618956b0b094f6a9609be071",
+      "status": "completed",
+      "milliseconds": 41500,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 0,
+      "engine": "auto",
+      "integerModel": true,
+      "source": "production planner + experimental direct integer workers",
+      "result": {
+        "damage": 21.02962278483717,
+        "tenacityMitigation": 0.15,
+        "stats": {
+          "PDMG": 120,
+          "MDMG": 0,
+          "DLY": 2240,
+          "STR": 2534,
+          "CRT": 1258,
+          "DET": 1845,
+          "DHT": 724,
+          "SKS": 650,
+          "TEN": 1826,
+          "VIT": 2940
+        },
+        "gears": [
+          {
+            "id": 36943,
+            "name": "绝境苍穹之剑",
+            "level": 605,
+            "slot": 1,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 2
+              }
+            ]
+          },
+          {
+            "id": 35264,
+            "name": "日影兰之盾",
+            "level": 605,
+            "slot": 2,
+            "unique": false,
+            "synced": false,
+            "melds": []
+          },
+          {
+            "id": 35265,
+            "name": "日影兰御敌头冠",
+            "level": 600,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35191,
+            "name": "改良型星战士御敌鳞铠",
+            "level": 600,
+            "slot": 4,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38959,
+            "name": "冥魂御敌手铠",
+            "level": 605,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38960,
+            "name": "冥魂御敌打底裤",
+            "level": 605,
+            "slot": 7,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 38961,
+            "name": "冥魂御敌铠靴",
+            "level": 605,
+            "slot": 8,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35300,
+            "name": "日影兰御敌耳坠",
+            "level": 600,
+            "slot": 9,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "TEN",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35230,
+            "name": "改良型星战士御敌项环",
+            "level": 600,
+            "slot": 10,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35310,
+            "name": "日影兰御敌手镯",
+            "level": 600,
+            "slot": 11,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35240,
+            "name": "改良型星战士御敌戒指",
+            "level": 600,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 35240,
+            "name": "改良型星战士御敌戒指",
+            "level": 600,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 10,
+                "value": 36,
+                "slot": 0
+              },
+              {
+                "stat": "SKS",
+                "grade": 10,
+                "value": 36,
+                "slot": 1
+              }
+            ]
+          }
+        ],
+        "food": {
+          "id": 49247,
+          "name": "蛤蜊糕",
+          "stats": {
+            "TEN": 151,
+            "VIT": 297,
+            "DET": 91
+          },
+          "statRates": {
+            "TEN": 10,
+            "VIT": 10,
+            "DET": 10
+          }
+        },
+        "exploredStates": 4655
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 10,
+          "initializationMs": 8,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "计算中",
+          "engine": "WASM",
+          "activePhase": "候选去重",
+          "elapsedMs": 5403,
+          "initializationMs": 8,
+          "wasmSearchCalls": 45,
+          "wasmSearchMs": 1036,
+          "wasmVisitedBranches": 205820,
+          "wasmEvaluatedCombinations": 81,
+          "wasmParetoCalls": 903,
+          "wasmParetoMs": 259,
+          "wasmParetoInputOptions": 307635,
+          "wasmParetoOutputOptions": 249842,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PLD",
+          "syncLevel": 605,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 10301,
+          "initializationMs": 8,
+          "otherMs": 7781,
+          "wasmSearchCalls": 90,
+          "wasmSearchMs": 2000,
+          "wasmVisitedBranches": 394019,
+          "wasmEvaluatedCombinations": 164,
+          "wasmParetoCalls": 1806,
+          "wasmParetoMs": 512,
+          "wasmParetoInputOptions": 615270,
+          "wasmParetoOutputOptions": 499684,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 35.4
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1469,
+          "rows": 368,
+          "elapsedMs": 151.59999999403954
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49240,
+          "columns": 1465,
+          "rows": 368,
+          "elapsedMs": 164.19999998807907
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1492,
+          "rows": 368,
+          "elapsedMs": 175.59999999403954
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1468,
+          "rows": 368,
+          "elapsedMs": 200.40000000596046
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1,
+          "mipMs": 2370.699999988079,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 2,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49239,
+          "columns": 1465,
+          "rows": 368,
+          "elapsedMs": 45
+        },
+        {
+          "worker": 2,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 1,
+          "mipMs": 1122.300000011921,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 2,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49246,
+          "columns": 1472,
+          "rows": 368,
+          "elapsedMs": 54.900000005960464
+        },
+        {
+          "worker": 2,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 351.5,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 638,
+          "mipMs": 13386.5,
+          "damage": 21.010625835618708,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 349,
+          "mipMs": 17668.79999998212,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 3665,
+          "mipMs": 31138.40000000596,
+          "damage": 21.02962278483717,
+          "status": 7
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.45,
+        "mitigation": 0.15,
+        "criticalThresholdCheck": "none"
+      }
+    },
+    {
+      "run": "war248-min10-direct-control",
+      "case": "war248-min10",
+      "inputFixture": "test/fixtures/warrior-375-minimum-15-gcd-248.json",
+      "inputOverrides": {
+        "objective": {
+          "type": "minimumTenacity",
+          "minimumTenacityMitigation": 0.1
+        }
+      },
+      "inputSha256": "1a3411f18dd5de4122ffaba5669559ed45c6bddf157d452d659c23141aaf85a8",
+      "status": "completed",
+      "milliseconds": 23078.20000001788,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 0,
+      "engine": "auto",
+      "integerModel": true,
+      "source": "production planner + experimental direct integer workers",
+      "result": {
+        "damage": 7.927973014548788,
+        "tenacityMitigation": 0.1,
+        "stats": {
+          "PDMG": 90,
+          "MDMG": 0,
+          "DLY": 3360,
+          "STR": 1270,
+          "CRT": 1354,
+          "DET": 1013,
+          "DHT": 474,
+          "SKS": 407,
+          "TEN": 816,
+          "VIT": 1437
+        },
+        "gears": [
+          {
+            "id": 22870,
+            "name": "勇悍斧·究极",
+            "level": 375,
+            "slot": 13,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 2
+              }
+            ]
+          },
+          {
+            "id": 21509,
+            "name": "钻石御敌头冠",
+            "level": 370,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 24369,
+            "name": "联盟御敌外套",
+            "level": 375,
+            "slot": 4,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 22243,
+            "name": "残暴手铠·常风",
+            "level": 350,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 2
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 3
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 24371,
+            "name": "联盟御敌软甲裤",
+            "level": 375,
+            "slot": 7,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 22245,
+            "name": "残暴锁甲靴·常风",
+            "level": 350,
+            "slot": 8,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 2
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 3
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 21753,
+            "name": "清银御敌耳坠",
+            "level": 350,
+            "slot": 9,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "CRT",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "CRT",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "CRT",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 24415,
+            "name": "联盟御敌项链",
+            "level": 375,
+            "slot": 10,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              }
+            ]
+          },
+          {
+            "id": 21763,
+            "name": "黑柳御敌腕环",
+            "level": 350,
+            "slot": 11,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "CRT",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "CRT",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "CRT",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 21768,
+            "name": "清银御敌戒指",
+            "level": 350,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "TEN",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 21768,
+            "name": "清银御敌戒指",
+            "level": 350,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          }
+        ],
+        "food": {
+          "id": 49240,
+          "name": "焦糖爆米花",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "CRT": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "CRT": 10
+          }
+        },
+        "exploredStates": 1976
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "WAR",
+          "syncLevel": 375,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 8,
+          "initializationMs": 7,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "WAR",
+          "syncLevel": 375,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 4274,
+          "initializationMs": 7,
+          "otherMs": 3382,
+          "wasmSearchCalls": 80,
+          "wasmSearchMs": 628,
+          "wasmVisitedBranches": 475870,
+          "wasmEvaluatedCombinations": 236,
+          "wasmParetoCalls": 902,
+          "wasmParetoMs": 257,
+          "wasmParetoInputOptions": 329690,
+          "wasmParetoOutputOptions": 241632,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 18.1
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49239,
+          "columns": 1604,
+          "rows": 394,
+          "elapsedMs": 145.19999998807907
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1621,
+          "rows": 394,
+          "elapsedMs": 135.5
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49240,
+          "columns": 1610,
+          "rows": 394,
+          "elapsedMs": 202.30000001192093
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49247,
+          "columns": 1610,
+          "rows": 394,
+          "elapsedMs": 216.2000000178814
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1,
+          "mipMs": 8720.59999999404,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49248,
+          "columns": 1610,
+          "rows": 394,
+          "elapsedMs": 107.60000002384186
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 44,
+          "mipMs": 9482.799999982119,
+          "damage": 7.893588567650835,
+          "status": 7
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 9,
+          "mipMs": 9518.300000011921,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49246,
+          "columns": 1605,
+          "rows": 394,
+          "elapsedMs": 56.5
+        },
+        {
+          "worker": 0,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 201.5,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 1838,
+          "mipMs": 17025.40000000596,
+          "damage": 7.927973014548788,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 83,
+          "mipMs": 10004.300000011921,
+          "damage": 0,
+          "status": 8
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.48,
+        "mitigation": 0.1,
+        "criticalThresholdCheck": "none"
+      }
+    },
+    {
+      "run": "pct375-direct-control",
+      "case": "pct375",
+      "inputFixture": "test/fixtures/pictomancer-375-phantom-input.json",
+      "inputOverrides": {},
+      "inputSha256": "13026623bbab0627cc79a5b692ebcf344014d5a21a69bc539e424b8f11485cf6",
+      "status": "completed",
+      "milliseconds": 6541.4000000059605,
+      "completed": 2,
+      "partitions": 2,
+      "restarts": 0,
+      "engine": "auto",
+      "integerModel": true,
+      "source": "production planner + experimental direct integer workers",
+      "result": {
+        "damage": 12.8560955257727,
+        "tenacityMitigation": 0,
+        "stats": {
+          "PDMG": 0,
+          "MDMG": 90,
+          "DLY": 0,
+          "INT": 1318,
+          "CRT": 1409,
+          "DET": 1290,
+          "DHT": 639,
+          "SPS": 364,
+          "VIT": 1322
+        },
+        "gears": [
+          {
+            "id": 51020,
+            "name": "幻境圆笔·秘影",
+            "level": 795,
+            "slot": 13,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 21545,
+            "name": "钻石咏咒宽边帽",
+            "level": 370,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 32754,
+            "name": "裁决咏咒护甲",
+            "level": 510,
+            "slot": 4,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 24406,
+            "name": "联盟咏咒半指护手",
+            "level": 375,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 43186,
+            "name": "旧化的画家工作裤",
+            "level": 515,
+            "slot": 7,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 43187,
+            "name": "旧化的画家木底鞋",
+            "level": 515,
+            "slot": 8,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 29323,
+            "name": "改良型水晶都咏咒耳坠",
+            "level": 500,
+            "slot": 9,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 29106,
+            "name": "伊甸之律咏咒项环",
+            "level": 500,
+            "slot": 10,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 32350,
+            "name": "伊甸之晨咏咒手环",
+            "level": 530,
+            "slot": 11,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 21772,
+            "name": "清银咏咒戒指",
+            "level": 350,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 21772,
+            "name": "清银咏咒戒指",
+            "level": 350,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DET",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          }
+        ],
+        "food": {
+          "id": 49240,
+          "name": "焦糖爆米花",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "CRT": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "CRT": 10
+          }
+        },
+        "exploredStates": 69
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PCT",
+          "syncLevel": 375,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 13,
+          "initializationMs": 9,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PCT",
+          "syncLevel": 375,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 213,
+          "initializationMs": 9,
+          "otherMs": 190,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 134,
+          "wasmParetoMs": 14,
+          "wasmParetoInputOptions": 33358,
+          "wasmParetoOutputOptions": 19784,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49240,
+          "columns": 1563,
+          "rows": 302,
+          "elapsedMs": 102
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "整数模型就绪",
+          "foodId": 49245,
+          "columns": 1581,
+          "rows": 302,
+          "elapsedMs": 103.09999999403954
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1,
+          "mipMs": 659.7000000178814,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 68,
+          "mipMs": 6275.0999999940395,
+          "damage": 12.8560955257727,
+          "status": 7
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.5,
+        "mitigation": 0.0,
+        "criticalThresholdCheck": "none"
+      }
+    },
+    {
+      "run": "pct375-direct-native-control",
+      "case": "pct375",
+      "inputFixture": "test/fixtures/pictomancer-375-phantom-input.json",
+      "inputOverrides": {},
+      "inputSha256": "13026623bbab0627cc79a5b692ebcf344014d5a21a69bc539e424b8f11485cf6",
+      "status": "completed",
+      "milliseconds": 2802.100000023842,
+      "completed": 2,
+      "partitions": 2,
+      "restarts": 0,
+      "engine": "auto",
+      "integerModel": false,
+      "source": "production worker pipeline",
+      "result": {
+        "damage": 12.8560955257727,
+        "tenacityMitigation": 0,
+        "stats": {
+          "PDMG": 0,
+          "MDMG": 90,
+          "DLY": 0,
+          "INT": 1318,
+          "CRT": 1409,
+          "DET": 1290,
+          "DHT": 639,
+          "SPS": 364,
+          "VIT": 1322
+        },
+        "gears": [
+          {
+            "id": 51020,
+            "name": "幻境圆笔·秘影",
+            "level": 795,
+            "slot": 13,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 24406,
+            "name": "联盟咏咒半指护手",
+            "level": 375,
+            "slot": 5,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 21772,
+            "name": "清银咏咒戒指",
+            "level": 350,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "DET",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 21772,
+            "name": "清银咏咒戒指",
+            "level": 350,
+            "slot": 12,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "DET",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 2
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 3
+              },
+              {
+                "stat": "DHT",
+                "grade": 5,
+                "value": 6,
+                "slot": 4
+              }
+            ]
+          },
+          {
+            "id": 32350,
+            "name": "伊甸之晨咏咒手环",
+            "level": 530,
+            "slot": 11,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 21545,
+            "name": "钻石咏咒宽边帽",
+            "level": 370,
+            "slot": 3,
+            "unique": false,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              },
+              {
+                "stat": "CRT",
+                "grade": 6,
+                "value": 16,
+                "slot": 1
+              }
+            ]
+          },
+          {
+            "id": 43187,
+            "name": "旧化的画家木底鞋",
+            "level": 515,
+            "slot": 8,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 43186,
+            "name": "旧化的画家工作裤",
+            "level": 515,
+            "slot": 7,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 32754,
+            "name": "裁决咏咒护甲",
+            "level": 510,
+            "slot": 4,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 29323,
+            "name": "改良型水晶都咏咒耳坠",
+            "level": 500,
+            "slot": 9,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 29106,
+            "name": "伊甸之律咏咒项环",
+            "level": 500,
+            "slot": 10,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          }
+        ],
+        "food": {
+          "id": 49240,
+          "name": "焦糖爆米花",
+          "stats": {
+            "DET": 151,
+            "VIT": 297,
+            "CRT": 91
+          },
+          "statRates": {
+            "DET": 10,
+            "VIT": 10,
+            "CRT": 10
+          }
+        },
+        "exploredStates": 601824
+      },
+      "diagnostics": [
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PCT",
+          "syncLevel": 375,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "规划候选与分片",
+          "elapsedMs": 13,
+          "initializationMs": 8,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": "planner",
+          "version": "2026-10-26-console-v1",
+          "task": "plan",
+          "job": "PCT",
+          "syncLevel": 375,
+          "stage": "规划完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 232,
+          "initializationMs": 8,
+          "otherMs": 196,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 134,
+          "wasmParetoMs": 28,
+          "wasmParetoInputOptions": 33358,
+          "wasmParetoOutputOptions": 19784,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "version": "2026-10-26-console-v1",
+          "task": "optimize",
+          "job": "PCT",
+          "syncLevel": 375,
+          "foodId": 49240,
+          "speed": 0,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "准备候选与镶嵌",
+          "elapsedMs": 10,
+          "initializationMs": 7,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "version": "2026-10-26-console-v1",
+          "task": "optimize",
+          "job": "PCT",
+          "syncLevel": 375,
+          "foodId": 49245,
+          "speed": 0,
+          "stage": "引擎就绪",
+          "engine": "WASM",
+          "activePhase": "准备候选与镶嵌",
+          "elapsedMs": 8,
+          "initializationMs": 5,
+          "wasmSearchCalls": 0,
+          "wasmSearchMs": 0,
+          "wasmVisitedBranches": 0,
+          "wasmEvaluatedCombinations": 0,
+          "wasmParetoCalls": 0,
+          "wasmParetoMs": 0,
+          "wasmParetoInputOptions": 0,
+          "wasmParetoOutputOptions": 0,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": false,
+          "wasmMemoryMiB": 8
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "version": "2026-10-26-console-v1",
+          "task": "optimize",
+          "job": "PCT",
+          "syncLevel": 375,
+          "foodId": 49245,
+          "speed": 0,
+          "stage": "分片完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 2493,
+          "initializationMs": 5,
+          "otherMs": 1890,
+          "wasmSearchCalls": 1,
+          "wasmSearchMs": 61,
+          "wasmVisitedBranches": 30332,
+          "wasmEvaluatedCombinations": 13562,
+          "wasmParetoCalls": 40,
+          "wasmParetoMs": 537,
+          "wasmParetoInputOptions": 245470,
+          "wasmParetoOutputOptions": 51641,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 28.1
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "version": "2026-10-26-console-v1",
+          "task": "optimize",
+          "job": "PCT",
+          "syncLevel": 375,
+          "foodId": 49240,
+          "speed": 0,
+          "stage": "分片完成",
+          "engine": "WASM",
+          "activePhase": "done",
+          "elapsedMs": 2516,
+          "initializationMs": 7,
+          "otherMs": 1878,
+          "wasmSearchCalls": 1,
+          "wasmSearchMs": 52,
+          "wasmVisitedBranches": 25901,
+          "wasmEvaluatedCombinations": 21622,
+          "wasmParetoCalls": 40,
+          "wasmParetoMs": 579,
+          "wasmParetoInputOptions": 245470,
+          "wasmParetoOutputOptions": 51641,
+          "jsTreeFallbacks": 0,
+          "wasmUsed": true,
+          "wasmMemoryMiB": 28.1
+        }
+      ],
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.5,
+        "mitigation": 0.0,
+        "criticalThresholdCheck": "none"
+      }
+    }
+  ],
+  "correctness": {
+    "tested": 900,
+    "empty": 331,
+    "withBound": 185,
+    "seconds": 22.894892147
+  },
+  "priorKernelTests": {
+    "passed": 93
+  },
+  "rejectedComponents": {
+    "rootDpFood49248": [
+      {
+        "case": "pld245-min10",
+        "before": 1966,
+        "after": 1966,
+        "milliseconds": 11.983505
+      },
+      {
+        "case": "pld245-min15",
+        "before": 1966,
+        "after": 1966,
+        "milliseconds": 9.275246
+      },
+      {
+        "case": "war248-min10",
+        "before": 2573,
+        "after": 1972,
+        "milliseconds": 2.040671
+      },
+      {
+        "case": "war248-min15",
+        "before": 2573,
+        "after": 1972,
+        "milliseconds": 1.837775
+      }
+    ],
+    "rangeTightening": {
+      "status": "timeout",
+      "milliseconds": 300000.6999999881,
+      "completed": 5,
+      "partitions": 6
+    }
+  },
+  "currentAdoptionStatus": "rejected-known-browser-optimality-regression",
+  "supersededBy": "docs/optimizer-algorithm-retest.md"
+}

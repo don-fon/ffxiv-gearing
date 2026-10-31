@@ -1,0 +1,418 @@
+{
+  "experimentalOnly": true,
+  "workers": 4,
+  "timeoutMs": 300000,
+  "cases": [
+    {
+      "run": "war248-min15-runtime",
+      "status": "completed",
+      "milliseconds": 49123.10000000894,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 0,
+      "message": null,
+      "damage": 7.859572391399585,
+      "partitionsFinished": [
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 1,
+          "mipMs": 6155.29999999702,
+          "damage": 7.839795522490837,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 464,
+          "mipMs": 13201.90000000596,
+          "damage": 7.859572391399585,
+          "status": 7
+        },
+        {
+          "worker": 2,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1173,
+          "mipMs": 22658.90000000596,
+          "damage": 7.810819234224617,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1430,
+          "mipMs": 16837.19999998808,
+          "damage": 7.742827274363699,
+          "status": 7
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 6986,
+          "mipMs": 37557.29999999702,
+          "damage": 7.857471887384171,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 13582,
+          "mipMs": 44329,
+          "damage": 7.853986276024632,
+          "status": 7
+        }
+      ]
+    },
+    {
+      "run": "pld245-min10-crt-cut",
+      "status": "completed",
+      "milliseconds": 272117.90000000596,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 2,
+      "message": null,
+      "damage": 21.165158132308274,
+      "partitionsFinished": [
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 7,
+          "mipMs": 19297.90000000596,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 2999,
+          "mipMs": 31712.29999999702,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 3,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 7967.20000000298,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 48855,
+          "mipMs": 139615.79999999702,
+          "damage": 21.165158132308274,
+          "status": 7
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 53997,
+          "mipMs": 143921.5,
+          "damage": 21.159923183329077,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 40122,
+          "mipMs": 256523.80000001192,
+          "damage": 0,
+          "status": 8
+        }
+      ]
+    },
+    {
+      "run": "pld245-min10-crt-cut-fine",
+      "status": "timeout",
+      "milliseconds": 300000.5,
+      "completed": 5,
+      "partitions": 6,
+      "restarts": null,
+      "message": null,
+      "damage": null,
+      "partitionsFinished": [
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1,
+          "mipMs": 20891.90000000596,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 3,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 4476,
+          "mipMs": 40485.69999998808,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 3,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1,
+          "mipMs": 9450.20000000298,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 53997,
+          "mipMs": 143471.40000000596,
+          "damage": 21.159923183329077,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 14171,
+          "mipMs": 125297.29999999702,
+          "damage": 0,
+          "status": 8
+        }
+      ]
+    },
+    {
+      "run": "pld245-min10-probe",
+      "status": "timeout",
+      "milliseconds": 300000.60000000894,
+      "completed": 5,
+      "partitions": 6,
+      "restarts": null,
+      "message": null,
+      "damage": null,
+      "partitionsFinished": [
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1,
+          "mipMs": 25411.5,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 28398,
+          "mipMs": 79019.5,
+          "damage": 21.165158132308274,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 7482,
+          "mipMs": 111466.60000000894,
+          "damage": 0,
+          "status": 8
+        }
+      ]
+    },
+    {
+      "run": "pld245-min10-probe-onehot",
+      "status": "error",
+      "milliseconds": 297447.299999997,
+      "completed": 4,
+      "partitions": 6,
+      "restarts": null,
+      "message": "Error: MILP incomplete: 13",
+      "partitionsFinished": [
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1,
+          "mipMs": 15321.70000000298,
+          "damage": 0,
+          "status": 8
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 303,
+          "mipMs": 26567.60000000894,
+          "damage": 0,
+          "status": 8
+        }
+      ]
+    },
+    {
+      "run": "war248-min15-runtime-repeat",
+      "status": "completed",
+      "milliseconds": 51221.70000000298,
+      "completed": 6,
+      "partitions": 6,
+      "restarts": 0,
+      "damage": 7.859572391399585,
+      "validation": {
+        "completed": true,
+        "gearFoodStatsReconstructed": true,
+        "slotUniqueAndCandidateChecks": true,
+        "gcd": 2.48,
+        "mitigation": 0.15,
+        "criticalThresholdCheck": "none"
+      },
+      "partitionsFinished": [
+        {
+          "worker": 2,
+          "partition": 2,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49239,
+          "mipNodes": 1,
+          "mipMs": 5462.899999991059,
+          "damage": 7.839795522490837,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 0,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49240,
+          "mipNodes": 464,
+          "mipMs": 12417,
+          "damage": 7.859572391399585,
+          "status": 7
+        },
+        {
+          "worker": 2,
+          "partition": 4,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49245,
+          "mipNodes": 1173,
+          "mipMs": 25166.5,
+          "damage": 7.810819234224617,
+          "status": 7
+        },
+        {
+          "worker": 0,
+          "partition": 5,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49246,
+          "mipNodes": 1430,
+          "mipMs": 18641.59999999404,
+          "damage": 7.742827274363699,
+          "status": 7
+        },
+        {
+          "worker": 1,
+          "partition": 1,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49247,
+          "mipNodes": 6986,
+          "mipMs": 40318.59999999404,
+          "damage": 7.857471887384171,
+          "status": 7
+        },
+        {
+          "worker": 3,
+          "partition": 3,
+          "engine": "HiGHS WASM",
+          "stage": "分片完成",
+          "foodId": 49248,
+          "mipNodes": 13582,
+          "mipMs": 46209.90000000596,
+          "damage": 7.853986276024632,
+          "status": 7
+        }
+      ]
+    }
+  ],
+  "correctness": {
+    "variant": "model-runtime-crt-cut.mjs",
+    "tested": 900,
+    "empty": 249,
+    "withBound": 215,
+    "seconds": 19.550719464
+  },
+  "additionalCorrectness": [
+    {
+      "variant": "model-runtime-crt-cut.mjs",
+      "tested": 900,
+      "empty": 318,
+      "withBound": 194,
+      "seconds": 22.157350456,
+      "includesRings": true
+    },
+    {
+      "variant": "model-runtime.mjs",
+      "tested": 900,
+      "empty": 272,
+      "withBound": 0,
+      "seconds": 11.831525670000001,
+      "includesRings": true
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+{
+  "date": "2026-10-30",
+  "scope": "Exact raw-domain proof prototype; all integer-recovery experimental requests require independent certification. No website deployment.",
+  "runs": [
+    {
+      "id": "input-compatibility-screen/small-certified",
+      "case": "small-certified",
+      "phase": "input-compatibility-screen",
+      "searchStatus": "completed",
+      "status": "completed",
+      "searchMs": 163.09999999403954,
+      "proofMs": 100.02425900000026,
+      "totalMs": 263.1242589940398,
+      "proofVerified": true,
+      "reason": null
+    },
+    {
+      "id": "input-compatibility-screen/small-budget-zero",
+      "case": "small-budget-zero",
+      "phase": "input-compatibility-screen",
+      "searchStatus": "completed",
+      "status": "unproven",
+      "searchMs": 150.7000000178814,
+      "proofMs": 90.53120200000012,
+      "totalMs": 241.23120201788151,
+      "proofVerified": false,
+      "reason": "Proof generation time budget exhausted"
+    },
+    {
+      "id": "input-compatibility-screen/PCT",
+      "case": "PCT",
+      "phase": "input-compatibility-screen",
+      "searchStatus": "completed",
+      "status": "unproven",
+      "searchMs": 9347.199999988079,
+      "proofMs": 136.72345599999971,
+      "totalMs": 9483.923455988079,
+      "proofVerified": false,
+      "reason": "Expected nonnegative safe integer"
+    },
+    {
+      "id": "input-compatibility-screen/WAR",
+      "case": "WAR",
+      "phase": "input-compatibility-screen",
+      "searchStatus": "completed",
+      "status": "unproven",
+      "searchMs": 41387.59999999404,
+      "proofMs": 79.24229700000433,
+      "totalMs": 41466.842296994044,
+      "proofVerified": false,
+      "reason": "Expected nonnegative safe integer"
+    },
+    {
+      "id": "full-cost/small-certified",
+      "case": "small-certified",
+      "phase": "full-cost",
+      "searchStatus": "completed",
+      "status": "completed",
+      "searchMs": 143.69999998807907,
+      "proofMs": 93.05724299999974,
+      "totalMs": 236.75724298807881,
+      "proofVerified": true,
+      "reason": null
+    },
+    {
+      "id": "full-cost/small-budget-zero",
+      "case": "small-budget-zero",
+      "phase": "full-cost",
+      "searchStatus": "completed",
+      "status": "unproven",
+      "searchMs": 140.69999998807907,
+      "proofMs": 69.0377669999998,
+      "totalMs": 209.73776698807887,
+      "proofVerified": false,
+      "reason": "Proof generation time budget exhausted"
+    },
+    {
+      "id": "full-cost/PCT",
+      "case": "PCT",
+      "phase": "full-cost",
+      "searchStatus": "completed",
+      "status": "unproven",
+      "searchMs": 9254.899999976158,
+      "proofMs": 30128.527852000003,
+      "totalMs": 39383.42785197616,
+      "proofVerified": false,
+      "reason": "Proof generation time budget exhausted"
+    },
+    {
+      "id": "full-cost/WAR",
+      "case": "WAR",
+      "phase": "full-cost",
+      "searchStatus": "completed",
+      "status": "unproven",
+      "searchMs": 40706.59999999404,
+      "proofMs": 30095.921436999997,
+      "totalMs": 70802.52143699404,
+      "proofVerified": false,
+      "reason": "Proof generation time budget exhausted"
+    },
+    {
+      "id": "final-protocol/final-certified",
+      "case": "final-certified",
+      "phase": "final-protocol",
+      "searchStatus": "completed",
+      "status": "completed",
+      "searchMs": 156.80000001192093,
+      "proofMs": 88.34025799999972,
+      "totalMs": 245.14025801192065,
+      "proofVerified": true,
+      "reason": null
+    },
+    {
+      "id": "final-protocol/final-unproven",
+      "case": "final-unproven",
+      "phase": "final-protocol",
+      "searchStatus": "completed",
+      "status": "unproven",
+      "searchMs": 163.60000002384186,
+      "proofMs": 81.57989300000008,
+      "totalMs": 245.17989302384194,
+      "proofVerified": false,
+      "reason": "Proof generation time budget exhausted"
+    }
+  ],
+  "proofTests": {
+    "passed": true,
+    "independentOracleCases": 512,
+    "verifiedNodes": 29932,
+    "schemaTamperingCases": 10,
+    "targetedRegressions": [
+      "inputBinding",
+      "attainableBounds",
+      "untrustedHints",
+      "budgets",
+      "version",
+      "nonmonotoneBLU",
+      "uniqueIDSymmetry",
+      "lockedSymmetry",
+      "nullCaps",
+      "untrustedCandidateScores",
+      "unsafeAggregateStats"
+    ],
+    "nonmonotoneBlu": true,
+    "seconds": 8.754149266984314
+  },
+  "smoke": {
+    "good": {
+      "status": "certified-optimal",
+      "proofVerified": true,
+      "inputHash": "f2664ef06a7fb31853bcde1696970cbe05dabebb0e8477338f144384169dcf10",
+      "version": "ffxiv-raw-proof-v1",
+      "exactScore": "32893276563960813/3125000000000000",
+      "result": {
+        "damage": 10.52584850046746,
+        "score": 10.52584850046746,
+        "exactScore": "32893276563960813/3125000000000000",
+        "exactDamage": "32893276563960813/3125000000000000",
+        "tenacityMitigation": 0,
+        "stats": {
+          "INT": 1298,
+          "CRT": 526,
+          "DET": 514,
+          "DHT": 476,
+          "SPS": 554,
+          "MDMG": 100
+        },
+        "gears": [
+          {
+            "id": 30,
+            "slot": 3,
+            "name": "oracle1-3-0",
+            "level": 350,
+            "unique": true,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              }
+            ]
+          },
+          {
+            "id": 40,
+            "slot": 4,
+            "name": "oracle1-4-0",
+            "level": 350,
+            "unique": true,
+            "synced": false,
+            "melds": [
+              {
+                "stat": "DHT",
+                "grade": 6,
+                "value": 16,
+                "slot": 0
+              }
+            ]
+          },
+          {
+            "id": 121,
+            "slot": 12,
+            "name": "oracle1-12-1",
+            "level": 350,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          },
+          {
+            "id": 121,
+            "slot": 12,
+            "name": "oracle1-12-1",
+            "level": 350,
+            "unique": false,
+            "synced": true,
+            "melds": []
+          }
+        ],
+        "food": {
+          "id": 1,
+          "name": "oracle capped",
+          "stats": {
+            "CRT": 20,
+            "DET": 15,
+            "SPS": 10
+          },
+          "statRates": {
+            "CRT": 10,
+            "DET": 10,
+            "SPS": 10
+          }
+        },
+        "criticalRange": {
+          "minimum": 526,
+          "maximum": 526,
+          "midpoint": 526,
+          "threshold": 526
+        }
+      },
+      "nodes": 47,
+      "verificationMs": 2.712104993406683,
+      "inputFileSha256": "169ed55bfa6d3b87806862a8e11c24b01ce41e334ffb33de94869fd3d8c27c7b",
+      "certificateFileSha256": "702458a26e8e60b701f0d1ef0ce7273e619ecd4dde028700f69aab980ed60b3f",
+      "generationMs": 4.714309994596988,
+      "totalProofMs": 73.63742599999999,
+      "artifacts": {
+        "input": "/workspace/.cloud-setup/optimizer-strict-proof-20261030/final-smoke-certified.input.json",
+        "candidate": "/workspace/.cloud-setup/optimizer-strict-proof-20261030/final-smoke-certified.candidate.json",
+        "certificate": "/workspace/.cloud-setup/optimizer-strict-proof-20261030/final-smoke-certified.certificate.json",
+        "verification": "/workspace/.cloud-setup/optimizer-strict-proof-20261030/final-smoke-certified.verification.json"
+      }
+    },
+    "budgetAndStaleFile": {
+      "status": "unproven",
+      "proofVerified": false,
+      "reason": "Proof generation time budget exhausted",
+      "totalProofMs": 65.360085,
+      "artifacts": {
+        "input": "/workspace/.cloud-setup/optimizer-strict-proof-20261030/final-smoke-reused.input.json",
+        "candidate": "/workspace/.cloud-setup/optimizer-strict-proof-20261030/final-smoke-reused.candidate.json",
+        "certificate": "/workspace/.cloud-setup/optimizer-strict-proof-20261030/final-smoke-reused.certificate.json",
+        "verification": "/workspace/.cloud-setup/optimizer-strict-proof-20261030/final-smoke-reused.verification.json"
+      }
+    }
+  },
+  "limits": [
+    "Proof kernel has a mathematical soundness argument and adversarial tests, not code-level Lean/Coq formal verification.",
+    "Guarantee is relative to the submitted raw candidate domain and documented full-slot materia semantics, not authenticity/completeness of external game data.",
+    "PCT and WAR full requests exhausted30-second generation budget and remain unproven. No claim of fast strict optimality.",
+    "Full-cost timings use the cap-null-fixed frozen snapshot. Later additions bind coordinator reports and validate aggregate integer limits; no full-cost rerun after metadata hardening. Final small integration is separately recorded.",
+    "Input-compatibility-screen failed before proof search on null caps; those figures are not evidence of low proof cost."
+  ],
+  "rawArchive": {
+    "path": "optimizer-strict-proof-20261030.json.gz",
+    "sha256": "85aa96e01254946e17c66c43266ce24c97e847a806ce04a9f5cc003a3373ee53"
+  }
+}

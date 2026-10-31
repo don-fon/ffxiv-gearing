@@ -1,0 +1,728 @@
+{
+  "scope": "Correctness regression, not a performance comparison",
+  "inputFixture": "test/fixtures/monk-605-phantom-input.json",
+  "inputOverrides": {
+    "targetGcd": 1.93,
+    "criticalPreference": "none",
+    "foodId": 49245,
+    "globalMinimumDamage": 27.06995332364717
+  },
+  "historicalIndependentReference": "docs/benchmarks/gradient-193-complete.json",
+  "expectedDamage": 27.16929816050764,
+  "incorrectOptimalDamage": 27.161766661934365,
+  "incorrectResult": {
+    "damage": 27.161766661934365,
+    "tenacityMitigation": 0,
+    "stats": {
+      "PDMG": 120,
+      "MDMG": 0,
+      "DLY": 2560,
+      "STR": 2598,
+      "CRT": 669,
+      "DET": 2345,
+      "DHT": 2038,
+      "SKS": 857,
+      "VIT": 2931
+    },
+    "gears": [
+      {
+        "id": 51001,
+        "name": "幻境旋棍·秘影",
+        "level": 795,
+        "slot": 13,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 38967,
+        "name": "冥魂强袭头盔",
+        "level": 605,
+        "slot": 3,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 47119,
+        "name": "雾忆强袭衬衫",
+        "level": 735,
+        "slot": 4,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 38969,
+        "name": "冥魂强袭手铠",
+        "level": 605,
+        "slot": 5,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 43059,
+        "name": "改良型绿咬鹃强袭马裤",
+        "level": 730,
+        "slot": 7,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 38971,
+        "name": "冥魂强袭铠靴",
+        "level": 605,
+        "slot": 8,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 43159,
+        "name": "黑马冠军强攻耳坠",
+        "level": 730,
+        "slot": 9,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 46385,
+        "name": "塔底强攻项环",
+        "level": 725,
+        "slot": 10,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 35236,
+        "name": "改良型星战士强攻手镯",
+        "level": 600,
+        "slot": 11,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 35316,
+        "name": "日影兰强攻指环",
+        "level": 600,
+        "slot": 12,
+        "unique": true,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 43020,
+        "name": "绿咬鹃强攻戒指",
+        "level": 720,
+        "slot": 12,
+        "unique": true,
+        "synced": true,
+        "melds": []
+      }
+    ],
+    "food": {
+      "id": 49245,
+      "name": "炖剑山芋",
+      "stats": {
+        "DHT": 151,
+        "VIT": 297,
+        "DET": 91
+      },
+      "statRates": {
+        "DHT": 10,
+        "VIT": 10,
+        "DET": 10
+      }
+    },
+    "exploredStates": 18129
+  },
+  "feasibleBetterWitness": {
+    "damage": 27.16929816050764,
+    "tenacityMitigation": 0,
+    "stats": {
+      "PDMG": 120,
+      "MDMG": 0,
+      "DLY": 2560,
+      "STR": 2602,
+      "CRT": 669,
+      "DET": 2387,
+      "DHT": 1965,
+      "SKS": 857,
+      "VIT": 2937
+    },
+    "gears": [
+      {
+        "id": 51001,
+        "name": "幻境旋棍·秘影",
+        "level": 795,
+        "slot": 13,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 38967,
+        "name": "冥魂强袭头盔",
+        "level": 605,
+        "slot": 3,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DET",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 47119,
+        "name": "雾忆强袭衬衫",
+        "level": 735,
+        "slot": 4,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 38969,
+        "name": "冥魂强袭手铠",
+        "level": 605,
+        "slot": 5,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 43059,
+        "name": "改良型绿咬鹃强袭马裤",
+        "level": 730,
+        "slot": 7,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 38971,
+        "name": "冥魂强袭铠靴",
+        "level": 605,
+        "slot": 8,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "DHT",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 43159,
+        "name": "黑马冠军强攻耳坠",
+        "level": 730,
+        "slot": 9,
+        "unique": false,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 38998,
+        "name": "冥魂强攻项环",
+        "level": 605,
+        "slot": 10,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          }
+        ]
+      },
+      {
+        "id": 35236,
+        "name": "改良型星战士强攻手镯",
+        "level": 600,
+        "slot": 11,
+        "unique": false,
+        "synced": false,
+        "melds": [
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 0
+          },
+          {
+            "stat": "SKS",
+            "grade": 10,
+            "value": 36,
+            "slot": 1
+          }
+        ]
+      },
+      {
+        "id": 43097,
+        "name": "改良型绿咬鹃强攻戒指",
+        "level": 730,
+        "slot": 12,
+        "unique": true,
+        "synced": true,
+        "melds": []
+      },
+      {
+        "id": 49478,
+        "name": "重量级强攻指环",
+        "level": 770,
+        "slot": 12,
+        "unique": true,
+        "synced": true,
+        "melds": []
+      }
+    ],
+    "food": {
+      "id": 49245,
+      "name": "炖剑山芋",
+      "stats": {
+        "DHT": 151,
+        "VIT": 297,
+        "DET": 91
+      },
+      "statRates": {
+        "DHT": 10,
+        "VIT": 10,
+        "DET": 10
+      }
+    },
+    "exploredStates": 8516
+  },
+  "witnessFixedInOriginalModel": {
+    "status": "optimal",
+    "damage": 27.16929816050764,
+    "withAndWithoutGlobalCut": true
+  },
+  "diagnostics": [
+    {
+      "mode": "baseline",
+      "modelStatus": 7,
+      "damage": 27.161766661934365,
+      "nodes": 214,
+      "timingExcluded": true,
+      "concurrentCorrectnessDiagnostics": true
+    },
+    {
+      "mode": "rank",
+      "modelStatus": 7,
+      "damage": 27.16929816050764,
+      "nodes": 2570,
+      "timingExcluded": true,
+      "concurrentCorrectnessDiagnostics": true
+    },
+    {
+      "mode": "no-cut",
+      "modelStatus": 7,
+      "damage": 27.16929816050764,
+      "nodes": 1530,
+      "timingExcluded": true,
+      "concurrentCorrectnessDiagnostics": true
+    }
+  ],
+  "correctedTests": [
+    {
+      "preprocess": "baseline",
+      "realRegression": {
+        "case": "MNK605-GCD1.93-food49245",
+        "damage": 27.16929816050764,
+        "status": "passed"
+      },
+      "tested": 900,
+      "empty": 331,
+      "withBound": 185,
+      "seconds": 48.256979748
+    },
+    {
+      "preprocess": "no-pareto",
+      "realRegression": {
+        "case": "MNK605-GCD1.93-food49245",
+        "damage": 27.16929816050764,
+        "status": "passed"
+      },
+      "tested": 900,
+      "empty": 331,
+      "withBound": 185,
+      "seconds": 47.499199685
+    },
+    {
+      "preprocess": "direct",
+      "realRegression": {
+        "case": "MNK605-GCD1.93-food49245",
+        "damage": 27.16929816050764,
+        "status": "passed"
+      },
+      "tested": 900,
+      "empty": 331,
+      "withBound": 185,
+      "seconds": 45.25569123100001
+    }
+  ],
+  "correction": "Small ordinal ranks pass the Node regression but do not fix the browser regression. The integer prototype is rejected for adoption pending a verified remedy.",
+  "currentStatus": "rejected-known-browser-optimality-regression",
+  "nodeRegressionNotSufficient": true,
+  "packageVersion": "highs@1.15.4",
+  "coreVersion": "HiGHS 1.15.1 (04024d7)",
+  "browserDiagnostics": [
+    {
+      "variant": "capture",
+      "status": "completed",
+      "damage": 27.132689238914775,
+      "timingExcluded": true,
+      "concurrentCorrectnessDiagnostics": true
+    },
+    {
+      "variant": "scale1024",
+      "status": "completed",
+      "damage": 27.16929816050764,
+      "timingExcluded": true,
+      "concurrentCorrectnessDiagnostics": true
+    },
+    {
+      "variant": "no-cut",
+      "status": "completed",
+      "damage": 27.096586410076124,
+      "timingExcluded": true,
+      "concurrentCorrectnessDiagnostics": true
+    },
+    {
+      "variant": "no-symmetry",
+      "status": "completed",
+      "damage": 27.132689238914775,
+      "timingExcluded": true,
+      "concurrentCorrectnessDiagnostics": true
+    }
+  ],
+  "failedFullBrowserRun": {
+    "status": "completed",
+    "milliseconds": 69766,
+    "completed": 4,
+    "partitions": 4,
+    "source": "production planner + experimental direct integer workers",
+    "result": {
+      "damage": 27.132689238914775,
+      "tenacityMitigation": 0,
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2560,
+        "STR": 2594,
+        "CRT": 758,
+        "DET": 2309,
+        "DHT": 2017,
+        "SKS": 857,
+        "VIT": 2926
+      },
+      "gears": [
+        {
+          "id": 51001,
+          "name": "幻境旋棍·秘影",
+          "level": 795,
+          "slot": 13,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 38967,
+          "name": "冥魂强袭头盔",
+          "level": 605,
+          "slot": 3,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 10,
+              "value": 36,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 10,
+              "value": 36,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 47119,
+          "name": "雾忆强袭衬衫",
+          "level": 735,
+          "slot": 4,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 38969,
+          "name": "冥魂强袭手铠",
+          "level": 605,
+          "slot": 5,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 10,
+              "value": 36,
+              "slot": 0
+            },
+            {
+              "stat": "SKS",
+              "grade": 10,
+              "value": 36,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 43059,
+          "name": "改良型绿咬鹃强袭马裤",
+          "level": 730,
+          "slot": 7,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 38971,
+          "name": "冥魂强袭铠靴",
+          "level": 605,
+          "slot": 8,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 10,
+              "value": 36,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 10,
+              "value": 36,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 43159,
+          "name": "黑马冠军强攻耳坠",
+          "level": 730,
+          "slot": 9,
+          "unique": false,
+          "synced": true,
+          "melds": []
+        },
+        {
+          "id": 35231,
+          "name": "改良型星战士强攻项环",
+          "level": 600,
+          "slot": 10,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "DHT",
+              "grade": 10,
+              "value": 36,
+              "slot": 0
+            },
+            {
+              "stat": "DHT",
+              "grade": 10,
+              "value": 36,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 35236,
+          "name": "改良型星战士强攻手镯",
+          "level": 600,
+          "slot": 11,
+          "unique": false,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "SKS",
+              "grade": 10,
+              "value": 36,
+              "slot": 0
+            },
+            {
+              "stat": "SKS",
+              "grade": 10,
+              "value": 36,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 35316,
+          "name": "日影兰强攻指环",
+          "level": 600,
+          "slot": 12,
+          "unique": true,
+          "synced": false,
+          "melds": [
+            {
+              "stat": "SKS",
+              "grade": 10,
+              "value": 36,
+              "slot": 0
+            },
+            {
+              "stat": "SKS",
+              "grade": 10,
+              "value": 36,
+              "slot": 1
+            }
+          ]
+        },
+        {
+          "id": 49478,
+          "name": "重量级强攻指环",
+          "level": 770,
+          "slot": 12,
+          "unique": true,
+          "synced": true,
+          "melds": []
+        }
+      ],
+      "food": {
+        "id": 49245,
+        "name": "炖剑山芋",
+        "stats": {
+          "DHT": 151,
+          "VIT": 297,
+          "DET": 91
+        },
+        "statRates": {
+          "DHT": 10,
+          "VIT": 10,
+          "DET": 10
+        }
+      },
+      "exploredStates": 18020
+    }
+  },
+  "freshNativeConfirmation": {
+    "record": "native-algorithm-retest-20261029.json",
+    "runId": "native-retest/native-control-mnk193",
+    "milliseconds": 220822.09999999404,
+    "damage": 27.16929816050764,
+    "completed": 4,
+    "partitions": 4,
+    "note": "New cold-browser full native control agrees with independent prior reference. The existence of a better feasible witness alone disproves the lower Optimal result."
+  }
+}

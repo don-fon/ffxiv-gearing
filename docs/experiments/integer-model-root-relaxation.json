@@ -1,0 +1,1685 @@
+{
+  "purpose": "Diagnostic LP relaxation of experimental integer model, not end-to-end runtime or a deployable optimization",
+  "cases": [
+    {
+      "name": "pld245-min10",
+      "foodId": 49239,
+      "status": 7,
+      "upper": 21.24594977928225,
+      "knownGlobalOptimum": 21.165158132308274,
+      "gapPercent": 0.38172002528367166,
+      "fractionalOptions": 3,
+      "mixedGroups": 1,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2538.4298245614036,
+        "CRT": 1937.4122807017543,
+        "DET": 1550.4736842105262,
+        "DHT": 785.8859649122808,
+        "SKS": 649,
+        "TEN": 1350,
+        "VIT": 2945.315789473684
+      },
+      "damageAtFractionalStats": 21.148790591304213,
+      "rows": 45,
+      "columns": 2864,
+      "milliseconds": 180.223474
+    },
+    {
+      "name": "pld245-min10",
+      "foodId": 49240,
+      "status": 7,
+      "upper": 21.336876023970152,
+      "knownGlobalOptimum": 21.165158132308274,
+      "gapPercent": 0.8113234523854151,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120.00000000000003,
+        "MDMG": 0,
+        "DLY": 2240.0000000000005,
+        "STR": 2540.4208494208497,
+        "CRT": 1639,
+        "DET": 1714.3552123552124,
+        "DHT": 953.1776061776062,
+        "SKS": 649,
+        "TEN": 1350,
+        "VIT": 2948.7760617760614
+      },
+      "damageAtFractionalStats": 21.19313086088141,
+      "rows": 45,
+      "columns": 2864,
+      "milliseconds": 87.81654700000001
+    },
+    {
+      "name": "pld245-min10",
+      "foodId": 49245,
+      "status": 7,
+      "upper": 21.2956330915674,
+      "knownGlobalOptimum": 21.165158132308274,
+      "gapPercent": 0.6164610651311797,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2536.19305019305,
+        "CRT": 1258,
+        "DET": 1702.5482625482625,
+        "DHT": 1312.2741312741314,
+        "SKS": 649,
+        "TEN": 1350,
+        "VIT": 2942.741312741313
+      },
+      "damageAtFractionalStats": 21.151206117378756,
+      "rows": 45,
+      "columns": 2891,
+      "milliseconds": 80.07732000000004
+    },
+    {
+      "name": "pld245-min10",
+      "foodId": 49246,
+      "status": 7,
+      "upper": 21.209907301783147,
+      "knownGlobalOptimum": 21.165158132308274,
+      "gapPercent": 0.21142846746116106,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2538.4298245614036,
+        "CRT": 1529.4122807017543,
+        "DET": 1627.4736842105262,
+        "DHT": 1056.8859649122808,
+        "SKS": 649,
+        "TEN": 1350,
+        "VIT": 2945.315789473684
+      },
+      "damageAtFractionalStats": 21.06688533044744,
+      "rows": 45,
+      "columns": 2871,
+      "milliseconds": 77.82035200000001
+    },
+    {
+      "name": "pld245-min10",
+      "foodId": 49247,
+      "status": 7,
+      "upper": 21.318519170128113,
+      "knownGlobalOptimum": 21.165158132308274,
+      "gapPercent": 0.7245919773485321,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2540.420849420849,
+        "CRT": 1548,
+        "DET": 1654.3552123552124,
+        "DHT": 1075.1776061776063,
+        "SKS": 649,
+        "TEN": 1350,
+        "VIT": 2948.7760617760614
+      },
+      "damageAtFractionalStats": 21.157438404723983,
+      "rows": 45,
+      "columns": 2867,
+      "milliseconds": 63.99200099999996
+    },
+    {
+      "name": "pld245-min10",
+      "foodId": 49248,
+      "status": 7,
+      "upper": 21.35900870390879,
+      "knownGlobalOptimum": 21.165158132308274,
+      "gapPercent": 0.9158947473423495,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2540.4208494208497,
+        "CRT": 1548,
+        "DET": 1714.3552123552124,
+        "DHT": 1044.177606177606,
+        "SKS": 649,
+        "TEN": 1350,
+        "VIT": 2948.7760617760614
+      },
+      "damageAtFractionalStats": 21.189309751382577,
+      "rows": 45,
+      "columns": 2868,
+      "milliseconds": 69.907463
+    },
+    {
+      "name": "pld245-min15",
+      "foodId": 49239,
+      "status": 7,
+      "upper": 21.049755105781756,
+      "knownGlobalOptimum": 21.02962278483717,
+      "gapPercent": 0.09573315294606477,
+      "fractionalOptions": 6,
+      "mixedGroups": 3,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2538.878793078793,
+        "CRT": 1507.2936221936222,
+        "DET": 1530,
+        "DHT": 712.9925353925354,
+        "SKS": 649,
+        "TEN": 1825,
+        "VIT": 2946.185270985271
+      },
+      "damageAtFractionalStats": 20.947520112315555,
+      "rows": 45,
+      "columns": 2836,
+      "milliseconds": 73.05034999999998
+    },
+    {
+      "name": "pld245-min15",
+      "foodId": 49240,
+      "status": 7,
+      "upper": 21.15579837543594,
+      "knownGlobalOptimum": 21.02962278483717,
+      "gapPercent": 0.599989794822875,
+      "fractionalOptions": 4,
+      "mixedGroups": 1,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2540.8103984176323,
+        "CRT": 1379.5202740887257,
+        "DET": 1673.7025996044083,
+        "DHT": 743.8310257134783,
+        "SKS": 649,
+        "TEN": 1825,
+        "VIT": 2949.51299802204
+      },
+      "damageAtFractionalStats": 21.017555322585054,
+      "rows": 45,
+      "columns": 2836,
+      "milliseconds": 63.759589000000005
+    },
+    {
+      "name": "pld245-min15",
+      "foodId": 49245,
+      "status": 7,
+      "upper": 21.08477063132903,
+      "knownGlobalOptimum": 21.02962278483717,
+      "gapPercent": 0.26223887635123955,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2539.2838552838552,
+        "CRT": 1259.5454025454023,
+        "DET": 1633.7778492778493,
+        "DHT": 836,
+        "SKS": 649,
+        "TEN": 1825,
+        "VIT": 2946.604819104819
+      },
+      "damageAtFractionalStats": 20.934227189262963,
+      "rows": 45,
+      "columns": 2863,
+      "milliseconds": 62.00590199999999
+    },
+    {
+      "name": "pld245-min15",
+      "foodId": 49246,
+      "status": 7,
+      "upper": 21.022163919347044,
+      "knownGlobalOptimum": 21.02962278483717,
+      "gapPercent": -0.03546837509373901,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2537.478335478336,
+        "CRT": 1259.5538395538397,
+        "DET": 1600.946803946804,
+        "DHT": 836,
+        "SKS": 649,
+        "TEN": 1825,
+        "VIT": 2944.3479193479193
+      },
+      "damageAtFractionalStats": 20.87516200941032,
+      "rows": 45,
+      "columns": 2843,
+      "milliseconds": 70.26047600000004
+    },
+    {
+      "name": "pld245-min15",
+      "foodId": 49247,
+      "status": 7,
+      "upper": 21.213720876652815,
+      "knownGlobalOptimum": 21.02962278483717,
+      "gapPercent": 0.8754227011070537,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2538.942084942085,
+        "CRT": 1385,
+        "DET": 1703.2355212355212,
+        "DHT": 742.6177606177606,
+        "SKS": 649,
+        "TEN": 1825,
+        "VIT": 2946.1776061776063
+      },
+      "damageAtFractionalStats": 21.055978641273505,
+      "rows": 45,
+      "columns": 2839,
+      "milliseconds": 70.192859
+    },
+    {
+      "name": "pld245-min15",
+      "foodId": 49248,
+      "status": 7,
+      "upper": 21.208237910701392,
+      "knownGlobalOptimum": 21.02962278483717,
+      "gapPercent": 0.8493501176493279,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 197
+        },
+        {
+          "count": 1,
+          "options": 2
+        },
+        {
+          "count": 1,
+          "options": 227
+        },
+        {
+          "count": 1,
+          "options": 188
+        },
+        {
+          "count": 1,
+          "options": 203
+        },
+        {
+          "count": 1,
+          "options": 242
+        },
+        {
+          "count": 1,
+          "options": 216
+        },
+        {
+          "count": 1,
+          "options": 170
+        },
+        {
+          "count": 1,
+          "options": 177
+        },
+        {
+          "count": 1,
+          "options": 165
+        },
+        {
+          "count": 2,
+          "options": 179
+        }
+      ],
+      "stats": {
+        "PDMG": 120,
+        "MDMG": 0,
+        "DLY": 2240,
+        "STR": 2539.340769340769,
+        "CRT": 1385.1993421993423,
+        "DET": 1754.3647933647933,
+        "DHT": 688,
+        "SKS": 649,
+        "TEN": 1825.0000000000002,
+        "VIT": 2946.675961675962
+      },
+      "damageAtFractionalStats": 21.05033559715288,
+      "rows": 45,
+      "columns": 2840,
+      "milliseconds": 87.37836100000004
+    },
+    {
+      "name": "war248-min10",
+      "foodId": 49239,
+      "status": 7,
+      "upper": 7.921885612301793,
+      "knownGlobalOptimum": 7.927973014548788,
+      "gapPercent": -0.0767838416682709,
+      "fractionalOptions": 2,
+      "mixedGroups": 1,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1268.4634146341464,
+        "CRT": 1342.5365853658536,
+        "DET": 765.5853658536585,
+        "DHT": 698.439024390244,
+        "SKS": 400,
+        "TEN": 814,
+        "VIT": 1434.0487804878048
+      },
+      "damageAtFractionalStats": 7.872947593600078,
+      "rows": 43,
+      "columns": 3500,
+      "milliseconds": 93.36508000000003
+    },
+    {
+      "name": "war248-min10",
+      "foodId": 49240,
+      "status": 7,
+      "upper": 7.963392480122437,
+      "knownGlobalOptimum": 7.927973014548788,
+      "gapPercent": 0.4467657181558282,
+      "fractionalOptions": 6,
+      "mixedGroups": 3,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1270.7266023823029,
+        "CRT": 1126.8865570051048,
+        "DET": 1131.8094157685764,
+        "DHT": 598.0000000000001,
+        "SKS": 399,
+        "TEN": 814,
+        "VIT": 1437.5428247305729
+      },
+      "damageAtFractionalStats": 7.90604384437695,
+      "rows": 43,
+      "columns": 3506,
+      "milliseconds": 85.42044899999996
+    },
+    {
+      "name": "war248-min10",
+      "foodId": 49245,
+      "status": 7,
+      "upper": 7.949728748323857,
+      "knownGlobalOptimum": 7.927973014548788,
+      "gapPercent": 0.2744173540341732,
+      "fractionalOptions": 6,
+      "mixedGroups": 3,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1271.0222446916077,
+        "CRT": 1006.6420626895854,
+        "DET": 935,
+        "DHT": 884.7047522750253,
+        "SKS": 399,
+        "TEN": 814,
+        "VIT": 1438.0222446916077
+      },
+      "damageAtFractionalStats": 7.87468312456151,
+      "rows": 43,
+      "columns": 3517,
+      "milliseconds": 80.5108650000002
+    },
+    {
+      "name": "war248-min10",
+      "foodId": 49246,
+      "status": 7,
+      "upper": 7.863365596889402,
+      "knownGlobalOptimum": 7.927973014548788,
+      "gapPercent": -0.8149298381922243,
+      "fractionalOptions": 2,
+      "mixedGroups": 1,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1268.4634146341464,
+        "CRT": 1065.170731707317,
+        "DET": 781.5853658536585,
+        "DHT": 920.8048780487804,
+        "SKS": 400,
+        "TEN": 814,
+        "VIT": 1434.0487804878048
+      },
+      "damageAtFractionalStats": 7.793737600993345,
+      "rows": 43,
+      "columns": 3501,
+      "milliseconds": 92.16376100000002
+    },
+    {
+      "name": "war248-min10",
+      "foodId": 49247,
+      "status": 7,
+      "upper": 7.939556271218486,
+      "knownGlobalOptimum": 7.927973014548788,
+      "gapPercent": 0.14610615662340454,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360.0000000000005,
+        "STR": 1275.1860465116279,
+        "CRT": 994,
+        "DET": 1012,
+        "DHT": 754.1395348837209,
+        "SKS": 399,
+        "TEN": 855.5348837209302,
+        "VIT": 1445.1860465116279
+      },
+      "damageAtFractionalStats": 7.872765562830604,
+      "rows": 43,
+      "columns": 3506,
+      "milliseconds": 100.93495099999996
+    },
+    {
+      "name": "war248-min10",
+      "foodId": 49248,
+      "status": 7,
+      "upper": 7.948874686411831,
+      "knownGlobalOptimum": 7.927973014548788,
+      "gapPercent": 0.263644588909262,
+      "fractionalOptions": 6,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1271.5956438052544,
+        "CRT": 1002.7651004474516,
+        "DET": 1191.9999999999998,
+        "DHT": 636.8230108404922,
+        "SKS": 399,
+        "TEN": 814,
+        "VIT": 1439.3126161332523
+      },
+      "damageAtFractionalStats": 7.8851274995085125,
+      "rows": 43,
+      "columns": 3506,
+      "milliseconds": 107.62884399999984
+    },
+    {
+      "name": "war248-min15",
+      "foodId": 49239,
+      "status": 7,
+      "upper": 7.869199696033229,
+      "knownGlobalOptimum": 7.859572391399585,
+      "gapPercent": 0.12249145569520614,
+      "fractionalOptions": 2,
+      "mixedGroups": 1,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1272,
+        "CRT": 1306,
+        "DET": 751,
+        "DHT": 505,
+        "SKS": 400,
+        "TEN": 1039,
+        "VIT": 1439
+      },
+      "damageAtFractionalStats": 7.825996368053226,
+      "rows": 43,
+      "columns": 3472,
+      "milliseconds": 77.594742
+    },
+    {
+      "name": "war248-min15",
+      "foodId": 49240,
+      "status": 7,
+      "upper": 7.904185498918103,
+      "knownGlobalOptimum": 7.859572391399585,
+      "gapPercent": 0.5676276684891457,
+      "fractionalOptions": 4,
+      "mixedGroups": 2,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1271.1860465116279,
+        "CRT": 1101,
+        "DET": 1045.6744186046512,
+        "DHT": 476,
+        "SKS": 399,
+        "TEN": 1039,
+        "VIT": 1438.1860465116279
+      },
+      "damageAtFractionalStats": 7.844217168859608,
+      "rows": 43,
+      "columns": 3478,
+      "milliseconds": 109.53971000000001
+    },
+    {
+      "name": "war248-min15",
+      "foodId": 49245,
+      "status": 7,
+      "upper": 7.8886810486767756,
+      "knownGlobalOptimum": 7.859572391399585,
+      "gapPercent": 0.3703592998143712,
+      "fractionalOptions": 6,
+      "mixedGroups": 3,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1262.1860465116279,
+        "CRT": 879,
+        "DET": 935,
+        "DHT": 817.6744186046512,
+        "SKS": 399,
+        "TEN": 1039,
+        "VIT": 1426.1860465116279
+      },
+      "damageAtFractionalStats": 7.813601086801911,
+      "rows": 43,
+      "columns": 3489,
+      "milliseconds": 118.44640900000013
+    },
+    {
+      "name": "war248-min15",
+      "foodId": 49246,
+      "status": 7,
+      "upper": 7.8160334409748415,
+      "knownGlobalOptimum": 7.859572391399585,
+      "gapPercent": -0.553960804183018,
+      "fractionalOptions": 2,
+      "mixedGroups": 1,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1263,
+        "CRT": 879,
+        "DET": 762,
+        "DHT": 922,
+        "SKS": 400,
+        "TEN": 1039,
+        "VIT": 1427
+      },
+      "damageAtFractionalStats": 7.735863669736012,
+      "rows": 43,
+      "columns": 3473,
+      "milliseconds": 109.68778399999997
+    },
+    {
+      "name": "war248-min15",
+      "foodId": 49247,
+      "status": 7,
+      "upper": 7.92100932566576,
+      "knownGlobalOptimum": 7.859572391399585,
+      "gapPercent": 0.781682911062731,
+      "fractionalOptions": 5,
+      "mixedGroups": 1,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1271.1860465116279,
+        "CRT": 1010,
+        "DET": 1012,
+        "DHT": 599.6744186046512,
+        "SKS": 399,
+        "TEN": 1039,
+        "VIT": 1438.186046511628
+      },
+      "damageAtFractionalStats": 7.847596865597563,
+      "rows": 43,
+      "columns": 3478,
+      "milliseconds": 99.25764400000003
+    },
+    {
+      "name": "war248-min15",
+      "foodId": 49248,
+      "status": 7,
+      "upper": 7.921772253814987,
+      "knownGlobalOptimum": 7.859572391399585,
+      "gapPercent": 0.7913899041564143,
+      "fractionalOptions": 6,
+      "mixedGroups": 3,
+      "groups": [
+        {
+          "count": 1,
+          "options": 420
+        },
+        {
+          "count": 1,
+          "options": 287
+        },
+        {
+          "count": 1,
+          "options": 241
+        },
+        {
+          "count": 1,
+          "options": 270
+        },
+        {
+          "count": 1,
+          "options": 310
+        },
+        {
+          "count": 1,
+          "options": 283
+        },
+        {
+          "count": 1,
+          "options": 192
+        },
+        {
+          "count": 1,
+          "options": 184
+        },
+        {
+          "count": 1,
+          "options": 193
+        },
+        {
+          "count": 2,
+          "options": 193
+        }
+      ],
+      "stats": {
+        "PDMG": 90,
+        "MDMG": 0,
+        "DLY": 3360,
+        "STR": 1270.1517036235803,
+        "CRT": 994.9445646295295,
+        "DET": 1130.867225527312,
+        "DHT": 508.00000000000006,
+        "SKS": 399,
+        "TEN": 1039,
+        "VIT": 1436.9218496484586
+      },
+      "damageAtFractionalStats": 7.851202833059712,
+      "rows": 43,
+      "columns": 3478,
+      "milliseconds": 82.96593200000007
+    }
+  ]
+}
