@@ -1,0 +1,90 @@
+{
+  "scope": "Historical full-task results of unadopted native hot-path/small-tail prototypes; not independent component speedups",
+  "variants": [
+    {
+      "variant": "both_sec",
+      "runs": [
+        {
+          "case": "pld245-min10",
+          "status": "completed",
+          "seconds": 225.84210000000894,
+          "damage": 21.165158132308274,
+          "score": null,
+          "branches": 8304718754,
+          "peakWasmMemoryMiB": 35.4,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.45,
+            "mitigation": 0.1,
+            "criticalThresholdCheck": "none"
+          }
+        },
+        {
+          "case": "war248-min15",
+          "status": "timeout",
+          "seconds": 300.000700000003,
+          "damage": null,
+          "score": null,
+          "branches": 3951845712,
+          "peakWasmMemoryMiB": 18.1,
+          "validation": {
+            "completed": false
+          }
+        }
+      ]
+    },
+    {
+      "variant": "both_fast",
+      "runs": [
+        {
+          "case": "war248-min15",
+          "status": "timeout",
+          "seconds": 300.0005,
+          "damage": null,
+          "score": null,
+          "branches": 4818972158,
+          "peakWasmMemoryMiB": 18.3,
+          "validation": {
+            "completed": false
+          }
+        },
+        {
+          "case": "pld245-min10",
+          "status": "completed",
+          "seconds": 195.09420000000299,
+          "damage": 21.165158132308274,
+          "score": null,
+          "branches": 12282530026,
+          "peakWasmMemoryMiB": 35.6,
+          "validation": {
+            "completed": true,
+            "gearFoodStatsReconstructed": true,
+            "slotUniqueAndCandidateChecks": true,
+            "gcd": 2.45,
+            "mitigation": 0.1,
+            "criticalThresholdCheck": "none"
+          }
+        }
+      ]
+    },
+    {
+      "variant": "both_integer_pool",
+      "runs": [
+        {
+          "case": "war248-min15",
+          "status": "timeout",
+          "seconds": 300.0005,
+          "damage": null,
+          "score": null,
+          "branches": 109318776,
+          "peakWasmMemoryMiB": 18.3,
+          "validation": {
+            "completed": false
+          }
+        }
+      ]
+    }
+  ]
+}
