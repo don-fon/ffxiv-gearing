@@ -1,0 +1,19 @@
+{
+  "recordedAtUtc": "2026-10-29T12:31:51.292300+00:00",
+  "sourceHead": "a590b92b6a244c5a665a68d840fd46a708b7556e",
+  "purpose": "Inventory-time fingerprints for detecting future changes. These were not captured at every historical benchmark and must not be presented as historical build fingerprints.",
+  "files": {
+    "src/optimizer.ts": "89c91308caeb047bda34a26d475aa0526eaeec9e7c77b1957421f62f7a3afa9c",
+    "src/optimizerInput.ts": "f8c4a027e0af30c9ff1ce5207ba38ad9cbd5f3dd19d4794016fa6c1f68617717",
+    "src/optimizerSearch.c": "3fc74fcf27de5d92b8c88c96d8abd5ce8a165c2dae4da45906e04ef76b292b10",
+    "src/optimizerSearch.wasm": "492e1946fc281e2d8d695f8de8e32a340e09d53ffd5f8a749a6298ab9cfe80f2",
+    "src/optimizerWasm.ts": "c08fc67bd3988491deafdc4ecbf26f8ed00f37b91ea453bcdb41e3f0068cf55c",
+    "src/optimizer.worker.ts": "a96d7d8d59363891204b8ef16d8bc51c92fdcc34ec1881e71510873e2d464cea",
+    "src/optimizerPool.ts": "53a6d7f335b22a558c09c6f1f09674b2696962fb2dfdbd74bd1c746925c61c2e",
+    "scripts/benchmark-optimizer.mjs": "d7f76a9f67d0d17acd5f053b298762704b7c5a13935096bf4c19cfde72c56f56",
+    "scripts/experiments/optimizer-integer-model.mjs": "0635323796f88df85cc373505afc1c3a4a4eced2676f334c98467b46aad12cc2",
+    "scripts/experiments/optimizer-integer-support.mjs": "93ac89f449fa87d06555fbcbe8eaeaab02789e65ef1579358371afc60d916994",
+    "scripts/experiments/optimizer-integer.worker.mjs": "8b490b833cb5eedb59946a60563db069a7c5952be6f116674ab38ae38e0500d6"
+  },
+  "latestEvidenceFile": "docs/experiments/direct-materia-results.json"
+}

@@ -1,0 +1,39 @@
+{
+  "branchHead": "7139a9a14298",
+  "sourceHead": "a590b92",
+  "localSourceWasmSha256": {
+    "a590b92": "492e1946fc281e2d8d695f8de8e32a340e09d53ffd5f8a749a6298ab9cfe80f2",
+    "6c0f4e3": "492e1946fc281e2d8d695f8de8e32a340e09d53ffd5f8a749a6298ab9cfe80f2",
+    "29a044a": "718b0397515bd372e8be180f97bdbd1c6bdb826d389dcfc31c8a33c4b334afe4",
+    "d6ce921": "6c19695c423717b68b066450648785c846f5b95a9795404bee73b09591c5cad3",
+    "1d96454": "6c19695c423717b68b066450648785c846f5b95a9795404bee73b09591c5cad3",
+    "163058a": "0193e69e162f6a8ea9e91529ef93c7c317e9397f7a5659a4c2da2bd6c79dc182"
+  },
+  "assets": [
+    {
+      "path": "149f4de8de.wasm",
+      "bytes": 26914,
+      "sha256": "6c19695c423717b68b066450648785c846f5b95a9795404bee73b09591c5cad3",
+      "matchesLocalSourceCommits": [
+        "d6ce921",
+        "1d96454"
+      ],
+      "url": "https://raw.githubusercontent.com/don-fon/ffxiv-gearing/7139a9a14298/149f4de8de.wasm"
+    },
+    {
+      "path": "preview/8fe5d12712.wasm",
+      "bytes": 27771,
+      "sha256": "718b0397515bd372e8be180f97bdbd1c6bdb826d389dcfc31c8a33c4b334afe4",
+      "matchesLocalSourceCommits": [
+        "29a044a"
+      ],
+      "url": "https://raw.githubusercontent.com/don-fon/ffxiv-gearing/7139a9a14298/preview/8fe5d12712.wasm"
+    }
+  ],
+  "checkedAtUtc": "2026-10-29T12:04:47.188898+00:00",
+  "scope": "GitHub gh-pages branch artifacts at the recorded commit; not a browser/CDN deployment smoke test",
+  "apiUrl": "https://api.github.com/repos/don-fon/ffxiv-gearing/commits?sha=gh-pages&per_page=12",
+  "formalKernelAbi": 6,
+  "previewKernelAbi": 7,
+  "committedKernelAbi": 11
+}
