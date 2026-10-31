@@ -40,45 +40,52 @@ function loadWasmBackend(): Promise<OptimizerSearchBackend> {
   return wasmBackend;
 }
 
-const diagnosticsVersion = '2026-10-26-console-v1';
+const diagnosticsVersion = '2026-10-31-console-v4';
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   const started = Date.now();
   const { input } = event.data;
   const scope = {
     task: event.data.type, job: input.damage?.job, syncLevel: input.syncLevel,
-    foodId: input.food?.id, speed: input.targetSpeedContribution, shard: input.candidateShard,
+    foodId: input.food?.id, foodName: input.food?.name, speed: input.targetSpeedContribution, shard: input.candidateShard,
   };
   let engine = '未就绪';
   let initializationMs = 0;
   let initializationError: string | undefined;
   let activePhase = 'initializing';
   let lastLog = started;
+  let liveSearch: { started: number; branches: number; states: number; route: 'fixed' | 'range' | 'warm' } | undefined;
+  let query: { route: string; counts: number[]; speedBounds?: { minimum: number; maximum: number };
+    minimumScore: number; branchLimit?: number; fraction?: number; complete?: boolean } | undefined;
   const counts = { wasmSearchCalls: 0, wasmSearchMs: 0, wasmVisitedBranches: 0,
     wasmEvaluatedCombinations: 0, wasmParetoCalls: 0, wasmParetoMs: 0,
-    wasmParetoInputOptions: 0, wasmParetoOutputOptions: 0, unsupportedSearchCalls: 0 };
+    wasmParetoInputOptions: 0, wasmParetoOutputOptions: 0, unsupportedSearchCalls: 0,
+    fixedSearchCalls: 0, fixedSearchMs: 0, rangeSearchCalls: 0, rangeSearchMs: 0, warmSearchCalls: 0, warmSearchMs: 0 };
   let backend: OptimizerSearchBackend | undefined;
-  const diagnostics = (stage: string) => ({
-    version: diagnosticsVersion, ...scope, stage, engine, activePhase,
-    elapsedMs: Date.now() - started, initializationMs, initializationError,
-    otherMs: activePhase === 'done' ? Math.max(0, Date.now() - started - initializationMs -
-      counts.wasmSearchMs - counts.wasmParetoMs) : undefined,
-    ...counts, wasmUsed: counts.wasmSearchCalls > 0 || counts.wasmParetoCalls > 0, wasmMemoryMiB: backend?.memoryBytes === undefined ? undefined :
-      Math.round(backend.memoryBytes() / 1048576 * 10) / 10,
-  });
+  const diagnostics = (stage: string) => {
+    const elapsedMs = Date.now() - started;
+    const wasmSearchMs = counts.wasmSearchMs + (liveSearch ? Date.now() - liveSearch.started : 0);
+    return {
+      version: diagnosticsVersion, ...scope, stage, engine, activePhase,
+      elapsedMs, initializationMs, initializationError, ...counts, wasmSearchMs,
+      fixedSearchMs: counts.fixedSearchMs + (liveSearch?.route === 'fixed' ? Date.now() - liveSearch.started : 0),
+      rangeSearchMs: counts.rangeSearchMs + (liveSearch?.route === 'range' ? Date.now() - liveSearch.started : 0),
+      warmSearchMs: counts.warmSearchMs + (liveSearch?.route === 'warm' ? Date.now() - liveSearch.started : 0),
+      query: query && { ...query, elapsedMs: liveSearch ? Date.now() - liveSearch.started : undefined },
+      wasmVisitedBranches: counts.wasmVisitedBranches + (liveSearch?.branches ?? 0),
+      wasmEvaluatedCombinations: counts.wasmEvaluatedCombinations + (liveSearch?.states ?? 0),
+      otherMs: Math.max(0, elapsedMs - initializationMs - wasmSearchMs - counts.wasmParetoMs),
+      wasmUsed: counts.wasmSearchCalls > 0 || counts.wasmParetoCalls > 0,
+      wasmMemoryMiB: backend?.memoryBytes === undefined ? undefined : Math.round(backend.memoryBytes() / 1048576 * 10) / 10,
+    };
+  };
   const emit = (stage: string, detail?: unknown) => {
-    const snapshot = diagnostics(stage);
-    console.log('[自动配装]', stage, snapshot, detail ?? '');
-    self.postMessage({ type: 'diagnostics', diagnostics: snapshot });
+    self.postMessage({ type: 'diagnostics', diagnostics: { ...diagnostics(stage), detail } });
     lastLog = Date.now();
   };
   const heartbeat = (detail?: unknown) => {
     if (Date.now() - lastLog >= 5000) emit('计算中', detail);
   };
-  console.log('[自动配装] Worker 启动', { version: diagnosticsVersion, ...scope,
-    requestedEngine: event.data.engine ?? 'auto', candidates: input.gears?.length,
-    foods: input.foods?.length ?? Number(input.food !== undefined), targetGcd: input.targetGcd,
-    criticalPreference: input.criticalPreference ?? 'none' });
   try {
     if (event.data.engine !== undefined && !['wasm', 'wasm-warm'].includes(event.data.engine)) {
       throw new Error('自动配装仅支持 WebAssembly 引擎，请刷新页面后重试。');
@@ -91,14 +98,29 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     engine = 'WASM';
     const native = backend;
     const tracked: OptimizerSearchBackend = (task, report) => {
+      const previousPhase = activePhase;
+      const route = task.branchLimit !== undefined ? 'warm' : task.speedBounds === undefined ? 'fixed' : 'range';
+      counts[`${route}SearchCalls`]++;
       activePhase = task.speedBounds === undefined ? 'WASM 精确搜索' : 'WASM GCD 区间搜索';
       counts.wasmSearchCalls++;
       const before = Date.now();
+      liveSearch = { started: before, branches: 0, states: 0, route };
+      query = { route: route === 'warm' ? '限额预热' : route === 'fixed' ? '固定速度' : '整段GCD',
+        counts: [task.prefix.count, ...task.options.map(option => option.count)],
+        speedBounds: task.speedBounds, minimumScore: task.minimumDamage, branchLimit: task.branchLimit };
       const result = native({ ...task, onCandidate: candidate => {
         const result = materializeOptimizationCandidate(task.input, candidate);
         if (result !== undefined) self.postMessage({ type: 'candidate', result });
-      } }, update => { heartbeat(update);report(update); });
+      } }, update => {
+        liveSearch!.branches = update.visitedBranches;liveSearch!.states = update.states;
+        query!.fraction = update.fraction;
+        heartbeat(update);report(update);
+      });
       counts.wasmSearchMs += Date.now() - before;
+      counts[`${route}SearchMs`] += Date.now() - before;
+      query.complete = result?.complete;
+      liveSearch = undefined;
+      activePhase = previousPhase;
       if (result === undefined) {
         counts.wasmSearchCalls--;
         counts.unsupportedSearchCalls++;
@@ -111,6 +133,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     };
     Object.assign(tracked, native);
     tracked.pareto = options => {
+      const previousPhase = activePhase;
       activePhase = '候选去重';
       heartbeat({ inputOptions: options.length });
       const before = Date.now();
@@ -122,6 +145,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         counts.wasmParetoOutputOptions += result.length;
       }
       heartbeat({ inputOptions: options.length, outputOptions: result?.length });
+      activePhase = previousPhase;
       return result;
     };
     backend = tracked;
@@ -146,9 +170,10 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     self.postMessage({ type: 'result', result,
       engine: event.data.engine ?? 'wasm-warm' });
   } catch (error) {
+    const failedPhase = activePhase;
     activePhase = 'failed';
     const message = error instanceof Error ? error.message : String(error);
-    console.error('[自动配装] 计算失败', diagnostics('error'), error);
+    console.error(`[自动配装] Worker 错误：${message}`, { ...diagnostics('error'), failedPhase, error });
     self.postMessage({ type: 'error', message });
   }
 };

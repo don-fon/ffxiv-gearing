@@ -16,6 +16,7 @@ import type {
   OptimizerProgress,
   OptimizerStat,
 } from '../optimizer';
+import { createOptimizerLogger } from '../optimizerDiagnostics';
 import { runOptimizationPool } from '../optimizerPool';
 import type { OptimizerWorkerResponse } from '../optimizerPool';
 import type { DropdownPopperProps } from './components/Dropdown';
@@ -216,12 +217,14 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     setProgress(undefined);
     setError('');
     setBaselineDamage(hasCompleteGearset ? store.equippedEffects?.damage : undefined);
-    console.log('[自动配装] 开始加载装备数据', { page: window.location.pathname,
-      hardwareConcurrency: navigator.hardwareConcurrency, workers: selectedWorkerCount });
+    const logger = createOptimizerLogger(runStarted);
+    logger.start({ 职业: store.job, 品级范围: [store.minLevel, store.maxLevel], 同步品级: store.syncLevel,
+      GCD: parsedTargetGcd, 暴击偏好: criticalPreference, Worker数: selectedWorkerCount });
     store.setOptimizationDataLoading(true);
     try {
       await loadGearDataOfLevelRange(store.minLevel, store.maxLevel);
     } catch (loadError) {
+      logger.fail(String(loadError));
       setError(loadError instanceof Error ? loadError.message : String(loadError));
       setStatus('error');
       return;
@@ -252,17 +255,16 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
         : { ...input, objective: { type: 'damage' } };
       input.criticalPreference = criticalPreference;
       const outside = input.gears.filter(gear => gear.level < store.minLevel || gear.level > store.maxLevel);
-      console.log('[自动配装] 输入概况', { job: store.job, filter: [store.minLevel, store.maxLevel], rangePolicy: 'displayed',
-        syncLevel: store.syncLevel, targetGcd: parsedTargetGcd, workers: selectedWorkerCount,
-        candidates: input.gears.length, foods: input.foods?.length ?? 0,
-        outsideFilter: outside.length, syncedOutsideFilter: outside.filter(gear => gear.synced).length,
-        selectedOutsideFilter: outside.filter(gear => lockable.some(entry => Math.abs(entry.gear.id) === gear.id)).length,
-        exampleSyncedArmor: input.gears.filter(gear => gear.synced && gear.slot === 4).slice(0, 3)
-          .map(gear => ({ id: gear.id, name: gear.name, itemLevel: gear.level, effectiveStats: gear.stats })),
-        outsideLevels: Array.from(new Set(outside.map(gear => gear.level))).sort((left, right) => left - right),
-        materiaSlots: input.gears.reduce((count, gear) => count + gear.materiaSlots.length, 0),
-        criticalPreference, minimumTenacityMitigation: parsedMinimumTenacityMitigation });
+      logger.input({ 装备数: input.gears.length, 食物数: input.foods?.length ?? Number(input.food !== undefined),
+        范围外手选装备数: outside.length, 范围外品级: Array.from(new Set(outside.map(gear => gear.level))),
+        魔晶石孔数: input.gears.reduce((count, gear) => count + gear.materiaSlots.length, 0),
+        目标: input.objective, 锁定装备: input.lockedGears ?? input.lockedGearIds,
+        排除装备数: calculationExcludedGearIds.length, 排除分类: calculationExcludedGearCategories,
+        允许魔晶石属性: input.materiaStats,
+        各部位候选数: Object.fromEntries(Array.from(new Set(input.gears.map(gear => gear.slot)))
+          .map(slot => [slot, input.gears.filter(gear => gear.slot === slot).length])) });
     } catch (inputError) {
+      logger.fail(String(inputError));
       setError(inputError instanceof Error ? inputError.message : String(inputError));
       setStatus('error');
       return;
@@ -271,6 +273,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     setStatus('running');
     const fail = (message: string) => {
       if (!mountedRef.current) return;
+      logger.fail(message);
       workersRef.current.forEach(worker => worker.terminate());
       workersRef.current = [];
       setError(message);
@@ -278,7 +281,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     };
     let planner: Worker;
     try { planner = new Worker(new URL('../optimizer.worker.ts', import.meta.url)); } catch (workerError) {
-      console.error('[自动配装] 无法启动 Worker', workerError);
+      console.error(`[自动配装] Worker 创建失败：${String(workerError)}`);
       fail('自动配装无法启动，请刷新页面后重试；若仍失败，请更新浏览器并检查安全设置。');
       return;
     }
@@ -287,7 +290,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
     planner.onmessage = (event: MessageEvent<WorkerResponse>) => {
       if (!mountedRef.current) return;
       if (event.data.type === 'diagnostics') {
-        console.log('[自动配装] 规划 Worker', event.data.diagnostics);
+        logger.diagnostics(event.data.diagnostics);
         return;
       }
       if (event.data.type === 'error') {
@@ -303,22 +306,21 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       }
 
       const workerCount = Math.min(partitions.length, selectedWorkerCount);
+      logger.plan({ partitions, heuristicResult, criticalRange }, workerCount);
       let poolWorkers: Worker[] = [];
       const pool = runOptimizationPool({ input,
         plan: { partitions, heuristicResult, criticalRange }, workerCount,
         createWorker: () => new Worker(new URL('../optimizer.worker.ts', import.meta.url)),
         isActive: () => mountedRef.current && workersRef.current === poolWorkers,
-        onProgress: setProgress,
-        onDiagnostics: diagnostics => console.log('[自动配装] 搜索 Worker', diagnostics),
+        onProgress: update => { logger.progress(update);setProgress(update); },
+        onDiagnostics: logger.diagnostics,
+        onBest: logger.best,
         onError: fail,
         onDone: (result, restarts) => {
           workersRef.current = [];
           setResult(result);
           setResultExcludedGearKey(calculationExcludedGearKey);
-          console.log('[自动配装] 全部完成', { elapsedMs: Date.now() - runStarted,
-            partitions: partitions.length, workers: workerCount, restarts, damage: result.damage,
-            exploredStates: result.exploredStates, selectedGear: result.gears.map(gear => ({ id: gear.id,
-              name: gear.name, itemLevel: gear.level, synced: gear.synced })) });
+          logger.done(result, restarts);
           setStatus('done');
         },
       });

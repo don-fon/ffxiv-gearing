@@ -64,16 +64,21 @@ for (const blocked of [false, true]) {
       expect(response.result.score).toBeCloseTo(expected.damage * (1 + mitigation / 0.5), 10);
     }
     expect(response.diagnostics[0].engine).toBe('WASM');
-    expect(response.diagnostics[0].version).toBe('2026-10-26-console-v1');
+    expect(response.diagnostics[0].version).toBe('2026-10-31-console-v4');
     expect(response.diagnostics.at(-1)?.stage).toBe('分片完成');
-    expect(consoleMessages.some(message => message.includes('Worker 启动'))).toBe(true);
-    expect(consoleMessages.some(message => message.includes('分片完成'))).toBe(true);
+    expect(consoleMessages.some(message => message.includes('Worker 启动'))).toBe(false);
+    expect(consoleMessages.some(message => message.includes('分片完成'))).toBe(false);
   });
 }
 }
 
 
 test('panel displays WASM failures and a later retry completes successfully', async ({ page, context }) => {
+  const logs: Array<{ text: string, arguments: number, detail: Promise<any> }> = [];
+  page.on('console', message => {
+    if (message.text().startsWith('[自动配装')) logs.push({ text: message.text(), arguments: message.args().length,
+      detail: message.args()[1]?.jsonValue().catch(() => undefined) ?? Promise.resolve(undefined) });
+  });
   let mode = 'download';
   await context.route('**/*.wasm', async route => {
     if (mode === 'download') await route.fulfill({ status: 404, body: '' });
@@ -106,7 +111,17 @@ test('panel displays WASM failures and a later retry completes successfully', as
   await expect(page.locator('.gear-optimization_error[role=alert]')).toHaveCount(0);
   await expect(page.locator('.gear-optimization_damage')).toContainText(expected.damage.toFixed(5));
   await expect(page.getByRole('button', { name: '重新计算', exact: true })).toBeEnabled();
-
+  expect(logs.every(log => log.arguments === 2)).toBe(true);
+  const successfulRun = logs.filter(log => log.text.startsWith('[自动配装 #3]'));
+  expect(successfulRun).toHaveLength(5);
+  expect(successfulRun.filter(log => log.text.includes('WASM 引擎就绪'))).toHaveLength(1);
+  expect(successfulRun.at(-1)?.text).toContain('完整组合');
+  const detail = await successfulRun.at(-1)!.detail;
+  expect(typeof detail).toBe('object');
+  expect(detail.Worker累计秒).toBeDefined();
+  expect(detail.搜索路线).toBeDefined();
+  expect(detail.最终方案.装备.map((gear: { 名称: string }) => gear.名称))
+    .toEqual(expect.arrayContaining(expected.gears.map((gear: { name: string }) => gear.name)));
 });
 
 test('panel leaves running state if worker construction is blocked', async ({ page }) => {

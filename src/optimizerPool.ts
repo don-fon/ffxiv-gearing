@@ -96,10 +96,11 @@ export function runOptimizationPool(options: PoolOptions): { workers: Worker[]; 
       const remaining = 5000 - (Date.now() - started.get(worker)!);
       if (remaining > 0) { delay = Math.min(delay, remaining);continue; }
       const slot = workers.indexOf(worker);
+      const elapsedMs = Date.now() - started.get(worker)!;
       forget(worker);worker.terminate();
       const replacement = options.createWorker();workers[slot] = replacement;
       restartCounts[partitionIndex]++;restarts++;
-      options.onDiagnostics?.({ worker: slot, partition: partitionIndex, stage: '重启分片',
+      options.onDiagnostics?.({ worker: slot, partition: partitionIndex, stage: '重启分片', elapsedMs,
         previousMinimumDamage: bound, minimumDamage: score(best), restarts: restartCounts[partitionIndex] });
       bind(replacement, slot);assign(replacement, partitionIndex);
     }

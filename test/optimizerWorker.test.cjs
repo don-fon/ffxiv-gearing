@@ -99,7 +99,7 @@ for (const initializationError of ['WASM code generation disallowed by embedder'
     await run.send({ type: 'optimize', input: {}, engine: 'wasm' });
     assert.equal(run.calls.length, 0);
     assert.match(run.messages[0].message, /无法启动.*刷新.*WebAssembly/);
-    assert.ok(run.logs.some(log => log.level === 'error' && log.args[1].initializationError.includes(initializationError)));
+    assert.ok(run.logs.some(log => log.level === 'error' && log.args.length === 2 && log.args[1].initializationError.includes(initializationError)));
   });
 }
 
@@ -160,3 +160,48 @@ test('diagnostics distinguish WASM availability from actual kernel calls', async
   assert.equal(status.wasmSearchCalls, 0);
   assert.equal(status.wasmParetoCalls, 0);
 });
+
+
+test('worker telemetry includes the running native call without duplicate console output', async () => {
+  let time = 0;
+  const run = worker({ clock: { now: () => time }, search: report => {
+    time = 6000;report({ fraction: 0.4, visitedBranches: 12, states: 2 });
+    time = 8000;
+  } });
+  await run.send({ type: 'optimize', input: {} });
+  const updates = run.messages.filter(message => message.type === 'diagnostics').map(message => message.diagnostics);
+  const running = updates.find(update => update.stage === '计算中');
+  assert.equal(running.wasmSearchMs, 6000);
+  assert.equal(running.wasmVisitedBranches, 12);
+  assert.equal(running.wasmEvaluatedCombinations, 2);
+  assert.equal(running.otherMs, 0);
+  assert.equal(updates.at(-1).wasmSearchMs, 8000);
+  assert.equal(updates.at(-1).wasmVisitedBranches, 17, 'final totals must not add the partial update twice');
+  assert.equal(run.logs.length, 0, 'normal worker messages are logged only by the UI aggregator');
+});
+
+
+for (const [route, task, label] of [
+  ['fixed', {}, '固定速度'],
+  ['range', { speedBounds: { minimum: 10, maximum: 20 } }, '整段GCD'],
+  ['warm', { branchLimit: 500_000 }, '限额预热'],
+]) {
+  test(`native ${route} query metadata and elapsed time are reported live`, async () => {
+    let time = 0;
+    const run = worker({ task, clock: { now: () => time }, search: report => {
+      time = 6000;report({ fraction: 0.4, visitedBranches: 12, states: 2 });
+      time = 8000;
+    } });
+    await run.send({ type: 'optimize', input: {} });
+    const updates = run.messages.filter(message => message.type === 'diagnostics').map(message => message.diagnostics);
+    const live = updates.find(update => update.stage === '计算中');
+    assert.equal(live[`${route}SearchMs`], 6000);
+    assert.equal(live[`${route}SearchCalls`], 1);
+    assert.equal(live.query.route, label);
+    assert.deepEqual(Array.from(live.query.counts), [2, 3]);
+    assert.equal(live.query.minimumScore, 1);
+    assert.equal(live.query.fraction, 0.4);
+    assert.equal(updates.at(-1)[`${route}SearchMs`], 8000);
+    assert.equal(updates.at(-1).query.complete, true);
+  });
+}
