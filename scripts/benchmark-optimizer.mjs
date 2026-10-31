@@ -20,7 +20,7 @@ const { values } = parseArgs({ options: {
 } });
 values['restart-limit'] ??= '4';
 if (!['none', 'high', 'low'].includes(values.critical)) throw new Error('Unknown critical preference.');
-if (!['auto', 'javascript', 'wasm', 'wasm-warm'].includes(values.engine)) throw new Error('Unknown benchmark engine.');
+if (!['auto', 'wasm', 'wasm-warm'].includes(values.engine)) throw new Error('Unknown benchmark engine.');
 for (const [name, minimum, maximum] of [['workers', 1, 4], ['locks', 0, 4], ['runs', 1, 10], ['timeout', 1000, 3600000]]) {
   const value = Number(values[name]);
   if (!Number.isInteger(value) || value < minimum || value > maximum) throw new Error(`Invalid ${name}.`);

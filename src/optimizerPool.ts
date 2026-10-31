@@ -13,7 +13,7 @@ interface PoolOptions {
   plan: GearOptimizationPlan;
   workerCount: number;
   createWorker: () => Worker;
-  engine?: 'javascript' | 'wasm' | 'wasm-warm';
+  engine?: 'wasm' | 'wasm-warm';
   isActive?: () => boolean;
   onProgress?: (progress: OptimizerProgress) => void;
   onBest?: (result: GearOptimizationResult) => void;

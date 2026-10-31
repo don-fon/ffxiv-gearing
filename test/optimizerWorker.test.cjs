@@ -10,55 +10,131 @@ const compiled = ts.transpileModule(source, { compilerOptions: {
   module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
 } }).outputText;
 
-function worker(fail, exercise = true) {
+function worker(options = {}) {
   const messages = [];
   const calls = [];
   const logs = [];
-  const backend = () => ({ complete: true, visitedBranches: 17, states: 3, damage: 1 });
-  backend.pareto = options => options.length >= 64 ? options.slice(0, 1) : undefined;
+  let fetches = 0;
+  let initializations = 0;
+  const backend = (task, report) => {
+    options.search?.(report);
+    return options.decline ? undefined : { complete: true, visitedBranches: 17, states: 3, damage: 1 };
+  };
+  backend.pareto = items => items.length >= 64 ? items.slice(0, 1) : undefined;
   backend.memoryBytes = () => 8388608;
   const self = { postMessage: message => messages.push(message) };
   vm.runInNewContext(compiled, {
-    exports: {}, self, URL,
+    exports: {}, self, URL, AbortController, Date: options.clock ?? Date,
+    WebAssembly: options.unsupported ? undefined : WebAssembly,
+    setTimeout: options.timeout ? callback => { queueMicrotask(callback);return 0; } : setTimeout,
+    clearTimeout,
     console: Object.fromEntries(['log', 'warn', 'error'].map(level =>
       [level, (...args) => logs.push({ level, args })])),
-    fetch: async () => ({ ok: !fail, status: fail ? 404 : 200, arrayBuffer: async () => new ArrayBuffer(0) }),
-    require: name => name === './optimizerWasm' ? { createWasmSearchBackend: async () => backend } : {
+    fetch: async (url, { signal }) => {
+      fetches++;
+      if (options.networkError) throw new TypeError('Failed to fetch');
+      return {
+        ok: !options.httpStatus, status: options.httpStatus ?? 200,
+        arrayBuffer: () => options.timeout
+          ? new Promise((resolve, reject) => {
+            if (signal.aborted) reject(new Error('aborted'));
+            else signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+          }) : Promise.resolve(new ArrayBuffer(0)),
+      };
+    },
+    require: name => name === './optimizerWasm' ? { createWasmSearchBackend: async () => {
+      initializations++;
+      if (options.initializationError) throw new Error(options.initializationError);
+      return backend;
+    } } : {
       planGearOptimization: (input, engine) => { calls.push(engine);return { partitions: [] }; },
       optimizeGearset: (input, report, engine) => {
         calls.push(engine);
-        if (exercise) {
-          engine?.pareto?.(Array.from({ length: 64 }, () => ({ stats: {}, choices: [] })));
-          engine?.({}, () => {});
+        if (options.exercise !== false) {
+          engine.pareto(Array.from({ length: 64 }, () => ({ stats: {}, choices: [] })));
+          engine({ prefix: { count: 2 }, options: [{ count: 3 }], minimumDamage: 1,
+            ...options.task }, () => {});
         }
         return { damage: 1 };
       },
     },
   });
-  return { messages, calls, logs, backend, send: data => self.onmessage({ data }) };
+  return { messages, calls, logs, backend, options,
+    get fetches() { return fetches; }, get initializations() { return initializations; },
+    send: data => self.onmessage({ data }) };
 }
 
-test('normal workers fall back to JavaScript if WASM cannot initialize', async () => {
-  const run = worker(true);
+for (const type of ['plan', 'optimize']) {
+  for (const options of [{ httpStatus: 404 }, { networkError: true }]) {
+    test(`${type} stops on download failure without invoking the solver`, async () => {
+      const run = worker(options);
+      await run.send({ type, input: {} });
+      assert.equal(run.calls.length, 0);
+      assert.equal(run.initializations, 0);
+      assert.deepEqual(run.messages.map(message => message.type), ['error']);
+      assert.match(run.messages[0].message, /下载失败.*网络.*重新计算/);
+      assert.ok(run.logs.some(log => log.level === 'error'));
+    });
+  }
+}
+
+test('download timeout covers a stalled response body and stops the solver', async () => {
+  const run = worker({ timeout: true });
   await run.send({ type: 'optimize', input: {} });
-  assert.equal(run.calls[0], undefined);
-  assert.equal(run.messages.find(message => message.type === 'result').engine, 'javascript');
-  assert.ok(run.logs.some(log => log.level === 'warn' && /WASM/.test(log.args[0])));
-  const status = run.messages.find(message => message.type === 'diagnostics').diagnostics;
-  assert.equal(status.engine, 'JavaScript');
-  assert.match(status.fallbackReason, /404/);
-});
-
-test('explicit WASM benchmarks report initialization failure', async () => {
-  const run = worker(true);
-  await run.send({ type: 'optimize', input: {}, engine: 'wasm' });
   assert.equal(run.calls.length, 0);
-  assert.equal(run.messages[0].type, 'error');
-  assert.match(run.messages[0].message, /404/);
+  assert.match(run.messages[0].message, /下载超时/);
 });
 
-test('normal workers use the measured native configuration and requested shard count', async () => {
-  const run = worker(false);
+test('unsupported browsers get an upgrade message before any fetch or calculation', async () => {
+  const run = worker({ unsupported: true });
+  await run.send({ type: 'plan', input: {} });
+  assert.equal(run.fetches, 0);
+  assert.equal(run.calls.length, 0);
+  assert.match(run.messages[0].message, /不支持.*WebAssembly.*最新版/);
+});
+
+for (const initializationError of ['WASM code generation disallowed by embedder', 'Unsupported optimizer WASM ABI.']) {
+  test(`initialization failure is actionable: ${initializationError}`, async () => {
+    const run = worker({ initializationError });
+    await run.send({ type: 'optimize', input: {}, engine: 'wasm' });
+    assert.equal(run.calls.length, 0);
+    assert.match(run.messages[0].message, /无法启动.*刷新.*WebAssembly/);
+    assert.ok(run.logs.some(log => log.level === 'error' && log.args[1].initializationError.includes(initializationError)));
+  });
+}
+
+for (const options of [{ httpStatus: 404 }, { initializationError: 'bad wasm' }]) {
+  test('retry after failure fetches and initializes again in the same worker', async () => {
+    const run = worker(options);
+    await run.send({ type: 'optimize', input: {} });
+    assert.equal(run.messages.at(-1).type, 'error');
+    delete options.httpStatus;delete options.initializationError;
+    await run.send({ type: 'optimize', input: {} });
+    assert.equal(run.fetches, 2);
+    assert.equal(run.messages.at(-1).type, 'result');
+    await run.send({ type: 'optimize', input: {} });
+    assert.equal(run.fetches, 2, 'successful initialization remains cached');
+  });
+}
+
+test('legacy JavaScript engine requests are rejected', async () => {
+  const run = worker();
+  await run.send({ type: 'optimize', input: {}, engine: 'javascript' });
+  assert.equal(run.fetches, 0);
+  assert.equal(run.calls.length, 0);
+  assert.match(run.messages[0].message, /仅支持 WebAssembly/);
+});
+
+test('a declined native search fails without silently using the JS tree solver', async () => {
+  const run = worker({ decline: true });
+  await run.send({ type: 'optimize', input: {} });
+  assert.equal(run.messages.at(-1).type, 'error');
+  assert.match(run.messages.at(-1).message, /超出计算引擎支持范围/);
+  assert.ok(!run.messages.some(message => message.type === 'result'));
+});
+
+test('normal workers use the native configuration and requested shard count', async () => {
+  const run = worker();
   await run.send({ type: 'plan', input: {}, workers: 4 });
   assert.equal(typeof run.calls[0], 'function');
   assert.equal(run.calls[0].candidateShardCount, 4);
@@ -72,14 +148,11 @@ test('normal workers use the measured native configuration and requested shard c
   assert.equal(status.wasmParetoCalls, 1);
   assert.equal(status.wasmVisitedBranches, 17);
   assert.equal(status.wasmEvaluatedCombinations, 3);
-  assert.equal(status.wasmParetoInputOptions, 64);
-  assert.equal(status.wasmParetoOutputOptions, 1);
   assert.equal(status.wasmMemoryMiB, 8);
 });
 
-
 test('diagnostics distinguish WASM availability from actual kernel calls', async () => {
-  const run = worker(false, false);
+  const run = worker({ exercise: false });
   await run.send({ type: 'optimize', input: {} });
   const status = run.messages.filter(message => message.type === 'diagnostics').at(-1).diagnostics;
   assert.equal(status.engine, 'WASM');

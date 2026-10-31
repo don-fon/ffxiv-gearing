@@ -276,7 +276,12 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       setError(message);
       setStatus('error');
     };
-    const planner = new Worker(new URL('../optimizer.worker.ts', import.meta.url));
+    let planner: Worker;
+    try { planner = new Worker(new URL('../optimizer.worker.ts', import.meta.url)); } catch (workerError) {
+      console.error('[自动配装] 无法启动 Worker', workerError);
+      fail('自动配装无法启动，请刷新页面后重试；若仍失败，请更新浏览器并检查安全设置。');
+      return;
+    }
     workersRef.current = [planner];
     planner.onerror = event => fail(event.message || '自动配装计算失败。');
     planner.onmessage = (event: MessageEvent<WorkerResponse>) => {
@@ -677,7 +682,7 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
             : `已完成 ${progress.completedGroups}/${progress.totalGroups} 个食物/速度分片，当前保留 ${progress.states} 个属性状态…`}
         </div>
       )}
-      {status === 'error' && <div className="gear-optimization_error">{error}</div>}
+      {status === 'error' && <div className="gear-optimization_error" role="alert">{error}</div>}
 
       {result !== undefined && (
         <div className="gear-optimization_result">
