@@ -913,6 +913,7 @@ test('secondary-budget bound stays above feasible damage across food-cap boundar
     return randomState % maximum;
   };
   const stats = ['CRT', 'DET', 'DHT', 'TEN'];
+  let tightened = 0;
   for (let iteration = 0; iteration < 2000; iteration++) {
     const context = iteration % 2 ? tankDamage : { ...tankDamage,
       level: { ...tankDamage.level, main: 292, sub: 364, div: 900, det: 900 } };
@@ -925,7 +926,7 @@ test('secondary-budget bound stays above feasible damage across food-cap boundar
     }
     const points = Array.from({ length: 6 }, () => {
       const point = { ...fixedStats };
-      for (const stat of stats) point[stat] += random(3000);
+      for (const stat of stats) point[stat] += random(3000) + (iteration % 4 === 0 ? 0.125 : 0);
       return point;
     });
     const maxima = { ...fixedStats };
@@ -936,13 +937,30 @@ test('secondary-budget bound stays above feasible damage across food-cap boundar
         Math.trunc(result[stat] * food.statRates[stat] / 100 + 1e-7));
       return result;
     };
-    const bound = helpers.budgetBound({ damage: context, fixedStats, gears: [], food }, points[0]);
-    const actual = Math.max(...points.map(point => calculateExpectedDamage(applyFood(point), context)));
+    const input = { damage: context, fixedStats, gears: [], food };
+    const finalPoints = points.map(applyFood);
+    const mitigations = finalPoints.map(point => calculateTenacityMitigation(point.TEN, context.level))
+      .sort((a, b) => a - b);
+    const minimum = iteration % 3 === 0 ? 0 : mitigations[iteration % 3 === 1 ? 3 : 4];
+    const bound = helpers.budgetBound({ ...input,
+      objective: { type: 'minimumTenacity', minimumTenacityMitigation: minimum },
+    }, points[0]);
+    const relaxed = helpers.budgetBound(input, points[0]);
+    const actual = Math.max(...finalPoints.filter(point =>
+      calculateTenacityMitigation(point.TEN, context.level) + 1e-12 >= minimum)
+      .map(point => calculateExpectedDamage(point, context)));
     const upper = bound(maxima, Math.min(...points.map(point => point.CRT)),
       Math.max(...points.map(point => stats.reduce((total, stat) => total + point[stat], 0))),
       calculateExpectedDamage(applyFood(maxima), context));
     assert.ok(upper + 1e-10 >= actual, `underestimated case ${iteration}: ${upper} < ${actual}`);
+    const relaxedUpper = relaxed(maxima, Math.min(...points.map(point => point.CRT)),
+      Math.max(...points.map(point => stats.reduce((total, stat) => total + point[stat], 0))),
+      calculateExpectedDamage(applyFood(maxima), context));
+    assert.ok(upper <= relaxedUpper + 1e-10);
+    if (upper < relaxedUpper - 1e-10) tightened++;
+
   }
+  assert.ok(tightened > 0, 'the minimum TEN reservation must actually tighten some bounds');
 });
 
 test('exact tree improvements preserve non-scoring gear and food stats', () => {
@@ -977,4 +995,29 @@ test('fixed secondary food bonuses use the general conservative bound', () => {
   const input = { damage: tankDamage, fixedStats, gears: [],
     food: { id: 1, name: 'fixed bonus', stats: { CRT: 100 }, statRates: {} } };
   assert.equal(helpers.budgetBound(input, fixedStats), undefined);
+});
+
+
+test('shared budget eligibility preserves formula protections and isolates each query', () => {
+  const input = { damage: { ...damage, job: 'DRG', mainStat: 'STR' },
+    fixedStats: { CRT: damage.level.sub, DET: damage.level.main, DHT: damage.level.sub },
+    gears: [], materiaStats: ['CRT', 'DET', 'DHT', 'SKS'] };
+  const context = optimizer.getSecondaryBudgetContext(input);
+  assert.equal(context.enabled, true);
+  assert.equal(context.neutralTenacity, true);
+  assert.equal(context.lower[3], damage.level.sub);
+  context.lower[3] = 999999;
+  assert.equal(optimizer.getSecondaryBudgetContext(input).lower[3], damage.level.sub);
+  for (const override of [
+    { damage: { ...input.damage, job: 'BLU', mainStat: 'INT' } },
+    { fixedStats: { ...input.fixedStats, CRT: damage.level.sub - 1 } },
+    { gears: [{ stats: { DET: -1 } }] },
+    { gears: [{ stats: { TEN: 0 } }] },
+    { materiaStats: [...input.materiaStats, 'TEN'] },
+    { lockedGears: [{ melds: [{ stat: 'TEN', value: 12 }] }] },
+    { food: { stats: { CRT: 20 }, statRates: {} } },
+    { food: { stats: { TEN: 20 }, statRates: { TEN: 10 } } },
+  ]) assert.equal(optimizer.getSecondaryBudgetContext({ ...input, ...override }).enabled, false);
+  assert.equal(optimizer.getSecondaryBudgetContext({ ...input, damage: tankDamage,
+    fixedStats: { ...input.fixedStats, TEN: tankDamage.level.sub } }).enabled, true);
 });

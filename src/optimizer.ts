@@ -1658,14 +1658,13 @@ function planFixedFoodGearOptimization(input: GearOptimizationInput,
   return { partitions, heuristicResult };
 }
 
-/** A conservative log-tangent bound also respects the shared secondary-stat budget.
- * CRT's convex multiplier is first bounded by its secant over the node's interval.
- * The remaining factors (including capped food) have concave logarithms. Their
- * tangents reduce the bound to a four-variable fractional knapsack problem.
+/** Shared formula eligibility for JS pruning and the native context.
+ * Keep lower at the fixed-stat baseline; each bound reserves any required TEN
+ * separately (the C kernel computes its own conservative mitigation inverse).
  */
-function createSecondaryBudgetBound(input: GearOptimizationInput, reference: OptimizerStats) {
-  const { sub, main, div, det, detTrunc } = input.damage.level;
+export function getSecondaryBudgetContext(input: GearOptimizationInput) {
   const stats = ['CRT', 'DET', 'DHT', 'TEN'] as const;
+  const { sub, main } = input.damage.level;
   const lower = stats.map(stat => input.fixedStats[stat] ?? 0);
   const neutralTenacity = input.damage.job !== 'BLU' && input.damage.mainStat !== 'VIT' &&
     input.fixedStats.TEN === undefined && input.food?.stats.TEN === undefined &&
@@ -1673,16 +1672,42 @@ function createSecondaryBudgetBound(input: GearOptimizationInput, reference: Opt
     !input.lockedGears?.some(gear => gear.melds?.some(meld => meld.stat === 'TEN')) &&
     !input.gears.some(gear => gear.stats.TEN !== undefined);
   if (neutralTenacity) lower[3] = sub;
-  if ((input.damage.mainStat !== 'VIT' && !neutralTenacity) || lower[0] < sub || lower[1] < main ||
-      lower[2] < sub || lower[3] < sub ||
-      input.gears.some(gear => stats.some(stat => (gear.stats[stat] ?? 0) < 0)) ||
-      stats.some(stat => input.food?.stats[stat] !== undefined &&
-        input.food.statRates[stat] === undefined)) return undefined;
+  const enabled = (input.damage.mainStat === 'VIT' || neutralTenacity) &&
+    lower[0] >= sub && lower[1] >= main && lower[2] >= sub && lower[3] >= sub &&
+    !input.gears.some(gear => stats.some(stat => (gear.stats[stat] ?? 0) < 0)) &&
+    !stats.some(stat => input.food?.stats[stat] !== undefined && input.food.statRates[stat] === undefined);
+  return { secondary: stats, lower, neutralTenacity, enabled };
+}
+
+/** A conservative log-tangent bound also respects the shared secondary-stat budget.
+ * CRT's convex multiplier is first bounded by its secant over the node's interval.
+ * The remaining factors (including capped food) have concave logarithms. Their
+ * tangents reduce the bound to a four-variable fractional knapsack problem.
+ */
+function createSecondaryBudgetBound(input: GearOptimizationInput, reference: OptimizerStats) {
+  const { sub, main, div, det, detTrunc } = input.damage.level;
+  const { secondary: stats, lower, neutralTenacity, enabled } = getSecondaryBudgetContext(input);
+  if (!enabled) return undefined;
   const foodCaps = stats.map(stat => input.food?.stats[stat] ?? 0);
   const foodRates = stats.map(stat => (input.food?.statRates[stat] ?? 0) / 100);
   const refs = stats.map(stat => stat === 'TEN' && neutralTenacity ? sub : reference[stat] ?? 0);
   const foodUpper = (value: number, index: number) =>
     value + Math.min(foodCaps[index], value * foodRates[index]);
+  // Match minimum_tenacity_raw in optimizerSearch.c: invert the continuous
+  // food upper envelope, with conservative slack for game truncation and floats.
+  // This is computed once per fixed-food bound, not once per tree node.
+  const minimum = minimumTenacityMitigation(input) ?? 0;
+  if (minimum > 0) {
+    const target = sub + div / 200 * (Math.ceil(minimum * 1000 - 1e-9) - 1e-7);
+    let low = 0;
+    let high = 1_000_000;
+    for (let iteration = 0; iteration < 60; iteration++) {
+      const middle = (low + high) * 0.5;
+      if (foodUpper(middle, 3) >= target) high = middle;
+      else low = middle;
+    }
+    lower[3] = Math.max(lower[3], low - 1e-6);
+  }
   const slopes = [0, 0.14 / det, 0.1375 / div, 0.112 / div];
   const bases = [sub, main, sub, sub];
   const weights = stats.map((stat, index) => index === 0 ? 0 :

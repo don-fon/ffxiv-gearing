@@ -19,7 +19,7 @@ const transform = source => source
   .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;');
 const solver = load('../src/optimizer.ts', { './statFormulas': formulas }, transform);
 const production = load('../src/optimizer.ts', { './statFormulas': formulas });
-const adapter = load('../src/optimizerWasm.ts');
+const adapter = load('../src/optimizerWasm.ts', { './optimizer': production });
 const bytes = fs.readFileSync(require.resolve('../src/optimizerSearch.wasm'));
 const floor = value => Math.trunc(value + 1e-7);
 function add(left, right) {

@@ -20,7 +20,7 @@ const formulas = loadTypeScript('../src/statFormulas.ts');
 const solver = loadTypeScript('../src/optimizer.ts', { './statFormulas': formulas }, source => source
   .replace('const maximumStateExpansion = 1_000_000;', 'const maximumStateExpansion = 4;')
   .replace('const maximumContractionProduct = 250_000;', 'const maximumContractionProduct = 0;') + '\nexport const testPareto = paretoFrontier; export const testAttributeTree = buildAttributeTree; export const testSearchAttributeTree = buildSearchAttributeTree;');
-const adapter = loadTypeScript('../src/optimizerWasm.ts');
+const adapter = loadTypeScript('../src/optimizerWasm.ts', { './optimizer': solver });
 const bytes = fs.readFileSync(require.resolve('../src/optimizerSearch.wasm'));
 
 function fixture(seed) {

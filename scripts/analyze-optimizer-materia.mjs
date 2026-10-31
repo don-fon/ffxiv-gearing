@@ -33,7 +33,7 @@ source+='\nconst probeTiming = { gearOptionsMs:0, buildGroupsMs:0, prepareGroups
 source=source.replace('function gearOptions(gear:', 'function rawGearOptions(gear:');
 source+=`\nfunction gearOptions(...args: Parameters<typeof rawGearOptions>) { const t=performance.now(); const out=rawGearOptions(...args); probeTiming.gearOptionsMs+=performance.now()-t; probeTiming.optionCount+=out.length; probeTiming.calls++; return out; }\nexport { probeTiming };`;
 const solver=load(source,{'./statFormulas':load(fs.readFileSync(root+'src/statFormulas.ts','utf8'))});
-const adapter=load(fs.readFileSync(root+'src/optimizerWasm.ts','utf8'));
+const adapter=load(fs.readFileSync(root+'src/optimizerWasm.ts','utf8'),{'./optimizer':solver});
 const input=JSON.parse(fs.readFileSync(root+'test/fixtures/warrior-375-input.json'));
 const expected=JSON.parse(fs.readFileSync(root+'test/fixtures/warrior-375-result.json'));
 const unlocked=process.argv.includes('--unlocked');

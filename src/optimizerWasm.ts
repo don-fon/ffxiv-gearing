@@ -1,3 +1,4 @@
+import { getSecondaryBudgetContext } from './optimizer';
 import type {
   AttributeTreeNode, GearOption, GearOptimizationInput, OptimizerSearchBackend,
   OptimizerSearchTask, OptimizerStat, OptimizerStats, SearchState,
@@ -111,7 +112,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     nextAddress = heapBase;
     treePointers = new WeakMap();
     points.clear();
-    const { damage, fixedStats, food } = currentInput;
+    const { damage, food } = currentInput;
     const pointer = allocate(64 * 8);
     const cache = allocate(core.search_cache_bytes());
     const frames = allocate(core.search_frame_bytes());
@@ -119,18 +120,7 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     const additions = damage.job === 'BLU' ? damage.bluMdmgAdditions : [];
     const lookup = allocate(additions.length * 8);
     if (additions.length > 0) new Float64Array(memory.buffer, lookup, additions.length).set(additions);
-    const secondary = ['CRT', 'DET', 'DHT', 'TEN'] as const;
-    const lower = secondary.map(stat => fixedStats[stat] ?? 0);
-    const neutralTenacity = damage.job !== 'BLU' && damage.mainStat !== 'VIT' &&
-      fixedStats.TEN === undefined && food?.stats.TEN === undefined &&
-      !currentInput.materiaStats.includes('TEN') &&
-      !currentInput.lockedGears?.some(gear => gear.melds?.some(meld => meld.stat === 'TEN')) &&
-      !currentInput.gears.some(gear => gear.stats.TEN !== undefined);
-    if (neutralTenacity) lower[3] = damage.level.sub;
-    const budgetEnabled = (damage.mainStat === 'VIT' || neutralTenacity) && lower[0] >= damage.level.sub &&
-      lower[1] >= damage.level.main && lower[2] >= damage.level.sub && lower[3] >= damage.level.sub &&
-      !currentInput.gears.some(gear => secondary.some(stat => (gear.stats[stat] ?? 0) < 0)) &&
-      !secondary.some(stat => food?.stats[stat] !== undefined && food.statRates[stat] === undefined);
+    const { secondary, lower, neutralTenacity, enabled: budgetEnabled } = getSecondaryBudgetContext(currentInput);
     const stats: OptimizerStat[] = [attackStat, 'INT', 'CRT', 'DET', 'DHT', 'TEN', 'PDMG', 'MDMG'];
     const context = new Float64Array(memory.buffer, pointer, 64);
     context.set([

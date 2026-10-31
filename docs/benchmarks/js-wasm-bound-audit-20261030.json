@@ -1,0 +1,17 @@
+{
+  "cases": 1800,
+  "tankCases": 1200,
+  "neutralCases": 600,
+  "budgetEnabledCases": 1542,
+  "positiveMinimumCases": 800,
+  "enabledPositiveMinimumCases": 685,
+  "tightenedCases": 296,
+  "maxNativePrototypeDifference": 4.263256414560601e-14,
+  "tighteningPercentAmongChanged": {
+    "median": 0.34035413792065095,
+    "maximum": 3.60005862963394
+  },
+  "scope": "Isolated secondary-budget upper bounds, native plane disabled; not end-to-end performance.",
+  "archive": "js-wasm-bound-audit-20261030.json.gz",
+  "archiveSha256": "e46db6587e7ab575de64c036df8b221a73c32816eb77a093e332082729d313be"
+}

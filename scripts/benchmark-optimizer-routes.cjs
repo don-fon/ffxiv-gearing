@@ -28,7 +28,9 @@ function load(source, dependencies = {}) {
 const solver = load(fs.readFileSync(sourceFile, 'utf8'), {
   './statFormulas': load(fs.readFileSync(path.join(root, 'src/statFormulas.ts'), 'utf8')),
 });
-const adapter = load(fs.readFileSync(path.join(root, 'src/optimizerWasm.ts'), 'utf8'));
+const adapter = load(fs.readFileSync(path.join(root, 'src/optimizerWasm.ts'), 'utf8'), { './optimizer': load(fs.readFileSync(path.join(root, 'src/optimizer.ts'), 'utf8'), {
+  './statFormulas': load(fs.readFileSync(path.join(root, 'src/statFormulas.ts'), 'utf8')),
+}) });
 
 (async () => {
   const native = await adapter.createWasmSearchBackend(

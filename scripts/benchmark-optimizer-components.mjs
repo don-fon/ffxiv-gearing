@@ -32,7 +32,7 @@ const source = values.engine === 'javascript' && values.baseline !== 'current'
   ? execFileSync('git', ['show', `${values.baseline}:src/optimizer.ts`], { cwd: root, encoding: 'utf8' })
   : read('src/optimizer.ts');
 const solver = load(source, { './statFormulas': load(read('src/statFormulas.ts')) });
-const adapter = load(read('src/optimizerWasm.ts'));
+const adapter = load(read('src/optimizerWasm.ts'), { './optimizer': load(read('src/optimizer.ts'), { './statFormulas': load(read('src/statFormulas.ts')) }) });
 const input = JSON.parse(read('test/fixtures/warrior-375-input.json'));
 const expected = JSON.parse(read('test/fixtures/warrior-375-result.json'));
 input.lockedGears = expected.gears.filter(gear => [13, 5, 8].includes(gear.slot))
