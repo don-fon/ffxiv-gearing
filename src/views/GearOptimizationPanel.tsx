@@ -13,21 +13,17 @@ import type {
   CriticalPreference,
   GearOptimizationInput,
   GearOptimizationResult,
-  GearOptimizationPlan,
   OptimizerProgress,
   OptimizerStat,
 } from '../optimizer';
+import { runOptimizationPool } from '../optimizerPool';
+import type { OptimizerWorkerResponse } from '../optimizerPool';
 import type { DropdownPopperProps } from './components/Dropdown';
 import { useStore } from './components/contexts';
 import { Icon } from './components/Icon';
 
 type Status = 'idle' | 'loading' | 'running' | 'done' | 'error';
-type WorkerResponse =
-  { type: 'diagnostics', diagnostics: Record<string, unknown> } |
-  { type: 'plan', plan: GearOptimizationPlan } |
-  { type: 'progress', progress: OptimizerProgress } |
-  { type: 'result', result: GearOptimizationResult } |
-  { type: 'error', message: string };
+type WorkerResponse = OptimizerWorkerResponse;
 
 const exclusionKey = (ids: number[], categories: OptimizerGearCategory[]) => [
   ids.slice().sort((left, right) => left - right).join(','),
@@ -302,100 +298,27 @@ export const GearOptimizationPanel = mobxReact.observer<DropdownPopperProps>(({ 
       }
 
       const workerCount = Math.min(partitions.length, selectedWorkerCount);
-      const workers = Array.from({ length: workerCount }, () =>
-        new Worker(new URL('../optimizer.worker.ts', import.meta.url)));
-      workersRef.current = workers;
-      const activeProgress = new Map<Worker, OptimizerProgress>();
-      const activePartitionIndexes = new Map<Worker, number>();
-      const partitionProgress = partitions.map(() => 0);
-      const partitionWeights = partitions.map(partition => Math.max(1, partition.estimatedWork || 1));
-      const totalWeight = partitionWeights.reduce((total, weight) => total + weight, 0);
-      let nextIndex = 0;
-      let completed = 0;
-      let exploredStates = 0;
-      let bestResult: GearOptimizationResult = heuristicResult;
-      const updateProgress = () => {
-        const values = Array.from(activeProgress.values());
-        const searching = values.some(value => value.visitedBranches !== undefined);
-        setProgress({
-          completedGroups: completed,
-          totalGroups: partitions.length,
-          searchProgress: partitionProgress.reduce((total, fraction, index) =>
-            total + fraction * partitionWeights[index], 0) / totalWeight,
-          states: values.filter(value => !searching || value.visitedBranches !== undefined)
-            .reduce((total, value) => total + value.states, 0),
-          visitedBranches: searching
-            ? values.reduce((total, value) => total + (value.visitedBranches ?? 0), 0)
-            : undefined,
-        });
-      };
-      const assign = (worker: Worker) => {
-        if (nextIndex >= partitions.length) {
-          worker.terminate();
-          return;
-        }
-        const partitionIndex = nextIndex++;
-        const partition = partitions[partitionIndex];
-        activePartitionIndexes.set(worker, partitionIndex);
-        const targetSpeedContribution = partition.contribution;
-        const food = partition.foodId === undefined
-          ? input.food
-          : input.foods?.find(candidate => candidate.id === partition.foodId);
-        activeProgress.delete(worker);
-        worker.postMessage({
-          type: 'optimize',
-          input: {
-            ...input,
-            candidateShard: partition.candidateShard,
-            criticalRange,
-            food,
-            foods: undefined,
-            targetSpeedContribution,
-            globalMinimumDamage: bestResult.score ?? bestResult.damage,
-          },
-        });
-      };
-      for (const worker of workers) {
-        worker.onerror = workerError => fail(workerError.message || '自动配装计算失败。');
-        worker.onmessage = (workerEvent: MessageEvent<WorkerResponse>) => {
-          if (!mountedRef.current) return;
-          if (workerEvent.data.type === 'diagnostics') {
-            console.log('[自动配装] 搜索 Worker', { partition: activePartitionIndexes.get(worker),
-              ...workerEvent.data.diagnostics });
-          } else if (workerEvent.data.type === 'error') {
-            fail(workerEvent.data.message);
-          } else if (workerEvent.data.type === 'progress') {
-            activeProgress.set(worker, workerEvent.data.progress);
-            const index = activePartitionIndexes.get(worker)!;
-            partitionProgress[index] = Math.max(partitionProgress[index],
-              Math.min(0.999999, workerEvent.data.progress.searchProgress ?? 0));
-            updateProgress();
-          } else if (workerEvent.data.type === 'result') {
-            partitionProgress[activePartitionIndexes.get(worker)!] = 1;
-            completed++;
-            exploredStates += workerEvent.data.result.exploredStates;
-            if ((workerEvent.data.result.score ?? workerEvent.data.result.damage) > (bestResult.score ?? bestResult.damage)) {
-              bestResult = workerEvent.data.result;
-            }
-            activeProgress.delete(worker);
-            updateProgress();
-            if (completed === partitions.length) {
-              workers.forEach(item => item.terminate());
-              workersRef.current = [];
-              setResult({ ...bestResult, exploredStates });
-              setResultExcludedGearKey(calculationExcludedGearKey);
-              console.log('[自动配装] 全部完成', { elapsedMs: Date.now() - runStarted,
-                partitions: partitions.length, workers: workerCount, damage: bestResult.damage,
-                exploredStates, selectedGear: bestResult.gears.map(gear => ({ id: gear.id,
-                  name: gear.name, itemLevel: gear.level, synced: gear.synced })) });
-              setStatus('done');
-            } else {
-              assign(worker);
-            }
-          }
-        };
-        assign(worker);
-      }
+      let poolWorkers: Worker[] = [];
+      const pool = runOptimizationPool({ input,
+        plan: { partitions, heuristicResult, criticalRange }, workerCount,
+        createWorker: () => new Worker(new URL('../optimizer.worker.ts', import.meta.url)),
+        isActive: () => mountedRef.current && workersRef.current === poolWorkers,
+        onProgress: setProgress,
+        onDiagnostics: diagnostics => console.log('[自动配装] 搜索 Worker', diagnostics),
+        onError: fail,
+        onDone: (result, restarts) => {
+          workersRef.current = [];
+          setResult(result);
+          setResultExcludedGearKey(calculationExcludedGearKey);
+          console.log('[自动配装] 全部完成', { elapsedMs: Date.now() - runStarted,
+            partitions: partitions.length, workers: workerCount, restarts, damage: result.damage,
+            exploredStates: result.exploredStates, selectedGear: result.gears.map(gear => ({ id: gear.id,
+              name: gear.name, itemLevel: gear.level, synced: gear.synced })) });
+          setStatus('done');
+        },
+      });
+      poolWorkers = pool.workers;
+      workersRef.current = poolWorkers;
     };
     planner.postMessage({ type: 'plan', input, workers: selectedWorkerCount });
   };

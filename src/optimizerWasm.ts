@@ -176,17 +176,30 @@ export async function createWasmSearchBackend(bytes: BufferSource,
     // A bounded warm-up needs a strong incumbent, while the full search must
     // prove it optimal. Preserve the incumbent-producing order during warm-up.
     core.start_search(rootAddress, rootCount, task.minimumDamage, Number(task.branchLimit === undefined));
+    let lastCandidateDamage = task.minimumDamage;
+    const publishCandidate = () => {
+      if (task.branchLimit !== undefined || task.onCandidate === undefined) return;
+      const damage = core.search_damage();
+      if (damage <= lastCandidateDamage || core.search_selected(0) === 0) return;
+      const selected = Array.from({ length: rootCount }, (_, index) => points.get(core.search_selected(index)));
+      if (selected[0] === undefined) return;
+      lastCandidateDamage = damage;
+      task.onCandidate({ prefix: selected[0] as SearchState, options: selected.slice(1) as GearOption[],
+        damage, visitedBranches: core.search_visited(), states: core.search_evaluated(), complete: false });
+    };
     let lastReport = Date.now();
     let complete = false;
     while (!(complete = core.step_search(50_000) !== 0)) {
       if (task.branchLimit !== undefined && core.search_visited() >= task.branchLimit) break;
       if (Date.now() - lastReport >= 1000) {
         lastReport = Date.now();
+        publishCandidate();
         report({ fraction: core.search_coverage(), visitedBranches: core.search_visited(),
           states: core.search_evaluated() });
       }
     }
     if (core.search_error() !== 0) throw new Error(`Optimizer WASM search failed (${core.search_error()}).`);
+    publishCandidate();
     const selected = Array.from({ length: rootCount }, (_, index) => points.get(core.search_selected(index)));
     return {
       prefix: selected[0] as SearchState | undefined,

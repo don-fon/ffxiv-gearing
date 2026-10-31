@@ -1,4 +1,4 @@
-import { optimizeGearset, planGearOptimization } from './optimizer';
+import { materializeOptimizationCandidate, optimizeGearset, planGearOptimization } from './optimizer';
 import type { GearOptimizationInput, OptimizerSearchBackend } from './optimizer';
 import { createWasmSearchBackend } from './optimizerWasm';
 
@@ -79,7 +79,10 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         activePhase = task.speedBounds === undefined ? 'WASM 精确搜索' : 'WASM GCD 区间搜索';
         counts.wasmSearchCalls++;
         const before = Date.now();
-        const result = native(task, update => { heartbeat(update);report(update); });
+        const result = native({ ...task, onCandidate: candidate => {
+          const result = materializeOptimizationCandidate(task.input, candidate);
+          if (result !== undefined) self.postMessage({ type: 'candidate', result });
+        } }, update => { heartbeat(update);report(update); });
         counts.wasmSearchMs += Date.now() - before;
         if (result === undefined) {
           counts.wasmSearchCalls--;

@@ -194,6 +194,7 @@ export interface OptimizerSearchTask {
   reference: OptimizerStats;
   minimumDamage: number;
   branchLimit?: number;
+  onCandidate?: (candidate: OptimizerSearchResult) => void;
   speedBounds?: { minimum: number; maximum: number };
 }
 
@@ -949,6 +950,37 @@ function objectiveScore(damage: number, mitigation: number, input: GearOptimizat
 function publicResult(result: GearOptimizationResult, input: GearOptimizationInput): GearOptimizationResult {
   if (input.objective?.type !== 'tenacityTradeoff' || result.empty) return result;
   return { ...result, score: result.damage, damage: calculateExpectedDamage(result.stats, input.damage) };
+}
+
+/** Convert an improving native selection to a validated feasible candidate.
+ * This says nothing about whether its partition has finished searching. */
+export function materializeOptimizationCandidate(input: GearOptimizationInput,
+  result: OptimizerSearchResult): GearOptimizationResult | undefined {
+  if (result.prefix === undefined) return undefined;
+  const raw = result.options!.reduce((stats, option) => addStats(stats, option.stats), result.prefix.stats);
+  const stats = applyFood(raw, input.food);
+  const evaluation = evaluateStats(stats, input);
+  if (!Number.isFinite(evaluation.damage) || !meetsCombinedObjective(evaluation, raw, {}, input) ||
+      gcdHundredths(stats[input.speedStat] ?? 0, input) !== targetGcdHundredths(input) ||
+      Math.abs(evaluation.damage - result.damage) > 1e-10 * Math.max(1, evaluation.damage)) {
+    throw new Error('WASM 中间候选未通过伤害或约束校验。');
+  }
+  const state: SearchState = { stats: raw, choices: [], previous: result.prefix,
+    selected: result.options!.flatMap(option => option.choices) };
+  const gears = reconstruct(state);
+  const slots = new Map(input.slots.map(slot => [slot, slot === 12 ? 2 : 1]));
+  const unique = new Set<number>();
+  for (const gear of gears) {
+    const source = input.gears.find(item => item.id === gear.id && item.slot === gear.slot);
+    if (source === undefined || (slots.get(gear.slot) ?? 0) <= 0 || source.unique && unique.has(gear.id)) {
+      throw new Error('WASM 中间候选的装备槽位或候选范围无效。');
+    }
+    if (source.unique) unique.add(gear.id);
+    slots.set(gear.slot, slots.get(gear.slot)! - 1);
+  }
+  if (Array.from(slots.values()).some(count => count !== 0)) throw new Error('WASM 中间候选未包含完整装备。');
+  return publicResult({ ...evaluation, stats, gears, food: input.food,
+    criticalRange: input.criticalRange, exploredStates: result.states }, input);
 }
 
 function meetsObjective(evaluation: OptimizationEvaluation, input: GearOptimizationInput): boolean {
