@@ -1575,6 +1575,11 @@ function improveSpeedIntervalSeed(input: GearOptimizationInput, plan: SpeedSearc
 
 function canSearchSpeedInterval(input: GearOptimizationInput, plan: SpeedSearchPlan,
   backend?: OptimizerSearchBackend): boolean {
+  // Retain the BLU exclusion for performance, not mathematical incompatibility.
+  // Measured 2026-10-30, sync 375 / GCD 2.50 / 4 Workers: removing it changed
+  // none/high CRT runs from 16.10/16.51s to 48.85/56.53s with identical optima.
+  // Some other BLU cases improved; this is a conservative default, not a claim
+  // that fixed-speed search always wins. See docs/optimizer-blu-route-validation.md.
   return backend?.speedRangeMinimumWork !== undefined &&
     input.damage.job !== 'BLU' && plan.optionsBySpeed.length < 16 &&
     estimatePartitionWork(plan) >= backend.speedRangeMinimumWork &&

@@ -1,0 +1,231 @@
+{
+  "date": "2026-10-30",
+  "runs": [
+    {
+      "id": "L50-baseline",
+      "case": "L50",
+      "arm": "baseline",
+      "status": "completed",
+      "seconds": 4.358900000005961,
+      "completed": 8,
+      "partitions": 8,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 4.945067699129944,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 32,
+        "intervalCalls": 0,
+        "wasmVisitedBranches": 343428,
+        "wasmSearchMs": 305
+      },
+      "intervalObserved": false,
+      "peakMemoryMiB": 8
+    },
+    {
+      "id": "L50-open",
+      "case": "L50",
+      "arm": "open",
+      "status": "completed",
+      "seconds": 3.569,
+      "completed": 4,
+      "partitions": 4,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 4.945067699129944,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 0,
+        "intervalCalls": 40,
+        "wasmVisitedBranches": 7686816,
+        "wasmSearchMs": 2371
+      },
+      "intervalObserved": true,
+      "peakMemoryMiB": 9.5
+    },
+    {
+      "id": "L60-open",
+      "case": "L60",
+      "arm": "open",
+      "status": "completed",
+      "seconds": 3.9079000000059603,
+      "completed": 4,
+      "partitions": 4,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 9.208444422091041,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 0,
+        "intervalCalls": 64,
+        "wasmVisitedBranches": 19532288,
+        "wasmSearchMs": 4594
+      },
+      "intervalObserved": true,
+      "peakMemoryMiB": 8
+    },
+    {
+      "id": "L60-baseline",
+      "case": "L60",
+      "arm": "baseline",
+      "status": "completed",
+      "seconds": 5.325599999994039,
+      "completed": 8,
+      "partitions": 8,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 9.208444422091041,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 38,
+        "intervalCalls": 0,
+        "wasmVisitedBranches": 176575,
+        "wasmSearchMs": 199
+      },
+      "intervalObserved": false,
+      "peakMemoryMiB": 8
+    },
+    {
+      "id": "L70-baseline",
+      "case": "L70",
+      "arm": "baseline",
+      "status": "completed",
+      "seconds": 16.10140000000596,
+      "completed": 16,
+      "partitions": 16,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 14.51520528672536,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 96,
+        "intervalCalls": 0,
+        "wasmVisitedBranches": 6406991,
+        "wasmSearchMs": 2171
+      },
+      "intervalObserved": false,
+      "peakMemoryMiB": 15.6
+    },
+    {
+      "id": "L70-open",
+      "case": "L70",
+      "arm": "open",
+      "status": "completed",
+      "seconds": 48.85270000001788,
+      "completed": 4,
+      "partitions": 4,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 14.51520528672536,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 0,
+        "intervalCalls": 64,
+        "wasmVisitedBranches": 646477296,
+        "wasmSearchMs": 124370
+      },
+      "intervalObserved": true,
+      "peakMemoryMiB": 8.4
+    },
+    {
+      "id": "L70-high-open",
+      "case": "L70-high",
+      "arm": "open",
+      "status": "completed",
+      "seconds": 56.53040000000596,
+      "completed": 4,
+      "partitions": 4,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 14.493765181362482,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 0,
+        "intervalCalls": 64,
+        "wasmVisitedBranches": 614721865,
+        "wasmSearchMs": 113149
+      },
+      "intervalObserved": true,
+      "peakMemoryMiB": 8.4
+    },
+    {
+      "id": "L70-high-baseline",
+      "case": "L70-high",
+      "arm": "baseline",
+      "status": "completed",
+      "seconds": 16.507199999988078,
+      "completed": 16,
+      "partitions": 16,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 14.493765181362482,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 96,
+        "intervalCalls": 0,
+        "wasmVisitedBranches": 6029248,
+        "wasmSearchMs": 1810
+      },
+      "intervalObserved": false,
+      "peakMemoryMiB": 15.1
+    },
+    {
+      "id": "L70-low-baseline",
+      "case": "L70-low",
+      "arm": "baseline",
+      "status": "completed",
+      "seconds": 18.65230000001192,
+      "completed": 32,
+      "partitions": 32,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 13.982613472294421,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 528,
+        "intervalCalls": 0,
+        "wasmVisitedBranches": 1344804,
+        "wasmSearchMs": 1295
+      },
+      "intervalObserved": false,
+      "peakMemoryMiB": 10.7
+    },
+    {
+      "id": "L70-low-open",
+      "case": "L70-low",
+      "arm": "open",
+      "status": "completed",
+      "seconds": 12.5485,
+      "completed": 4,
+      "partitions": 4,
+      "restarts": 0,
+      "feasible": true,
+      "objective": 13.982613472294421,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 0,
+        "intervalCalls": 64,
+        "wasmVisitedBranches": 2664097,
+        "wasmSearchMs": 1736
+      },
+      "intervalObserved": true,
+      "peakMemoryMiB": 23.9
+    },
+    {
+      "id": "L80-open",
+      "case": "L80",
+      "arm": "open",
+      "status": "timeout",
+      "seconds": 60.00070000001788,
+      "completed": 0,
+      "partitions": 4,
+      "restarts": null,
+      "feasible": true,
+      "objective": 25.223742653521157,
+      "completedQueryCounts": {
+        "fixedSpeedCalls": 0,
+        "intervalCalls": 20,
+        "wasmVisitedBranches": 328763,
+        "wasmSearchMs": 140
+      },
+      "intervalObserved": true,
+      "peakMemoryMiB": 12.2
+    }
+  ],
+  "completePairedCases": 5,
+  "completeRuns": 10,
+  "timeoutRuns": 1,
+  "interruptedRun": "L80-baseline",
+  "archive": "blu-route-validation-20261030.json.gz",
+  "archiveSha256": "262b1a7fe98a3e8e5b4ed28a7a4e247e450b748f264ab48e2c098a972c2c1f94"
+}
