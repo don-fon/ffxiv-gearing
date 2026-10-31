@@ -1,5 +1,7 @@
 # 连续松弛辅助精确搜索实验（2026-10-27）
 
+> 已归档（2026-10-30）：收益不足以支持当前采用，按用户决定停止推进。实验、数据和补丁保留；下文建议与命令属于历史记录。见[归档决定](optimizer-gradient-archive.md)。
+
 本轮测试的是“梯度方法辅助精确搜索”，不把连续解直接作为配装结果。
 生产求解器暂不采用本实验。实验补丁独立保存在
 [`experiments/gradient-relaxation.patch`](experiments/gradient-relaxation.patch)。
